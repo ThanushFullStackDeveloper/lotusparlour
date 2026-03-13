@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, User } from 'lucide-react';
-import { getServices, getStaff, createAppointment, getAvailableSlots, getHolidays } from '../utils/api';
+import { getServices, getStaff, createAppointment, getAvailableSlots, getHolidays, getCurrentUser } from '../utils/api';
 import { toast } from 'sonner';
 
 const Booking = () => {
@@ -13,6 +13,7 @@ const Booking = () => {
   const [staff, setStaff] = useState([]);
   const [availableSlots, setAvailableSlots] = useState([]);
   const [holidays, setHolidays] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
 
   const [formData, setFormData] = useState({
     service_id: location.state?.selectedService?.id || '',
@@ -25,7 +26,7 @@ const Booking = () => {
   });
 
   useEffect(() => {
-    fetchData();
+    checkAuthAndFetchData();
   }, []);
 
   useEffect(() => {
@@ -34,16 +35,33 @@ const Booking = () => {
     }
   }, [formData.appointment_date, formData.service_id]);
 
-  const fetchData = async () => {
+  const checkAuthAndFetchData = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      toast.error('Please login to book an appointment');
+      navigate('/login', { state: { from: '/booking' } });
+      return;
+    }
+
     try {
-      const [servicesRes, staffRes, holidaysRes] = await Promise.all([
+      const [servicesRes, staffRes, holidaysRes, userRes] = await Promise.all([
         getServices(),
         getStaff(),
         getHolidays(),
+        getCurrentUser(),
       ]);
       setServices(servicesRes.data);
       setStaff(staffRes.data);
       setHolidays(holidaysRes.data);
+      setCurrentUser(userRes.data.user);
+      
+      // Pre-fill customer details from logged-in user
+      setFormData(prev => ({
+        ...prev,
+        customer_name: userRes.data.user.name,
+        customer_phone: userRes.data.user.phone,
+        customer_email: userRes.data.user.email,
+      }));
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load booking data');
@@ -115,7 +133,7 @@ const Booking = () => {
 
         {/* Progress Steps */}
         <div className="flex justify-center mb-12" data-testid="booking-steps">
-          {[1, 2, 3].map((num) => (
+          {[1, 2].map((num) => (
             <div key={num} className="flex items-center">
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
@@ -125,7 +143,7 @@ const Booking = () => {
               >
                 {num}
               </div>
-              {num < 3 && <div className={`w-16 h-1 ${step > num ? 'bg-[var(--secondary)]' : 'bg-gray-200'}`}></div>}
+              {num < 2 && <div className={`w-16 h-1 ${step > num ? 'bg-[var(--secondary)]' : 'bg-gray-200'}`}></div>}
             </div>
           ))}
         </div>
@@ -240,92 +258,41 @@ const Booking = () => {
                 </div>
               </div>
 
+              {/* Booking Summary */}
+              {formData.appointment_date && formData.appointment_time && (
+                <div className="mt-6 p-6 bg-[var(--background-alt)] rounded-lg border-2 border-[var(--secondary)]">
+                  <h3 className="text-xl font-bold mb-4">Booking Summary</h3>
+                  <div className="space-y-2">
+                    <p className="text-sm"><span className="font-medium">Service:</span> {selectedService?.name}</p>
+                    <p className="text-sm"><span className="font-medium">Date:</span> {formData.appointment_date}</p>
+                    <p className="text-sm"><span className="font-medium">Time:</span> {formData.appointment_time}</p>
+                    {selectedStaff && <p className="text-sm"><span className="font-medium">Staff:</span> {selectedStaff.name}</p>}
+                    {currentUser && (
+                      <>
+                        <p className="text-sm"><span className="font-medium">Customer:</span> {currentUser.name}</p>
+                        <p className="text-sm"><span className="font-medium">Phone:</span> {currentUser.phone}</p>
+                      </>
+                    )}
+                    <p className="text-sm"><span className="font-medium">Duration:</span> {selectedService?.duration} mins</p>
+                    <p className="text-lg mt-3"><span className="font-bold" style={{ color: 'var(--secondary)' }}>Price: ₹{selectedService?.price}</span></p>
+                    <p className="text-xs mt-2 text-yellow-700 bg-yellow-50 p-2 rounded">💰 Payment: Cash at Parlour</p>
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-between mt-8">
                 <button onClick={() => setStep(1)} className="btn-secondary" data-testid="back-to-step-1">
                   Back
                 </button>
                 <button
-                  onClick={() => {
-                    if (!formData.appointment_date || !formData.appointment_time) {
-                      toast.error('Please select date and time');
-                      return;
-                    }
-                    setStep(3);
-                  }}
-                  className="btn-primary"
-                  data-testid="next-to-step-3"
+                  onClick={handleSubmit}
+                  disabled={!formData.appointment_date || !formData.appointment_time}
+                  className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  data-testid="confirm-booking-btn"
                 >
-                  Continue
+                  Confirm Booking
                 </button>
               </div>
-            </div>
-          )}
-
-          {/* Step 3: Customer Details & Confirmation */}
-          {step === 3 && (
-            <div data-testid="step-3-details">
-              <h2 className="text-3xl font-bold font-heading mb-6 flex items-center">
-                <User className="mr-3" style={{ color: 'var(--secondary)' }} />
-                Your Details
-              </h2>
-
-              <div className="mb-6 p-4 bg-[var(--background-alt)] rounded-lg">
-                <h3 className="font-semibold mb-2">Booking Summary</h3>
-                <p className="text-sm">Service: <span className="font-medium">{selectedService?.name}</span></p>
-                <p className="text-sm">Date: <span className="font-medium">{formData.appointment_date}</span></p>
-                <p className="text-sm">Time: <span className="font-medium">{formData.appointment_time}</span></p>
-                {selectedStaff && <p className="text-sm">Staff: <span className="font-medium">{selectedStaff.name}</span></p>}
-                <p className="text-sm mt-2">Price: <span className="font-bold" style={{ color: 'var(--secondary)' }}>₹{selectedService?.price}</span></p>
-                <p className="text-xs mt-2 text-yellow-700 bg-yellow-50 p-2 rounded">Payment: Cash at Parlour</p>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Full Name *</label>
-                  <input
-                    type="text"
-                    name="customer_name"
-                    value={formData.customer_name}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg"
-                    data-testid="customer-name-input"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Phone Number *</label>
-                  <input
-                    type="tel"
-                    name="customer_phone"
-                    value={formData.customer_phone}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg"
-                    data-testid="customer-phone-input"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Email Address *</label>
-                  <input
-                    type="email"
-                    name="customer_email"
-                    value={formData.customer_email}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg"
-                    data-testid="customer-email-input"
-                  />
-                </div>
-
-                <div className="flex justify-between mt-8">
-                  <button type="button" onClick={() => setStep(2)} className="btn-secondary" data-testid="back-to-step-2">
-                    Back
-                  </button>
-                  <button type="submit" className="btn-primary" data-testid="confirm-booking-btn">
-                    Confirm Booking
-                  </button>
-                </div>
-              </form>
             </div>
           )}
         </motion.div>
