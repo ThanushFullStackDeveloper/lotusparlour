@@ -39,21 +39,88 @@ const Home = () => {
     }
   };
 
+  const getTodayConfig = () => {
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const now = new Date();
+    const todayName = dayNames[now.getDay()];
+    const weeklyHours = settings.weekly_hours || [];
+    return weeklyHours.find(d => d.day === todayName) || { 
+      day: todayName, 
+      start_time: settings.opening_time || '09:00', 
+      end_time: settings.closing_time || '22:00', 
+      is_open: true 
+    };
+  };
+
+  const getNextOpenDay = () => {
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const now = new Date();
+    const weeklyHours = settings.weekly_hours || [];
+    
+    for (let i = 1; i <= 7; i++) {
+      const nextDate = new Date(now);
+      nextDate.setDate(now.getDate() + i);
+      const nextDayName = dayNames[nextDate.getDay()];
+      const config = weeklyHours.find(d => d.day === nextDayName);
+      if (config && config.is_open) {
+        return { day: nextDayName, time: config.start_time, isNextDay: i === 1 };
+      }
+    }
+    return null;
+  };
+
   const isOpen = () => {
+    const todayConfig = getTodayConfig();
+    if (!todayConfig.is_open) return false;
+    
     const now = new Date();
     const currentTime = now.getHours() * 60 + now.getMinutes();
-    const [openHour, openMin] = settings.opening_time.split(':').map(Number);
-    const [closeHour, closeMin] = settings.closing_time.split(':').map(Number);
+    const [openHour, openMin] = (todayConfig.start_time || '09:00').split(':').map(Number);
+    const [closeHour, closeMin] = (todayConfig.end_time || '22:00').split(':').map(Number);
     const openTime = openHour * 60 + openMin;
     const closeTime = closeHour * 60 + closeMin;
     return currentTime >= openTime && currentTime < closeTime;
   };
 
+  const formatTime = (timeStr) => {
+    if (!timeStr) return '';
+    const [hour, min] = timeStr.split(':').map(Number);
+    const period = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
+    return `${displayHour}:${min.toString().padStart(2, '0')} ${period}`;
+  };
+
   const getStatusText = () => {
-    if (isOpen()) {
-      return `Open Now - Closes at ${settings.closing_time}`;
+    const todayConfig = getTodayConfig();
+    
+    if (!todayConfig.is_open) {
+      const nextOpen = getNextOpenDay();
+      if (nextOpen) {
+        return `Closed – Opens ${nextOpen.isNextDay ? 'tomorrow' : nextOpen.day} at ${formatTime(nextOpen.time)}`;
+      }
+      return 'Closed';
     }
-    return `Closed - Opens at ${settings.opening_time}`;
+    
+    if (isOpen()) {
+      return `Open Now – Closes at ${formatTime(todayConfig.end_time)}`;
+    }
+    
+    // Shop closed for today but will open later today
+    const now = new Date();
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+    const [openHour, openMin] = (todayConfig.start_time || '09:00').split(':').map(Number);
+    const openTime = openHour * 60 + openMin;
+    
+    if (currentTime < openTime) {
+      return `Closed – Opens today at ${formatTime(todayConfig.start_time)}`;
+    }
+    
+    // Already past closing time
+    const nextOpen = getNextOpenDay();
+    if (nextOpen) {
+      return `Closed – Opens ${nextOpen.isNextDay ? 'tomorrow' : nextOpen.day} at ${formatTime(nextOpen.time)}`;
+    }
+    return 'Closed';
   };
 
   return (

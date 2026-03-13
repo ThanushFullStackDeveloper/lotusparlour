@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Phone, Mail, MapPin, Clock, Send } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, Send, Navigation } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Contact = () => {
@@ -23,11 +23,16 @@ const Contact = () => {
 
   const businessInfo = {
     phone: '09500673208',
-    address: '3/41, East Street, Main Road, Puthumanai, Tirunelveli, Tamil Nadu 627120',
+    address: '3/41, East Street, Main Road,\nPuthumanai, Tirunelveli,\nTamil Nadu 627120',
     email: 'info@lotusbeauty.com',
     hours: 'Open Daily until 10 PM',
     lat: 8.164900622176761,
     lng: 77.62145042867182,
+  };
+
+  const handleGetDirections = () => {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${businessInfo.lat},${businessInfo.lng}`;
+    window.open(url, '_blank');
   };
 
   return (
@@ -51,66 +56,92 @@ const Contact = () => {
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
+              className="space-y-8"
             >
-              <h2 className="text-3xl font-bold font-heading mb-6">Visit Us</h2>
-              <div className="space-y-6">
-                <div className="flex items-start space-x-4" data-testid="contact-address">
-                  <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--secondary)', opacity: 0.1 }}>
-                    <MapPin style={{ color: 'var(--secondary)' }} />
+              {/* Visit Us */}
+              <div className="bg-white p-6 rounded-2xl shadow-sm" data-testid="contact-address">
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center bg-[var(--primary-light)]">
+                    <MapPin size={28} style={{ color: 'var(--secondary)' }} />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-1">Address</h3>
-                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{businessInfo.address}</p>
+                    <h3 className="text-lg font-bold mb-2">Visit Us</h3>
+                    <p className="text-sm whitespace-pre-line" style={{ color: 'var(--text-secondary)' }}>
+                      {businessInfo.address}
+                    </p>
                   </div>
                 </div>
+              </div>
 
-                <div className="flex items-start space-x-4" data-testid="contact-phone">
-                  <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--secondary)', opacity: 0.1 }}>
-                    <Phone style={{ color: 'var(--secondary)' }} />
+              {/* Phone */}
+              <div className="bg-white p-6 rounded-2xl shadow-sm" data-testid="contact-phone">
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center bg-[var(--primary-light)]">
+                    <Phone size={28} style={{ color: 'var(--secondary)' }} />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-1">Phone</h3>
-                    <a href={`tel:${businessInfo.phone}`} className="text-sm hover:text-[var(--secondary)]" style={{ color: 'var(--text-secondary)' }}>
+                    <h3 className="text-lg font-bold mb-2">Phone</h3>
+                    <a 
+                      href={`tel:${businessInfo.phone}`} 
+                      className="text-base font-medium hover:text-[var(--secondary)] transition-colors" 
+                      style={{ color: 'var(--text-secondary)' }}
+                    >
                       {businessInfo.phone}
                     </a>
                   </div>
                 </div>
+              </div>
 
-                <div className="flex items-start space-x-4" data-testid="contact-email">
-                  <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--secondary)', opacity: 0.1 }}>
-                    <Mail style={{ color: 'var(--secondary)' }} />
+              {/* Email */}
+              <div className="bg-white p-6 rounded-2xl shadow-sm" data-testid="contact-email">
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center bg-[var(--primary-light)]">
+                    <Mail size={28} style={{ color: 'var(--secondary)' }} />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-1">Email</h3>
-                    <a href={`mailto:${businessInfo.email}`} className="text-sm hover:text-[var(--secondary)]" style={{ color: 'var(--text-secondary)' }}>
+                    <h3 className="text-lg font-bold mb-2">Email</h3>
+                    <a 
+                      href={`mailto:${businessInfo.email}`} 
+                      className="text-base font-medium hover:text-[var(--secondary)] transition-colors" 
+                      style={{ color: 'var(--text-secondary)' }}
+                    >
                       {businessInfo.email}
                     </a>
                   </div>
                 </div>
+              </div>
 
-                <div className="flex items-start space-x-4" data-testid="contact-hours">
-                  <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--secondary)', opacity: 0.1 }}>
-                    <Clock style={{ color: 'var(--secondary)' }} />
+              {/* Opening Hours */}
+              <div className="bg-white p-6 rounded-2xl shadow-sm" data-testid="contact-hours">
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center bg-[var(--primary-light)]">
+                    <Clock size={28} style={{ color: 'var(--secondary)' }} />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-1">Opening Hours</h3>
-                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{businessInfo.hours}</p>
+                    <h3 className="text-lg font-bold mb-2">Opening Hours</h3>
+                    <p className="text-base font-medium" style={{ color: 'var(--text-secondary)' }}>
+                      {businessInfo.hours}
+                    </p>
                   </div>
                 </div>
+              </div>
 
-                <div className="pt-4">
-                  <a href={`tel:${businessInfo.phone}`} data-testid="call-now-btn">
-                    <button className="btn-primary mr-3">Call Now</button>
-                  </a>
-                  <a
-                    href={`https://wa.me/91${businessInfo.phone}?text=${encodeURIComponent('Hey, I am interested in your beauty parlour services. I would like to book an appointment.')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    data-testid="whatsapp-btn"
-                  >
-                    <button className="btn-secondary">WhatsApp</button>
-                  </a>
-                </div>
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button 
+                  onClick={handleGetDirections}
+                  className="btn-primary flex items-center justify-center space-x-2"
+                  data-testid="get-directions-btn"
+                >
+                  <Navigation size={18} />
+                  <span>Get Directions</span>
+                </button>
+                <a href={`tel:${businessInfo.phone}`} className="flex-1" data-testid="call-now-btn">
+                  <button className="btn-secondary w-full flex items-center justify-center space-x-2">
+                    <Phone size={18} />
+                    <span>Call Now</span>
+                  </button>
+                </a>
               </div>
             </motion.div>
 
@@ -177,28 +208,6 @@ const Contact = () => {
                 </button>
               </form>
             </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Map */}
-      <section className="section-spacing bg-[var(--background-alt)]" data-testid="contact-map">
-        <div className="container-custom">
-          <h2 className="text-3xl font-bold font-heading text-center mb-8">Find Us on Map</h2>
-          <div className="aspect-video rounded-2xl overflow-hidden shadow-lg">
-            <iframe
-              src={`https://www.openstreetmap.org/export/embed.html?bbox=${businessInfo.lng - 0.01},${businessInfo.lat - 0.01},${businessInfo.lng + 0.01},${businessInfo.lat + 0.01}&layer=mapnik&marker=${businessInfo.lat},${businessInfo.lng}`}
-              width="100%"
-              height="100%"
-              style={{ border: 0 }}
-              allowFullScreen=""
-              loading="lazy"
-              title="Lotus Beauty Parlour Location"
-              data-testid="map-iframe"
-            ></iframe>
-          </div>
-          <div className="text-center mt-4">
-            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Coordinates: {businessInfo.lat}, {businessInfo.lng}</p>
           </div>
         </div>
       </section>

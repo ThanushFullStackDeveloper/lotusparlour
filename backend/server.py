@@ -206,6 +206,12 @@ class ServiceVideoCreate(BaseModel):
     is_active: bool = True
 
 
+class WeeklyHours(BaseModel):
+    day: str
+    start_time: str = "09:00"
+    end_time: str = "22:00"
+    is_open: bool = True
+
 class Settings(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = "site_settings"
@@ -216,6 +222,7 @@ class Settings(BaseModel):
     years_experience: str = "5+"
     opening_time: str = "09:00"
     closing_time: str = "22:00"
+    weekly_hours: Optional[List[dict]] = None
     updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 class SettingsUpdate(BaseModel):
@@ -226,6 +233,7 @@ class SettingsUpdate(BaseModel):
     years_experience: Optional[str] = None
     opening_time: Optional[str] = None
     closing_time: Optional[str] = None
+    weekly_hours: Optional[List[dict]] = None
 
 class SupportRequest(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -449,27 +457,66 @@ async def get_appointments(payload: dict = Depends(verify_token)):
 
 @api_router.get("/appointments/available-slots")
 async def get_available_slots(date: str, service_id: str):
-    # Check if date is a holiday
-    holiday = await db.holidays.find_one({"date": date}, {"_id": 0})
-    if holiday:
-        return {"available": False, "message": "Parlour is closed on this date", "slots": []}
+    # Get settings for weekly hours
+    settings = await db.settings.find_one({"id": "site_settings"}, {"_id": 0})
     
-    # Generate time slots from 9 AM to 10 PM (closing time)
+    # Parse the requested date
+    try:
+        requested_date = datetime.strptime(date, "%Y-%m-%d")
+    except ValueError:
+        return {"available": False, "message": "Invalid date format", "slots": []}
+    
+    # Get day of week (0 = Monday, 6 = Sunday)
+    day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    day_name = day_names[requested_date.weekday()]
+    
+    # Check weekly hours
+    weekly_hours = settings.get('weekly_hours', []) if settings else []
+    day_config = next((d for d in weekly_hours if d.get('day') == day_name), None)
+    
+    if day_config and not day_config.get('is_open', True):
+        return {"available": False, "message": f"Parlour is closed on {day_name}", "slots": []}
+    
+    # Get opening and closing times for this day
+    if day_config:
+        start_time_str = day_config.get('start_time', '09:00')
+        end_time_str = day_config.get('end_time', '22:00')
+    else:
+        start_time_str = settings.get('opening_time', '09:00') if settings else '09:00'
+        end_time_str = settings.get('closing_time', '22:00') if settings else '22:00'
+    
+    start_hour = int(start_time_str.split(':')[0])
+    end_hour = int(end_time_str.split(':')[0])
+    
+    # Generate time slots based on configured hours
     all_slots = []
-    for hour in range(9, 22):  # 9 AM to 10 PM
+    for hour in range(start_hour, end_hour):
         all_slots.append(f"{hour:02d}:00")
         all_slots.append(f"{hour:02d}:30")
     
-    # Get booked slots
-    booked_appointments = await db.appointments.find({
-        "appointment_date": date,
-        "status": {"$ne": "cancelled"}
-    }, {"_id": 0}).to_list(1000)
+    # Check if today and filter out past slots
+    now = datetime.now()
+    today_str = now.strftime("%Y-%m-%d")
     
-    booked_slots = [apt['appointment_time'] for apt in booked_appointments]
-    available_slots = [slot for slot in all_slots if slot not in booked_slots]
+    if date == today_str:
+        current_minutes = now.hour * 60 + now.minute
+        # Check if shop is already closed for today
+        closing_minutes = end_hour * 60
+        if current_minutes >= closing_minutes:
+            return {"available": False, "message": "Booking closed for today. Please select another date.", "slots": []}
+        
+        # Filter out past time slots
+        valid_slots = []
+        for slot in all_slots:
+            slot_hour, slot_min = map(int, slot.split(':'))
+            slot_minutes = slot_hour * 60 + slot_min
+            # Only show slots at least 30 mins in the future
+            if slot_minutes > current_minutes + 30:
+                valid_slots.append(slot)
+        all_slots = valid_slots
     
-    return {"available": True, "slots": available_slots}
+    # Allow multiple bookings - don't filter out booked slots
+    return {"available": True, "slots": all_slots}
 
 @api_router.put("/appointments/{appointment_id}/status", dependencies=[Depends(verify_admin)])
 async def update_appointment_status(appointment_id: str, status: str):
@@ -730,10 +777,34 @@ async def get_all_videos():
 async def get_settings():
     settings = await db.settings.find_one({"id": "site_settings"}, {"_id": 0})
     if not settings:
-        # Create default settings
-        default_settings = Settings()
+        # Create default settings with weekly hours
+        default_weekly_hours = [
+            {"day": "Monday", "start_time": "09:00", "end_time": "22:00", "is_open": True},
+            {"day": "Tuesday", "start_time": "09:00", "end_time": "22:00", "is_open": True},
+            {"day": "Wednesday", "start_time": "09:00", "end_time": "22:00", "is_open": True},
+            {"day": "Thursday", "start_time": "09:00", "end_time": "22:00", "is_open": True},
+            {"day": "Friday", "start_time": "09:00", "end_time": "22:00", "is_open": True},
+            {"day": "Saturday", "start_time": "09:00", "end_time": "22:00", "is_open": True},
+            {"day": "Sunday", "start_time": "09:00", "end_time": "22:00", "is_open": True},
+        ]
+        default_settings = Settings(weekly_hours=default_weekly_hours)
         await db.settings.insert_one(default_settings.model_dump())
         return default_settings.model_dump()
+    
+    # Ensure weekly_hours exists for existing settings
+    if not settings.get('weekly_hours'):
+        default_weekly_hours = [
+            {"day": "Monday", "start_time": "09:00", "end_time": "22:00", "is_open": True},
+            {"day": "Tuesday", "start_time": "09:00", "end_time": "22:00", "is_open": True},
+            {"day": "Wednesday", "start_time": "09:00", "end_time": "22:00", "is_open": True},
+            {"day": "Thursday", "start_time": "09:00", "end_time": "22:00", "is_open": True},
+            {"day": "Friday", "start_time": "09:00", "end_time": "22:00", "is_open": True},
+            {"day": "Saturday", "start_time": "09:00", "end_time": "22:00", "is_open": True},
+            {"day": "Sunday", "start_time": "09:00", "end_time": "22:00", "is_open": True},
+        ]
+        settings['weekly_hours'] = default_weekly_hours
+        await db.settings.update_one({"id": "site_settings"}, {"$set": {"weekly_hours": default_weekly_hours}})
+    
     return settings
 
 @api_router.put("/settings", dependencies=[Depends(verify_admin)])

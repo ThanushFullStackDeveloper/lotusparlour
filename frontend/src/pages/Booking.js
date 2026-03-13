@@ -160,7 +160,22 @@ const Booking = () => {
       navigate('/dashboard');
     } catch (error) {
       console.error('Error booking appointment:', error);
-      toast.error(error.response?.data?.detail || 'Failed to book appointment');
+      // Handle different error formats - ensure we only show string messages
+      let errorMessage = 'Failed to book appointment';
+      if (error.response?.data) {
+        const data = error.response.data;
+        if (typeof data.detail === 'string') {
+          errorMessage = data.detail;
+        } else if (Array.isArray(data.detail)) {
+          // Validation errors from FastAPI come as array
+          errorMessage = data.detail.map(e => e.msg || e.message || 'Validation error').join(', ');
+        } else if (typeof data.detail === 'object' && data.detail.msg) {
+          errorMessage = data.detail.msg;
+        } else if (typeof data === 'string') {
+          errorMessage = data;
+        }
+      }
+      toast.error(errorMessage);
     }
   };
 

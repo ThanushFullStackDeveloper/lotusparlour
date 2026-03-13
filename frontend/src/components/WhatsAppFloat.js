@@ -11,8 +11,15 @@ const WhatsAppFloat = () => {
   };
 
   return (
-    <div className="whatsapp-float" onClick={handleClick} data-testid="whatsapp-float-btn">
-      <MessageCircle size={28} color="white" />
+    <div 
+      className="whatsapp-float-container" 
+      onClick={handleClick} 
+      data-testid="whatsapp-float-btn"
+    >
+      <span className="whatsapp-text">Book Now on WhatsApp</span>
+      <div className="whatsapp-icon">
+        <MessageCircle size={28} color="white" />
+      </div>
     </div>
   );
 };

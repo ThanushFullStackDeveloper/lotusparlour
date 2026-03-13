@@ -7,7 +7,6 @@ import {
   Users,
   Image,
   Star,
-  CalendarOff,
   Tag,
   TrendingUp,
   LogOut,
@@ -26,7 +25,6 @@ import ServicesManagement from './admin/ServicesManagement';
 import StaffManagement from './admin/StaffManagement';
 import GalleryManagement from './admin/GalleryManagement';
 import ReviewsManagement from './admin/ReviewsManagement';
-import HolidaysManagement from './admin/HolidaysManagement';
 import CouponsManagement from './admin/CouponsManagement';
 import RevenueAnalytics from './admin/RevenueAnalytics';
 import StaffCalendar from './admin/StaffCalendar';
@@ -54,7 +52,6 @@ const AdminDashboard = () => {
     { icon: Image, label: 'Gallery', path: '/admin/gallery' },
     { icon: Video, label: 'Videos', path: '/admin/videos' },
     { icon: Star, label: 'Reviews', path: '/admin/reviews' },
-    { icon: CalendarOff, label: 'Holidays', path: '/admin/holidays' },
     { icon: Tag, label: 'Coupons', path: '/admin/coupons' },
     { icon: TrendingUp, label: 'Revenue', path: '/admin/revenue' },
     { icon: Calendar, label: 'Staff Calendar', path: '/admin/staff-calendar' },
@@ -131,7 +128,6 @@ const AdminDashboard = () => {
             <Route path="/gallery" element={<GalleryManagement />} />
             <Route path="/videos" element={<VideosManagement />} />
             <Route path="/reviews" element={<ReviewsManagement />} />
-            <Route path="/holidays" element={<HolidaysManagement />} />
             <Route path="/coupons" element={<CouponsManagement />} />
             <Route path="/revenue" element={<RevenueAnalytics />} />
             <Route path="/staff-calendar" element={<StaffCalendar />} />
