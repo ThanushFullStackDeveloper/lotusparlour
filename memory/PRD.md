@@ -25,14 +25,15 @@ Build a full-stack Beauty Parlour Appointment Booking Web Application for LOTUS 
 ## Implemented Features
 
 ### Customer-Facing Website
-- [x] Home page with dynamic content, open/closed status
+- [x] Home page with dynamic content, open/closed status (weekly hours based)
 - [x] About, Services, Gallery, Staff, Videos, Contact pages
-- [x] Multi-step booking flow
+- [x] Contact page with simplified layout (no map, Get Directions button)
+- [x] Multi-step booking flow with past-slot filtering
 - [x] Customer registration/login (Email + Phone number)
 - [x] Customer dashboard (view appointments)
 - [x] Review submission form (with admin approval)
 - [x] Support/Account Recovery request form
-- [x] WhatsApp floating button
+- [x] WhatsApp floating button with "Book Now on WhatsApp" text
 
 ### Admin Dashboard
 - [x] Dashboard overview with stats
@@ -41,12 +42,11 @@ Build a full-stack Beauty Parlour Appointment Booking Web Application for LOTUS 
 - [x] Staff management
 - [x] Gallery management
 - [x] Reviews management (approve/reject)
-- [x] Holidays management
 - [x] Coupons management
 - [x] Revenue analytics
 - [x] Staff calendar
 - [x] Videos management
-- [x] Settings management (homepage content)
+- [x] Settings management (homepage content + weekly working hours)
 - [x] Customers management (reset password)
 - [x] Support requests management
 
@@ -56,13 +56,32 @@ Build a full-stack Beauty Parlour Appointment Booking Web Application for LOTUS 
 - `/api/services`, `/api/staff`, `/api/gallery`, `/api/reviews`
 - `/api/appointments`, `/api/appointments/available-slots`
 - `/api/coupons/validate/{code}`
-- `/api/settings`
+- `/api/settings` (includes weekly_hours)
 - `/api/customers`
 - `/api/support`
 
 ### Admin Credentials
 - Email: admin@lotus.com
 - Password: admin123
+
+## Recent Updates (March 13, 2026)
+
+### Session 1 Fixes
+- Fixed JSX syntax error in Navbar.js (extra `</Link>` tag)
+- Fixed coupon validation to handle multiple date formats
+- Implemented mobile number login
+- Added support request form
+- Added homepage review submission
+
+### Session 2 Updates
+- WhatsApp button now shows "Book Now on WhatsApp" text
+- Contact page simplified: removed Google Map, added icons, added Get Directions button
+- Weekly working hours configuration in Admin Settings
+- Dynamic Open/Closed status on homepage based on weekly hours
+- Booking validation: blocks past closing time, filters past slots for today
+- Multiple customers can book same time slot
+- Holidays tab removed (replaced by weekly hours)
+- Fixed React error handling to show string messages
 
 ## Pending Features (P2-P3)
 
@@ -77,7 +96,7 @@ Build a full-stack Beauty Parlour Appointment Booking Web Application for LOTUS 
 - [ ] SMS notifications (Twilio)
 
 ## Known Issues
-- None currently - all tests passing (100% backend, 100% frontend)
+- Minor React hydration warning in staff dropdown (does not affect functionality)
 
 ## Technical Debt
 - [ ] Refactor server.py into modular structure (routes/, models/, services/)
