@@ -1,0 +1,148 @@
+{
+  "project_name": "Lotus Beauty Parlour",
+  "design_philosophy": {
+    "theme": "Elegant Salon",
+    "emotional_tone": "Pampering, Luxurious, Trustworthy, Radiant",
+    "core_principles": [
+      "Fusion of Gold & Pink: Balance warmth with metallic elegance",
+      "Negative Space: Use breathing room to create a sense of luxury",
+      "Content First: High-quality images of services are the main focus",
+      "Interactive Delights: Subtle gold shimmers and smooth transitions"
+    ]
+  },
+  "typography": {
+    "font_family": {
+      "heading": "Playfair Display, serif",
+      "body": "Manrope, sans-serif",
+      "accent": "Cormorant Garamond, serif"
+    },
+    "scale": {
+      "h1": "text-5xl md:text-6xl font-bold tracking-tight",
+      "h2": "text-4xl md:text-5xl font-semibold tracking-tight",
+      "h3": "text-2xl md:text-3xl font-medium",
+      "body": "text-base md:text-lg leading-relaxed",
+      "caption": "text-sm tracking-wide uppercase text-muted-foreground"
+    },
+    "imports": [
+      "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Manrope:wght@300;400;500;600&family=Cormorant+Garamond:wght@400;600&display=swap"
+    ]
+  },
+  "colors": {
+    "palette": {
+      "primary": {
+        "DEFAULT": "#D4A5A5",
+        "foreground": "#2D2424",
+        "hover": "#C08B8B",
+        "description": "Muted Rose / Lotus Pink - Main brand color"
+      },
+      "secondary": {
+        "DEFAULT": "#D4AF37",
+        "foreground": "#FFFFFF",
+        "hover": "#B3922D",
+        "description": "Metallic Gold - Accents, borders, highlights"
+      },
+      "background": {
+        "DEFAULT": "#FDFBF7",
+        "alt": "#FAF6F0",
+        "dark": "#2D2424",
+        "description": "Warm Porcelain/Ivory - Avoid pure white for softer look"
+      },
+      "text": {
+        "primary": "#2D2424",
+        "secondary": "#5D5050",
+        "muted": "#8C8080"
+      },
+      "accent": {
+        "success": "#4A7c59",
+        "warning": "#EFB054",
+        "error": "#D14D4D"
+      }
+    },
+    "gradients": {
+      "gold_shimmer": "linear-gradient(45deg, #D4AF37, #F3E5AB, #D4AF37)",
+      "pink_mist": "linear-gradient(180deg, rgba(212, 165, 165, 0.1) 0%, rgba(253, 251, 247, 0) 100%)"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 py-3 font-medium transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105",
+      "secondary": "border-2 border-secondary text-secondary-foreground bg-transparent hover:bg-secondary hover:text-white rounded-full px-8 py-3 font-medium transition-all duration-300",
+      "gold": "bg-secondary text-white hover:bg-secondary/90 rounded-none px-6 py-2 uppercase tracking-widest text-sm font-bold shadow-[0_4px_14px_0_rgba(212,175,55,0.39)]"
+    },
+    "cards": {
+      "service": "bg-white p-6 rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-transparent hover:border-secondary/30 group",
+      "glass": "bg-white/70 backdrop-blur-md border border-white/20 shadow-lg rounded-2xl"
+    },
+    "inputs": {
+      "default": "border-input bg-transparent rounded-md focus:ring-2 focus:ring-secondary/50 focus:border-secondary transition-all"
+    }
+  },
+  "layout_strategies": {
+    "container": "container mx-auto px-4 md:px-8 max-w-7xl",
+    "section_spacing": "py-16 md:py-24",
+    "grid_bento": "grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8",
+    "admin_dashboard": "grid grid-cols-1 md:grid-cols-4 gap-6 p-6 bg-gray-50/50 min-h-screen"
+  },
+  "assets": {
+    "images": {
+      "hero": {
+        "url": "https://images.unsplash.com/photo-1645856049138-bcb23afaeefb?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Elegant bride with gold jewelry"
+      },
+      "services": {
+        "bridal": "https://images.unsplash.com/photo-1714381108306-a36169f0d3fb?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "hair": "https://images.unsplash.com/photo-1711454867327-4990937f8f18?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "facial": "https://images.unsplash.com/photo-1722350766824-f8520e9676ac?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "interior": "https://images.unsplash.com/photo-1533008093099-e2681382639a?crop=entropy&cs=srgb&fm=jpg&q=85"
+      },
+      "staff": [
+        "https://images.unsplash.com/photo-1676340619040-8688de9fd331?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "https://images.unsplash.com/photo-1616723355486-eac8780bfcb9?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "https://images.unsplash.com/photo-1701064855115-054e55f59a16?crop=entropy&cs=srgb&fm=jpg&q=85"
+      ],
+      "logo": "https://customer-assets.emergentagent.com/job_241db126-351c-4832-a8fb-845982688c90/artifacts/41r87k77_4B7AC146-0B06-4B1E-A8D9-0A69F86F7A02.jpeg"
+    },
+    "icons_library": "lucide-react (default), @phosphor-icons/react (for luxury feel)"
+  },
+  "libraries": {
+    "calendar": {
+      "name": "react-big-calendar",
+      "reason": "Industry standard for custom calendar views, capable of Google Calendar-like scheduling"
+    },
+    "animation": {
+      "name": "framer-motion",
+      "usage": "Page transitions, scroll reveals, hover effects on service cards"
+    },
+    "charts": {
+      "name": "recharts",
+      "usage": "Revenue dashboard, booking analytics"
+    },
+    "notifications": {
+      "name": "sonner",
+      "usage": "Elegant toast notifications"
+    }
+  },
+  "specific_instructions": {
+    "admin_panel": {
+      "style": "Clean, high-density dashboard. Use white cards with subtle shadows. Sidebar should be dark (#2D2424) or gold-accented.",
+      "calendar_view": "Must allow toggle between Daily/Weekly/Monthly. Use color-coded events for different services (e.g., Bridal=Gold, Hair=Pink)."
+    },
+    "booking_flow": {
+      "style": "Step-by-step wizard. Do not overwhelm the user. Show 'Summary' at the end before confirmation.",
+      "mobile": "Sticky bottom bar for 'Book Now' on mobile if flow is long."
+    },
+    "whatsapp_integration": {
+      "position": "Fixed bottom-right",
+      "style": "Floating button, green brand color (WhatsApp official) but with a gold border to match theme.",
+      "message": "Hey, I am interested in your beauty parlour services. I would like to book an appointment."
+    }
+  },
+  "universal_guidelines": [
+    "Use 2-3x more spacing than feels comfortable.",
+    "Dark colors look good when used independently without gradients.",
+    "Don't make generic centered layouts.",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "Use glass-morphism effects with backdrop filters.",
+    "All interactive elements MUST include `data-testid`."
+  ]
+}
