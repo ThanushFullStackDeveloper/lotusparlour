@@ -13,6 +13,7 @@ import {
   LogOut,
   Menu,
   X,
+  Video,
 } from 'lucide-react';
 
 // Admin pages
@@ -26,6 +27,7 @@ import HolidaysManagement from './admin/HolidaysManagement';
 import CouponsManagement from './admin/CouponsManagement';
 import RevenueAnalytics from './admin/RevenueAnalytics';
 import StaffCalendar from './admin/StaffCalendar';
+import VideosManagement from './admin/VideosManagement';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -47,6 +49,7 @@ const AdminDashboard = () => {
     { icon: CalendarOff, label: 'Holidays', path: '/admin/holidays' },
     { icon: Tag, label: 'Coupons', path: '/admin/coupons' },
     { icon: TrendingUp, label: 'Revenue', path: '/admin/revenue' },
+    { icon: Video, label: 'Videos', path: '/admin/videos' },
     { icon: Calendar, label: 'Staff Calendar', path: '/admin/staff-calendar' },
   ];
 
@@ -121,6 +124,7 @@ const AdminDashboard = () => {
             <Route path="/coupons" element={<CouponsManagement />} />
             <Route path="/revenue" element={<RevenueAnalytics />} />
             <Route path="/staff-calendar" element={<StaffCalendar />} />
+            <Route path="/videos" element={<VideosManagement />} />
             <Route path="/" element={<DashboardOverview />} />
           </Routes>
         </div>

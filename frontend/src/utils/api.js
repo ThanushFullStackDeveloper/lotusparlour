@@ -85,5 +85,13 @@ export const uploadImage = (file) => {
   });
 };
 
+// Videos
+export const getVideos = () => api.get('/videos');
+export const getAllVideos = () => api.get('/videos/all');
+export const createVideo = (data) => api.post('/videos', data);
+export const updateVideo = (id, data) => api.put(`/videos/${id}`, data);
+export const deleteVideo = (id) => api.delete(`/videos/${id}`);
+
+
 // Seed
 export const seedAdmin = () => api.post('/seed/admin');

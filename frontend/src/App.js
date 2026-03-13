@@ -10,6 +10,7 @@ import Services from './pages/Services';
 import Gallery from './pages/Gallery';
 import Staff from './pages/Staff';
 import Contact from './pages/Contact';
+import Videos from './pages/Videos';
 import Booking from './pages/Booking';
 import CustomerLogin from './pages/CustomerLogin';
 import CustomerDashboard from './pages/CustomerDashboard';
@@ -80,6 +81,7 @@ function App() {
                     <Route path="/services" element={<Services />} />
                     <Route path="/gallery" element={<Gallery />} />
                     <Route path="/staff" element={<Staff />} />
+                    <Route path="/videos" element={<Videos />} />
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/booking" element={<Booking />} />
                     <Route path="/login" element={<CustomerLogin />} />

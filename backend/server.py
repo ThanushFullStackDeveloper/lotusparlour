@@ -184,7 +184,24 @@ class Coupon(BaseModel):
 class CouponCreate(BaseModel):
     code: str
     discount_percent: float
-    valid_until: str
+
+class ServiceVideo(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    description: str
+    youtube_url: str
+    category: str
+    is_active: bool = True
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class ServiceVideoCreate(BaseModel):
+    title: str
+    description: str
+    youtube_url: str
+    category: str
+    is_active: bool = True
+
 
 # ============ HELPER FUNCTIONS ============
 
@@ -599,6 +616,43 @@ async def upload_image(file: UploadFile = File(...)):
     base64_encoded = base64.b64encode(contents).decode('utf-8')
     image_data = f"data:{file.content_type};base64,{base64_encoded}"
     return {"url": image_data}
+
+
+# ============ SERVICE VIDEOS ROUTES ============
+
+@api_router.get("/videos")
+async def get_videos():
+    videos = await db.service_videos.find({"is_active": True}, {"_id": 0}).to_list(1000)
+    return videos
+
+@api_router.get("/videos/all", dependencies=[Depends(verify_admin)])
+async def get_all_videos():
+    videos = await db.service_videos.find({}, {"_id": 0}).to_list(1000)
+    return videos
+
+@api_router.post("/videos", dependencies=[Depends(verify_admin)])
+async def create_video(video_data: ServiceVideoCreate):
+    video = ServiceVideo(**video_data.model_dump())
+    doc = video.model_dump()
+    await db.service_videos.insert_one(doc)
+    return video
+
+@api_router.put("/videos/{video_id}", dependencies=[Depends(verify_admin)])
+async def update_video(video_id: str, video_data: ServiceVideoCreate):
+    result = await db.service_videos.update_one(
+        {"id": video_id},
+        {"$set": video_data.model_dump()}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Video not found")
+    return {"message": "Video updated successfully"}
+
+@api_router.delete("/videos/{video_id}", dependencies=[Depends(verify_admin)])
+async def delete_video(video_id: str):
+    result = await db.service_videos.delete_one({"id": video_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Video not found")
+    return {"message": "Video deleted successfully"}
 
 # ============ SEED DATA ============
 
