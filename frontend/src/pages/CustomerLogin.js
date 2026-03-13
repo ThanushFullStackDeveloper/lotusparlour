@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, Lock, Mail, Phone } from 'lucide-react';
-import { login, register } from '../utils/api';
+import { User, Lock, Mail, Phone, HelpCircle } from 'lucide-react';
+import { login, register, loginWithPhone } from '../utils/api';
 import { toast } from 'sonner';
 
 const CustomerLogin = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isLogin, setIsLogin] = useState(true);
+  const [loginMethod, setLoginMethod] = useState('email'); // 'email' or 'phone'
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -25,7 +26,11 @@ const CustomerLogin = () => {
     try {
       let response;
       if (isLogin) {
-        response = await login({ email: formData.email, password: formData.password });
+        if (loginMethod === 'phone') {
+          response = await loginWithPhone(formData.phone, formData.password);
+        } else {
+          response = await login({ email: formData.email, password: formData.password });
+        }
         toast.success('Login successful!');
       } else {
         response = await register(formData);
@@ -34,6 +39,7 @@ const CustomerLogin = () => {
 
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('role', 'user');
+      localStorage.setItem('userName', response.data.user?.name || formData.name || 'User');
 
       // Redirect to original destination or dashboard
       const from = location.state?.from || '/dashboard';
@@ -80,22 +86,70 @@ const CustomerLogin = () => {
               </div>
             )}
 
-            <div>
-              <label className="block text-sm font-medium mb-2">Email Address *</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3.5 text-gray-400" size={18} />
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg"
-                  placeholder="Enter your email"
-                  data-testid="email-input"
-                />
+            {isLogin && (
+              <div className="flex space-x-2 mb-2">
+                <button
+                  type="button"
+                  onClick={() => setLoginMethod('email')}
+                  className={`flex-1 py-2 px-3 text-sm rounded-lg transition-all ${
+                    loginMethod === 'email' 
+                      ? 'bg-[var(--secondary)] text-white' 
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                  data-testid="login-email-tab"
+                >
+                  Email
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLoginMethod('phone')}
+                  className={`flex-1 py-2 px-3 text-sm rounded-lg transition-all ${
+                    loginMethod === 'phone' 
+                      ? 'bg-[var(--secondary)] text-white' 
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                  data-testid="login-phone-tab"
+                >
+                  Phone
+                </button>
               </div>
-            </div>
+            )}
+
+            {isLogin && loginMethod === 'phone' ? (
+              <div>
+                <label className="block text-sm font-medium mb-2">Phone Number *</label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-3.5 text-gray-400" size={18} />
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    required
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg"
+                    placeholder="Enter your phone number"
+                    data-testid="phone-login-input"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium mb-2">Email Address *</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3.5 text-gray-400" size={18} />
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required={loginMethod === 'email' || !isLogin}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg"
+                    placeholder="Enter your email"
+                    data-testid="email-input"
+                  />
+                </div>
+              </div>
+            )}
 
             {!isLogin && (
               <div>
@@ -152,6 +206,20 @@ const CustomerLogin = () => {
               </button>
             </p>
           </div>
+
+          {isLogin && (
+            <div className="text-center mt-4 pt-4 border-t border-gray-200">
+              <Link 
+                to="/support" 
+                className="inline-flex items-center space-x-2 text-sm hover:underline"
+                style={{ color: 'var(--text-muted)' }}
+                data-testid="support-link"
+              >
+                <HelpCircle size={16} />
+                <span>Need help? Account recovery</span>
+              </Link>
+            </div>
+          )}
 
           <div className="text-center mt-4">
             <Link to="/" className="text-sm hover:underline" style={{ color: 'var(--text-muted)' }} data-testid="back-home-link">

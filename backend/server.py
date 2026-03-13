@@ -613,16 +613,39 @@ async def validate_coupon(code: str):
     if not coupon:
         raise HTTPException(status_code=404, detail="Invalid coupon")
     
-    # Check if coupon is within valid time range
     now = datetime.now(timezone.utc)
-    start_time = datetime.fromisoformat(coupon['start_time'])
-    end_time = datetime.fromisoformat(coupon['end_time'])
     
-    if now < start_time:
-        raise HTTPException(status_code=400, detail="Coupon not yet active")
+    # Helper to parse various datetime formats
+    def parse_datetime(dt_str: str) -> datetime:
+        if not dt_str:
+            return None
+        try:
+            # Try full ISO format with timezone
+            dt = datetime.fromisoformat(dt_str)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            return dt
+        except ValueError:
+            pass
+        # Try date-only format (YYYY-MM-DD)
+        try:
+            dt = datetime.strptime(dt_str, "%Y-%m-%d")
+            return dt.replace(hour=23, minute=59, second=59, tzinfo=timezone.utc)
+        except ValueError:
+            return None
     
-    if now > end_time:
-        raise HTTPException(status_code=400, detail="Coupon expired")
+    # Check start_time if present
+    if 'start_time' in coupon and coupon['start_time']:
+        start_time = parse_datetime(coupon['start_time'])
+        if start_time and now < start_time:
+            raise HTTPException(status_code=400, detail="Coupon not yet active")
+    
+    # Check end_time or valid_until if present
+    end_time_str = coupon.get('end_time') or coupon.get('valid_until')
+    if end_time_str:
+        end_time = parse_datetime(end_time_str)
+        if end_time and now > end_time:
+            raise HTTPException(status_code=400, detail="Coupon expired")
     
     return coupon
 

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Star, Calendar, Users, Award } from 'lucide-react';
-import { getServices, getStaff, getReviews, getSettings } from '../utils/api';
+import { Star, Calendar, Users, Award, Send } from 'lucide-react';
+import { getServices, getStaff, getReviews, getSettings, createReview } from '../utils/api';
+import { toast } from 'sonner';
 
 const Home = () => {
   const [services, setServices] = useState([]);
@@ -285,6 +286,9 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Submit Review Section */}
+      <ReviewSubmission />
+
       {/* CTA Section */}
       <section className="section-spacing" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)' }} data-testid="cta-section">
         <div className="container-custom text-center text-white">
@@ -300,6 +304,128 @@ const Home = () => {
         </div>
       </section>
     </div>
+  );
+};
+
+// Review Submission Component
+const ReviewSubmission = () => {
+  const [reviewForm, setReviewForm] = useState({
+    customer_name: '',
+    rating: 5,
+    review_text: ''
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleReviewChange = (e) => {
+    setReviewForm({ ...reviewForm, [e.target.name]: e.target.value });
+  };
+
+  const handleRatingChange = (rating) => {
+    setReviewForm({ ...reviewForm, rating });
+  };
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (!reviewForm.customer_name || !reviewForm.review_text) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await createReview(reviewForm);
+      toast.success('Thank you! Your review has been submitted for approval.');
+      setReviewForm({ customer_name: '', rating: 5, review_text: '' });
+    } catch (error) {
+      toast.error('Failed to submit review. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <section className="section-spacing bg-[var(--background-alt)]" data-testid="review-submission-section">
+      <div className="container-custom">
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold font-heading mb-4">Share Your Experience</h2>
+            <p className="text-base" style={{ color: 'var(--text-secondary)' }}>
+              We'd love to hear about your visit! Your feedback helps us improve.
+            </p>
+          </div>
+          
+          <motion.form
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            onSubmit={handleReviewSubmit}
+            className="bg-white p-8 rounded-2xl shadow-lg space-y-6"
+            data-testid="review-form"
+          >
+            <div>
+              <label className="block text-sm font-medium mb-2">Your Name *</label>
+              <input
+                type="text"
+                name="customer_name"
+                value={reviewForm.customer_name}
+                onChange={handleReviewChange}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--secondary)] focus:border-transparent"
+                placeholder="Enter your name"
+                data-testid="review-name-input"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Your Rating *</label>
+              <div className="flex space-x-2" data-testid="review-rating-stars">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => handleRatingChange(star)}
+                    className="focus:outline-none transition-transform hover:scale-110"
+                    data-testid={`rating-star-${star}`}
+                  >
+                    <Star
+                      size={32}
+                      fill={star <= reviewForm.rating ? 'var(--secondary)' : 'transparent'}
+                      color="var(--secondary)"
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Your Review *</label>
+              <textarea
+                name="review_text"
+                value={reviewForm.review_text}
+                onChange={handleReviewChange}
+                required
+                rows={4}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--secondary)] focus:border-transparent resize-none"
+                placeholder="Share your experience with us..."
+                data-testid="review-text-input"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="btn-primary w-full flex items-center justify-center space-x-2"
+              data-testid="submit-review-btn"
+            >
+              <Send size={18} />
+              <span>{submitting ? 'Submitting...' : 'Submit Review'}</span>
+            </button>
+            
+            <p className="text-xs text-center" style={{ color: 'var(--text-muted)' }}>
+              Your review will be published after approval by our team.
+            </p>
+          </motion.form>
+        </div>
+      </div>
+    </section>
   );
 };
 

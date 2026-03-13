@@ -16,6 +16,7 @@ import CustomerLogin from './pages/CustomerLogin';
 import CustomerDashboard from './pages/CustomerDashboard';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
+import SupportRequest from './pages/SupportRequest';
 
 // Components
 import Navbar from './components/Navbar';
@@ -85,6 +86,7 @@ function App() {
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/booking" element={<Booking />} />
                     <Route path="/login" element={<CustomerLogin />} />
+                    <Route path="/support" element={<SupportRequest />} />
                     <Route
                       path="/dashboard"
                       element={

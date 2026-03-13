@@ -106,7 +106,6 @@ const Navbar = () => {
             <Link to="/booking" data-testid="nav-book-btn">
               <button className="btn-primary">Book Now</button>
             </Link>
-            </Link>
           </div>
 
           {/* Mobile Menu Button */}
