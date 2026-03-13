@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Trash2, Star, X } from 'lucide-react';
-import { getAllReviews, createReview, deleteReview } from '../../utils/api';
+import { Plus, Trash2, Star, X, Check, X as XIcon } from 'lucide-react';
+import { getAllReviews, createReviewAdmin, deleteReview, approveReview, unapproveReview } from '../../utils/api';
 import { toast } from 'sonner';
 
 const ReviewsManagement = () => {
@@ -25,13 +25,28 @@ const ReviewsManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await createReview(formData);
+      await createReviewAdmin(formData);
       toast.success('Review added successfully');
       fetchReviews();
       setShowModal(false);
       setFormData({ customer_name: '', rating: 5, review_text: '' });
     } catch (error) {
       toast.error('Failed to add review');
+    }
+  };
+
+  const handleToggleApproval = async (review) => {
+    try {
+      if (review.approved) {
+        await unapproveReview(review.id);
+        toast.success('Review unapproved');
+      } else {
+        await approveReview(review.id);
+        toast.success('Review approved');
+      }
+      fetchReviews();
+    } catch (error) {
+      toast.error('Failed to update review');
     }
   };
 
@@ -59,16 +74,31 @@ const ReviewsManagement = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {reviews.map((review, index) => (
-          <motion.div key={review.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white p-6 rounded-xl shadow-sm" data-testid={`review-card-${index}`}>
+          <motion.div key={review.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`bg-white p-6 rounded-xl shadow-sm border-2 ${review.approved ? 'border-green-200' : 'border-yellow-200'}`} data-testid={`review-card-${index}`}>
             <div className="flex items-center justify-between mb-3">
-              <div className="flex">
-                {[...Array(review.rating)].map((_, i) => (
-                  <Star key={i} size={16} fill="var(--secondary)" color="var(--secondary)" />
-                ))}
+              <div className="flex items-center space-x-3">
+                <div className="flex">
+                  {[...Array(review.rating)].map((_, i) => (
+                    <Star key={i} size={16} fill="var(--secondary)" color="var(--secondary)" />
+                  ))}
+                </div>
+                <span className={`px-2 py-1 text-xs font-medium rounded ${review.approved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                  {review.approved ? 'Approved' : 'Pending'}
+                </span>
               </div>
-              <button onClick={() => handleDelete(review.id)} className="text-red-500 hover:text-red-700" data-testid={`delete-review-${index}`}>
-                <Trash2 size={18} />
-              </button>
+              <div className="flex space-x-2">
+                <button 
+                  onClick={() => handleToggleApproval(review)} 
+                  className={`p-2 rounded-lg ${review.approved ? 'bg-yellow-50 text-yellow-600 hover:bg-yellow-100' : 'bg-green-50 text-green-600 hover:bg-green-100'}`}
+                  title={review.approved ? 'Unapprove' : 'Approve'}
+                  data-testid={`toggle-review-${index}`}
+                >
+                  {review.approved ? <XIcon size={18} /> : <Check size={18} />}
+                </button>
+                <button onClick={() => handleDelete(review.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg" data-testid={`delete-review-${index}`}>
+                  <Trash2 size={18} />
+                </button>
+              </div>
             </div>
             <p className="text-sm italic mb-2">"{review.review_text}"</p>
             <p className="text-sm font-semibold">- {review.customer_name}</p>

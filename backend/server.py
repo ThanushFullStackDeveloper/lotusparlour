@@ -177,14 +177,16 @@ class Coupon(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     code: str
     discount_percent: float
-    valid_until: str
+    start_time: str
+    end_time: str
     active: bool = True
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 class CouponCreate(BaseModel):
     code: str
     discount_percent: float
-    valid_until: str
+    start_time: str
+    end_time: str
 
 class ServiceVideo(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -457,14 +459,41 @@ async def get_all_reviews():
     reviews = await db.reviews.find({}, {"_id": 0}).to_list(1000)
     return reviews
 
-@api_router.post("/reviews", dependencies=[Depends(verify_admin)])
+@api_router.post("/reviews")
 async def create_review(review_data: ReviewCreate):
+    """Customer can submit a review (will need admin approval)"""
+    review = Review(**review_data.model_dump(), approved=False)
+    doc = review.model_dump()
+    await db.reviews.insert_one(doc)
+    return {"message": "Review submitted successfully. It will be visible after admin approval."}
+
+@api_router.post("/reviews/admin", dependencies=[Depends(verify_admin)])
+async def create_review_admin(review_data: ReviewCreate):
+    """Admin can directly create an approved review"""
     review = Review(**review_data.model_dump(), approved=True)
     doc = review.model_dump()
     await db.reviews.insert_one(doc)
     return review
 
 @api_router.put("/reviews/{review_id}/approve", dependencies=[Depends(verify_admin)])
+async def approve_review(review_id: str):
+    result = await db.reviews.update_one(
+        {"id": review_id},
+        {"$set": {"approved": True}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Review not found")
+    return {"message": "Review approved"}
+
+@api_router.put("/reviews/{review_id}/unapprove", dependencies=[Depends(verify_admin)])
+async def unapprove_review(review_id: str):
+    result = await db.reviews.update_one(
+        {"id": review_id},
+        {"$set": {"approved": False}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Review not found")
+    return {"message": "Review unapproved"}
 async def approve_review(review_id: str):
     result = await db.reviews.update_one(
         {"id": review_id},
@@ -543,8 +572,15 @@ async def validate_coupon(code: str):
     if not coupon:
         raise HTTPException(status_code=404, detail="Invalid coupon")
     
-    # Check expiry
-    if datetime.fromisoformat(coupon['valid_until']) < datetime.now(timezone.utc):
+    # Check if coupon is within valid time range
+    now = datetime.now(timezone.utc)
+    start_time = datetime.fromisoformat(coupon['start_time'])
+    end_time = datetime.fromisoformat(coupon['end_time'])
+    
+    if now < start_time:
+        raise HTTPException(status_code=400, detail="Coupon not yet active")
+    
+    if now > end_time:
         raise HTTPException(status_code=400, detail="Coupon expired")
     
     return coupon

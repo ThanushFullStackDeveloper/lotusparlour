@@ -6,7 +6,12 @@ import { toast } from 'sonner';
 
 const CouponsManagement = () => {
   const [coupons, setCoupons] = useState([]);
-  const [formData, setFormData] = useState({ code: '', discount_percent: '', valid_until: '' });
+  const [formData, setFormData] = useState({ 
+    code: '', 
+    discount_percent: '', 
+    start_time: '', 
+    end_time: '' 
+  });
 
   useEffect(() => {
     fetchCoupons();
@@ -28,7 +33,7 @@ const CouponsManagement = () => {
       await createCoupon(data);
       toast.success('Coupon created');
       fetchCoupons();
-      setFormData({ code: '', discount_percent: '', valid_until: '' });
+      setFormData({ code: '', discount_percent: '', start_time: '', end_time: '' });
     } catch (error) {
       toast.error('Failed to create coupon');
     }
@@ -60,8 +65,12 @@ const CouponsManagement = () => {
             <input type="number" value={formData.discount_percent} onChange={(e) => setFormData({ ...formData, discount_percent: e.target.value })} required className="w-full px-4 py-2 border rounded-lg" data-testid="discount-input" />
           </div>
           <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-medium mb-2">Valid Until *</label>
-            <input type="date" value={formData.valid_until} onChange={(e) => setFormData({ ...formData, valid_until: e.target.value })} required className="w-full px-4 py-2 border rounded-lg" data-testid="valid-until-input" />
+            <label className="block text-sm font-medium mb-2">Start Date & Time *</label>
+            <input type="datetime-local" value={formData.start_time} onChange={(e) => setFormData({ ...formData, start_time: e.target.value })} required className="w-full px-4 py-2 border rounded-lg" data-testid="start-time-input" />
+          </div>
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm font-medium mb-2">End Date & Time *</label>
+            <input type="datetime-local" value={formData.end_time} onChange={(e) => setFormData({ ...formData, end_time: e.target.value })} required className="w-full px-4 py-2 border rounded-lg" data-testid="end-time-input" />
           </div>
           <button type="submit" className="btn-primary flex items-center space-x-2" data-testid="add-coupon-btn">
             <Plus size={20} />
@@ -76,7 +85,7 @@ const CouponsManagement = () => {
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Code</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Discount</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valid Until</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valid Period</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
             </tr>
           </thead>
@@ -85,7 +94,12 @@ const CouponsManagement = () => {
               <motion.tr key={coupon.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} data-testid={`coupon-row-${index}`}>
                 <td className="px-6 py-4 font-mono font-bold">{coupon.code}</td>
                 <td className="px-6 py-4">{coupon.discount_percent}%</td>
-                <td className="px-6 py-4">{coupon.valid_until}</td>
+                <td className="px-6 py-4">
+                  <div className="text-sm">
+                    <div>{new Date(coupon.start_time).toLocaleString()}</div>
+                    <div className="text-gray-500">to {new Date(coupon.end_time).toLocaleString()}</div>
+                  </div>
+                </td>
                 <td className="px-6 py-4">
                   <button onClick={() => handleDelete(coupon.id)} className="text-red-500 hover:text-red-700" data-testid={`delete-coupon-${index}`}>
                     <Trash2 size={18} />

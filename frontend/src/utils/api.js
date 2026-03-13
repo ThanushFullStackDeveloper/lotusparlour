@@ -51,7 +51,9 @@ export const updateAppointmentStatus = (id, status) => api.put(`/appointments/${
 export const getReviews = () => api.get('/reviews');
 export const getAllReviews = () => api.get('/reviews/all');
 export const createReview = (data) => api.post('/reviews', data);
+export const createReviewAdmin = (data) => api.post('/reviews/admin', data);
 export const approveReview = (id) => api.put(`/reviews/${id}/approve`);
+export const unapproveReview = (id) => api.put(`/reviews/${id}/unapprove`);
 export const deleteReview = (id) => api.delete(`/reviews/${id}`);
 
 // Gallery
