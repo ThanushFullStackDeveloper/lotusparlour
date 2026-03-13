@@ -535,14 +535,6 @@ async def unapprove_review(review_id: str):
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Review not found")
     return {"message": "Review unapproved"}
-async def approve_review(review_id: str):
-    result = await db.reviews.update_one(
-        {"id": review_id},
-        {"$set": {"approved": True}}
-    )
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Review not found")
-    return {"message": "Review approved"}
 
 @api_router.delete("/reviews/{review_id}", dependencies=[Depends(verify_admin)])
 async def delete_review(review_id: str):
@@ -731,8 +723,6 @@ async def get_all_videos():
     videos = await db.service_videos.find({}, {"_id": 0}).to_list(1000)
     return videos
 
-@api_router.post("/videos", dependencies=[Depends(verify_admin)])
-
 
 # ============ SETTINGS ROUTES ============
 
@@ -871,6 +861,7 @@ async def reset_password(new_password: str, payload: dict = Depends(verify_token
     
     return {"message": "Password updated successfully"}
 
+@api_router.post("/videos", dependencies=[Depends(verify_admin)])
 async def create_video(video_data: ServiceVideoCreate):
     video = ServiceVideo(**video_data.model_dump())
     doc = video.model_dump()
