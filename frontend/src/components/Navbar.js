@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, User, Calendar, LogOut, ChevronDown } from 'lucide-react';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
   const role = localStorage.getItem('role');
+  const userName = localStorage.getItem('userName') || 'User';
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
+    localStorage.removeItem('userName');
     navigate('/');
     window.location.reload();
   };
@@ -59,25 +62,45 @@ const Navbar = () => {
                 {link.name}
               </Link>
             ))}
-            {token && role === 'user' && (
-              <Link
-                to="/dashboard"
-                className="text-base font-medium hover:text-[var(--secondary)] transition-colors"
-                style={{ color: 'var(--text-primary)' }}
-                data-testid="nav-link-dashboard"
-              >
-                Dashboard
-              </Link>
-            )}
-            {token ? (
-              <button onClick={handleLogout} className="btn-secondary" data-testid="nav-logout-btn">
-                Logout
-              </button>
-            ) : (
+            {token && role === 'user' ? (
+              <div className="relative">
+                <button
+                  onClick={() => setProfileOpen(!profileOpen)}
+                  className="flex items-center space-x-2 text-base font-medium hover:text-[var(--secondary)] transition-colors"
+                  style={{ color: 'var(--text-primary)' }}
+                  data-testid="profile-dropdown-btn"
+                >
+                  <User size={20} />
+                  <span>{userName}</span>
+                  <ChevronDown size={16} />
+                </button>
+                {profileOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50" data-testid="profile-dropdown-menu">
+                    <Link
+                      to="/dashboard"
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center space-x-2 px-4 py-2 hover:bg-gray-100 transition-colors"
+                      data-testid="profile-menu-appointments"
+                    >
+                      <Calendar size={18} />
+                      <span>My Appointments</span>
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center space-x-2 px-4 py-2 hover:bg-gray-100 transition-colors w-full text-left"
+                      data-testid="profile-menu-logout"
+                    >
+                      <LogOut size={18} />
+                      <span>Logout</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : !token ? (
               <Link to="/login" data-testid="nav-login-btn">
                 <button className="btn-secondary">Login</button>
               </Link>
-            )}
+            ) : null}
             <Link to="/booking" data-testid="nav-book-btn">
               <button className="btn-primary">Book Now</button>
             </Link>

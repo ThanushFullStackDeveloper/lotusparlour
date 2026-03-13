@@ -90,6 +90,28 @@ export const uploadImage = (file) => {
 // Videos
 export const getVideos = () => api.get('/videos');
 export const getAllVideos = () => api.get('/videos/all');
+
+// Settings
+export const getSettings = () => api.get('/settings');
+export const updateSettings = (data) => api.put('/settings', data);
+
+// Support
+export const createSupportRequest = (data) => api.post('/support', data);
+export const getSupportRequests = () => api.get('/support');
+export const updateSupportStatus = (id, status) => api.put(`/support/${id}/status?status=${status}`);
+export const deleteSupportRequest = (id) => api.delete(`/support/${id}`);
+
+// Customers
+export const getCustomers = () => api.get('/customers');
+export const adminResetCustomerPassword = (id) => api.put(`/customers/${id}/reset-password`);
+
+// Admin
+export const changeAdminPassword = (data) => api.put('/admin/change-password', data);
+
+// Auth
+export const loginWithPhone = (phone, password) => api.post('/auth/login-phone', null, { params: { phone, password } });
+export const resetUserPassword = (newPassword) => api.post('/auth/reset-password', null, { params: { new_password: newPassword } });
+
 export const createVideo = (data) => api.post('/videos', data);
 export const updateVideo = (id, data) => api.put(`/videos/${id}`, data);
 export const deleteVideo = (id) => api.delete(`/videos/${id}`);

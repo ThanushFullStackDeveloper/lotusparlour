@@ -418,16 +418,7 @@ async def create_appointment(appointment_data: AppointmentCreate, payload: dict 
     if holiday:
         raise HTTPException(status_code=400, detail="Today the parlour is closed. Please select another date.")
     
-    # Check for double booking
-    existing = await db.appointments.find_one({
-        "appointment_date": appointment_data.appointment_date,
-        "appointment_time": appointment_data.appointment_time,
-        "staff_id": appointment_data.staff_id,
-        "status": {"$ne": "cancelled"}
-    }, {"_id": 0})
-    
-    if existing:
-        raise HTTPException(status_code=400, detail="This time slot is already booked")
+    # Allow multiple bookings for same time slot (removed conflict check)
     
     appointment = Appointment(
         user_id=payload.get('user_id'),
@@ -718,6 +709,145 @@ async def get_all_videos():
     return videos
 
 @api_router.post("/videos", dependencies=[Depends(verify_admin)])
+
+
+# ============ SETTINGS ROUTES ============
+
+@api_router.get("/settings")
+async def get_settings():
+    settings = await db.settings.find_one({"id": "site_settings"}, {"_id": 0})
+    if not settings:
+        # Create default settings
+        default_settings = Settings()
+        await db.settings.insert_one(default_settings.model_dump())
+        return default_settings.model_dump()
+    return settings
+
+@api_router.put("/settings", dependencies=[Depends(verify_admin)])
+async def update_settings(settings_data: SettingsUpdate):
+    update_data = {k: v for k, v in settings_data.model_dump().items() if v is not None}
+    update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
+    
+    result = await db.settings.update_one(
+        {"id": "site_settings"},
+        {"$set": update_data},
+        upsert=True
+    )
+    return {"message": "Settings updated successfully"}
+
+# ============ SUPPORT ROUTES ============
+
+@api_router.post("/support")
+async def create_support_request(request_data: SupportRequestCreate):
+    support_request = SupportRequest(**request_data.model_dump())
+    doc = support_request.model_dump()
+    await db.support_requests.insert_one(doc)
+    return {"message": "Support request submitted successfully"}
+
+@api_router.get("/support", dependencies=[Depends(verify_admin)])
+async def get_support_requests():
+    requests = await db.support_requests.find({}, {"_id": 0}).to_list(1000)
+    return requests
+
+@api_router.put("/support/{request_id}/status", dependencies=[Depends(verify_admin)])
+async def update_support_status(request_id: str, status: str):
+    result = await db.support_requests.update_one(
+        {"id": request_id},
+        {"$set": {"status": status}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Request not found")
+    return {"message": "Status updated"}
+
+@api_router.delete("/support/{request_id}", dependencies=[Depends(verify_admin)])
+async def delete_support_request(request_id: str):
+    result = await db.support_requests.delete_one({"id": request_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Request not found")
+    return {"message": "Request deleted"}
+
+# ============ CUSTOMER MANAGEMENT ============
+
+@api_router.get("/customers", dependencies=[Depends(verify_admin)])
+async def get_customers():
+    users = await db.users.find({}, {"_id": 0, "password_hash": 0}).to_list(1000)
+    
+    # Add booking count for each user
+    for user in users:
+        booking_count = await db.appointments.count_documents({"user_id": user['id']})
+        user['total_bookings'] = booking_count
+    
+    return users
+
+@api_router.put("/customers/{user_id}/reset-password", dependencies=[Depends(verify_admin)])
+async def admin_reset_customer_password(user_id: str):
+    # Generate temporary password
+    temp_password = str(uuid.uuid4())[:8]
+    password_hash = hash_password(temp_password)
+    
+    result = await db.users.update_one(
+        {"id": user_id},
+        {"$set": {"password_hash": password_hash, "force_password_reset": True}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {"message": "Password reset", "temporary_password": temp_password}
+
+# ============ ADMIN PASSWORD CHANGE ============
+
+@api_router.put("/admin/change-password", dependencies=[Depends(verify_admin)])
+async def change_admin_password(password_data: AdminPasswordChange, payload: dict = Depends(verify_admin)):
+    admin = await db.admins.find_one({"id": payload['user_id']}, {"_id": 0})
+    
+    if not verify_password(password_data.current_password, admin['password_hash']):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    
+    new_hash = hash_password(password_data.new_password)
+    await db.admins.update_one(
+        {"id": payload['user_id']},
+        {"$set": {"password_hash": new_hash}}
+    )
+    
+    return {"message": "Password changed successfully"}
+
+# ============ PHONE LOGIN ============
+
+@api_router.post("/auth/login-phone")
+async def login_with_phone(phone: str, password: str):
+    user = await db.users.find_one({"phone": phone}, {"_id": 0})
+    if not user or not verify_password(password, user['password_hash']):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Check if forced password reset
+    if user.get('force_password_reset'):
+        token = create_token(user['id'], user['email'], 'user')
+        return {
+            "token": token,
+            "force_password_reset": True,
+            "user": UserResponse(**{k: v for k, v in user.items() if k != 'password_hash'})
+        }
+    
+    token = create_token(user['id'], user['email'], 'user')
+    return {"token": token, "user": UserResponse(**{k: v for k, v in user.items() if k != 'password_hash'})}
+
+# ============ USER PASSWORD RESET ============
+
+@api_router.post("/auth/reset-password")
+async def reset_password(new_password: str, payload: dict = Depends(verify_token)):
+    password_hash = hash_password(new_password)
+    
+    result = await db.users.update_one(
+        {"id": payload['user_id']},
+        {"$set": {"password_hash": password_hash, "force_password_reset": False}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {"message": "Password updated successfully"}
+
 async def create_video(video_data: ServiceVideoCreate):
     video = ServiceVideo(**video_data.model_dump())
     doc = video.model_dump()
