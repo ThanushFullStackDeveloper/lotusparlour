@@ -1,50 +1,103 @@
-import { useEffect } from "react";
-import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'sonner';
+import './App.css';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+// Pages
+import Home from './pages/Home';
+import About from './pages/About';
+import Services from './pages/Services';
+import Gallery from './pages/Gallery';
+import Staff from './pages/Staff';
+import Contact from './pages/Contact';
+import Booking from './pages/Booking';
+import CustomerLogin from './pages/CustomerLogin';
+import CustomerDashboard from './pages/CustomerDashboard';
+import AdminLogin from './pages/AdminLogin';
+import AdminDashboard from './pages/AdminDashboard';
 
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
+// Components
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import WhatsAppFloat from './components/WhatsAppFloat';
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    if (token) {
+      setIsAuthenticated(true);
+      if (role === 'admin') {
+        setIsAdmin(true);
+      }
+    }
+  }, []);
+
+  const ProtectedRoute = ({ children, adminOnly = false }) => {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+
+    if (!token) {
+      return <Navigate to="/login" replace />;
+    }
+
+    if (adminOnly && role !== 'admin') {
+      return <Navigate to="/admin/login" replace />;
+    }
+
+    return children;
+  };
+
   return (
     <div className="App">
       <BrowserRouter>
+        <Toaster position="top-right" richColors />
         <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
+          {/* Admin Routes */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route
+            path="/admin/*"
+            element={
+              <ProtectedRoute adminOnly>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Customer Routes with Navbar and Footer */}
+          <Route
+            path="/*"
+            element={
+              <>
+                <Navbar />
+                <div style={{ minHeight: '80vh' }}>
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/services" element={<Services />} />
+                    <Route path="/gallery" element={<Gallery />} />
+                    <Route path="/staff" element={<Staff />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/booking" element={<Booking />} />
+                    <Route path="/login" element={<CustomerLogin />} />
+                    <Route
+                      path="/dashboard"
+                      element={
+                        <ProtectedRoute>
+                          <CustomerDashboard />
+                        </ProtectedRoute>
+                      }
+                    />
+                  </Routes>
+                </div>
+                <Footer />
+                <WhatsAppFloat />
+              </>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </div>
