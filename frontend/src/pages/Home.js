@@ -2,12 +2,20 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Star, Calendar, Users, Award } from 'lucide-react';
-import { getServices, getStaff, getReviews } from '../utils/api';
+import { getServices, getStaff, getReviews, getSettings } from '../utils/api';
 
 const Home = () => {
   const [services, setServices] = useState([]);
   const [staff, setStaff] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [settings, setSettings] = useState({
+    parlour_name: 'Lotus Beauty Parlour',
+    welcome_text: 'Welcome to Lotus Beauty Parlour',
+    years_experience: '5+',
+    opening_time: '09:00',
+    closing_time: '22:00',
+    logo_image: null
+  });
 
   useEffect(() => {
     fetchData();
@@ -15,17 +23,36 @@ const Home = () => {
 
   const fetchData = async () => {
     try {
-      const [servicesRes, staffRes, reviewsRes] = await Promise.all([
+      const [servicesRes, staffRes, reviewsRes, settingsRes] = await Promise.all([
         getServices(),
         getStaff(),
         getReviews(),
+        getSettings(),
       ]);
       setServices(servicesRes.data.slice(0, 3));
       setStaff(staffRes.data.slice(0, 3));
       setReviews(reviewsRes.data.slice(0, 3));
+      setSettings(settingsRes.data);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
+  };
+
+  const isOpen = () => {
+    const now = new Date();
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+    const [openHour, openMin] = settings.opening_time.split(':').map(Number);
+    const [closeHour, closeMin] = settings.closing_time.split(':').map(Number);
+    const openTime = openHour * 60 + openMin;
+    const closeTime = closeHour * 60 + closeMin;
+    return currentTime >= openTime && currentTime < closeTime;
+  };
+
+  const getStatusText = () => {
+    if (isOpen()) {
+      return `Open Now - Closes at ${settings.closing_time}`;
+    }
+    return `Closed - Opens at ${settings.opening_time}`;
   };
 
   return (
@@ -40,7 +67,7 @@ const Home = () => {
               transition={{ duration: 0.8 }}
             >
               <h1 className="text-5xl md:text-6xl font-bold font-heading mb-6" style={{ color: 'var(--text-primary)' }}>
-                Welcome to <span style={{ color: 'var(--secondary)' }}>Lotus</span> Beauty Parlour
+                {settings.welcome_text} <span style={{ color: 'var(--secondary)' }}>{settings.parlour_name.split(' ').pop()}</span>
               </h1>
               <p className="text-base md:text-lg mb-8" style={{ color: 'var(--text-secondary)' }}>
                 Transform your beauty journey with our premium makeup artistry and salon services in the heart of Tirunelveli.
@@ -63,8 +90,9 @@ const Home = () => {
                 </div>
                 <div className="h-12 w-px bg-gray-300"></div>
                 <div>
-                  <p className="text-sm text-gray-600">Open Daily</p>
-                  <p className="text-sm font-semibold">Until 10 PM</p>
+                  <p className={`text-sm font-semibold ${isOpen() ? 'text-green-600' : 'text-red-600'}`}>
+                    {getStatusText()}
+                  </p>
                 </div>
               </div>
             </motion.div>
@@ -76,12 +104,12 @@ const Home = () => {
               className="relative"
             >
               <img
-                src="https://images.unsplash.com/photo-1645856049138-bcb23afaeefb?crop=entropy&cs=srgb&fm=jpg&q=85"
+                src={settings.hero_image || "https://images.unsplash.com/photo-1645856049138-bcb23afaeefb?crop=entropy&cs=srgb&fm=jpg&q=85"}
                 alt="Elegant Bridal Makeup"
                 className="rounded-2xl shadow-2xl w-full"
               />
               <div className="absolute -bottom-6 -left-6 bg-white p-4 rounded-xl shadow-lg">
-                <p className="text-3xl font-bold" style={{ color: 'var(--secondary)' }}>15+</p>
+                <p className="text-3xl font-bold" style={{ color: 'var(--secondary)' }}>{settings.years_experience}</p>
                 <p className="text-sm text-gray-600">Years Experience</p>
               </div>
             </motion.div>
@@ -94,21 +122,44 @@ const Home = () => {
         <div className="container-custom">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {[
-              { icon: Award, title: 'Expert Artists', desc: 'Certified professionals' },
-              { icon: Star, title: '5.0 Rating', desc: 'Top-rated on Google' },
-              { icon: Calendar, title: 'Easy Booking', desc: 'Book online anytime' },
-              { icon: Users, title: 'Happy Clients', desc: '1000+ satisfied customers' },
+              { 
+                icon: Award, 
+                title: 'Expert Artists', 
+                desc: 'Certified professionals',
+                image: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400&h=300&fit=crop'
+              },
+              { 
+                icon: Star, 
+                title: '5.0 Rating', 
+                desc: 'Top-rated on Google',
+                image: 'https://images.unsplash.com/photo-1600948836101-f9ffda59d250?w=400&h=300&fit=crop'
+              },
+              { 
+                icon: Calendar, 
+                title: 'Easy Booking', 
+                desc: 'Book online anytime',
+                image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=300&fit=crop'
+              },
+              { 
+                icon: Users, 
+                title: 'Happy Clients', 
+                desc: '1000+ satisfied customers',
+                image: 'https://images.unsplash.com/photo-1554139967-ae0fce5d57b7?w=400&h=300&fit=crop'
+              },
             ].map((feature, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="text-center"
+                className="text-center bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all"
                 data-testid={`feature-${index}`}
               >
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4" style={{ backgroundColor: 'var(--secondary)', opacity: 0.1 }}>
-                  <feature.icon size={32} style={{ color: 'var(--secondary)' }} />
+                <div className="relative w-full h-32 mb-4 rounded-lg overflow-hidden">
+                  <img src={feature.image} alt={feature.title} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-center justify-center">
+                    <feature.icon size={40} className="text-white" />
+                  </div>
                 </div>
                 <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
                 <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{feature.desc}</p>

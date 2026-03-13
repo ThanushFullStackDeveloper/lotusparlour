@@ -96,13 +96,16 @@ const Navbar = () => {
                   </div>
                 )}
               </div>
-            ) : !token ? (
-              <Link to="/login" data-testid="nav-login-btn">
-                <button className="btn-secondary">Login</button>
-              </Link>
-            ) : null}
+            ) : (
+              !token && (
+                <Link to="/login" data-testid="nav-login-btn">
+                  <button className="btn-secondary">Login</button>
+                </Link>
+              )
+            )}
             <Link to="/booking" data-testid="nav-book-btn">
               <button className="btn-primary">Book Now</button>
+            </Link>
             </Link>
           </div>
 

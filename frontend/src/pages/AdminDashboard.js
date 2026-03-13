@@ -14,6 +14,9 @@ import {
   Menu,
   X,
   Video,
+  Settings,
+  HelpCircle,
+  UserCheck,
 } from 'lucide-react';
 
 // Admin pages
@@ -28,6 +31,9 @@ import CouponsManagement from './admin/CouponsManagement';
 import RevenueAnalytics from './admin/RevenueAnalytics';
 import StaffCalendar from './admin/StaffCalendar';
 import VideosManagement from './admin/VideosManagement';
+import SettingsManagement from './admin/SettingsManagement';
+import CustomersManagement from './admin/CustomersManagement';
+import SupportManagement from './admin/SupportManagement';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -42,15 +48,18 @@ const AdminDashboard = () => {
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
     { icon: Calendar, label: 'Appointments', path: '/admin/appointments' },
+    { icon: UserCheck, label: 'Customers', path: '/admin/customers' },
     { icon: Briefcase, label: 'Services', path: '/admin/services' },
     { icon: Users, label: 'Staff', path: '/admin/staff' },
     { icon: Image, label: 'Gallery', path: '/admin/gallery' },
+    { icon: Video, label: 'Videos', path: '/admin/videos' },
     { icon: Star, label: 'Reviews', path: '/admin/reviews' },
     { icon: CalendarOff, label: 'Holidays', path: '/admin/holidays' },
     { icon: Tag, label: 'Coupons', path: '/admin/coupons' },
     { icon: TrendingUp, label: 'Revenue', path: '/admin/revenue' },
-    { icon: Video, label: 'Videos', path: '/admin/videos' },
     { icon: Calendar, label: 'Staff Calendar', path: '/admin/staff-calendar' },
+    { icon: HelpCircle, label: 'Support', path: '/admin/support' },
+    { icon: Settings, label: 'Settings', path: '/admin/settings' },
   ];
 
   return (
@@ -116,15 +125,18 @@ const AdminDashboard = () => {
           <Routes>
             <Route path="/dashboard" element={<DashboardOverview />} />
             <Route path="/appointments" element={<AppointmentsManagement />} />
+            <Route path="/customers" element={<CustomersManagement />} />
             <Route path="/services" element={<ServicesManagement />} />
             <Route path="/staff" element={<StaffManagement />} />
             <Route path="/gallery" element={<GalleryManagement />} />
+            <Route path="/videos" element={<VideosManagement />} />
             <Route path="/reviews" element={<ReviewsManagement />} />
             <Route path="/holidays" element={<HolidaysManagement />} />
             <Route path="/coupons" element={<CouponsManagement />} />
             <Route path="/revenue" element={<RevenueAnalytics />} />
             <Route path="/staff-calendar" element={<StaffCalendar />} />
-            <Route path="/videos" element={<VideosManagement />} />
+            <Route path="/support" element={<SupportManagement />} />
+            <Route path="/settings" element={<SettingsManagement />} />
             <Route path="/" element={<DashboardOverview />} />
           </Routes>
         </div>
