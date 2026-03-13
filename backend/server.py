@@ -184,6 +184,7 @@ class Coupon(BaseModel):
 class CouponCreate(BaseModel):
     code: str
     discount_percent: float
+    valid_until: str
 
 class ServiceVideo(BaseModel):
     model_config = ConfigDict(extra="ignore")

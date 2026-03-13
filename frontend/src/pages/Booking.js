@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, User } from 'lucide-react';
-import { getServices, getStaff, createAppointment, getAvailableSlots, getHolidays, getCurrentUser } from '../utils/api';
+import { Calendar, Clock, User, Tag } from 'lucide-react';
+import { getServices, getStaff, createAppointment, getAvailableSlots, getHolidays, getCurrentUser, validateCoupon } from '../utils/api';
 import { toast } from 'sonner';
 
 const Booking = () => {
@@ -14,6 +14,9 @@ const Booking = () => {
   const [availableSlots, setAvailableSlots] = useState([]);
   const [holidays, setHolidays] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponLoading, setCouponLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     service_id: location.state?.selectedService?.id || '',
@@ -94,6 +97,52 @@ const Booking = () => {
 
   const handleDateSelect = (e) => {
     setFormData({ ...formData, appointment_date: e.target.value });
+  };
+
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast.error('Please enter a coupon code');
+      return;
+    }
+
+    setCouponLoading(true);
+    try {
+      const response = await validateCoupon(couponCode.toUpperCase());
+      setAppliedCoupon(response.data);
+      toast.success(`Coupon applied! ${response.data.discount_percent}% discount`);
+    } catch (error) {
+      console.error('Error validating coupon:', error);
+      toast.error(error.response?.data?.detail || 'Invalid or expired coupon');
+      setAppliedCoupon(null);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setCouponCode('');
+    setAppliedCoupon(null);
+    toast.info('Coupon removed');
+  };
+
+  const calculatePrice = () => {
+    if (!selectedService) return { original: 0, discount: 0, final: 0 };
+    
+    const originalPrice = selectedService.price;
+    let discount = 0;
+    
+    if (appliedCoupon) {
+      discount = (originalPrice * appliedCoupon.discount_percent) / 100;
+    }
+    
+    const finalPrice = originalPrice - discount;
+    
+    return {
+      original: originalPrice,
+      discount: discount,
+      final: finalPrice
+    };
   };
 
   const handleSubmit = async (e) => {
@@ -258,6 +307,53 @@ const Booking = () => {
                 </div>
               </div>
 
+              {/* Coupon Code Section */}
+              {formData.appointment_date && formData.appointment_time && (
+                <div className="mt-6">
+                  <label className="block text-sm font-medium mb-2 flex items-center space-x-2">
+                    <Tag size={16} style={{ color: 'var(--secondary)' }} />
+                    <span>Have a Coupon Code? (Optional)</span>
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      placeholder="Enter coupon code"
+                      disabled={appliedCoupon !== null}
+                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg uppercase disabled:bg-gray-100"
+                      data-testid="coupon-input"
+                    />
+                    {appliedCoupon ? (
+                      <button
+                        type="button"
+                        onClick={handleRemoveCoupon}
+                        className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                        data-testid="remove-coupon-btn"
+                      >
+                        Remove
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleApplyCoupon}
+                        disabled={couponLoading}
+                        className="px-6 py-3 bg-[var(--secondary)] text-white rounded-lg hover:bg-[var(--secondary-hover)] transition-colors disabled:opacity-50"
+                        data-testid="apply-coupon-btn"
+                      >
+                        {couponLoading ? 'Checking...' : 'Apply'}
+                      </button>
+                    )}
+                  </div>
+                  {appliedCoupon && (
+                    <p className="text-sm text-green-600 mt-2 flex items-center space-x-1">
+                      <span>✓</span>
+                      <span>Coupon "{appliedCoupon.code}" applied - {appliedCoupon.discount_percent}% off</span>
+                    </p>
+                  )}
+                </div>
+              )}
+
               {/* Booking Summary */}
               {formData.appointment_date && formData.appointment_time && (
                 <div className="mt-6 p-6 bg-[var(--background-alt)] rounded-lg border-2 border-[var(--secondary)]">
@@ -274,8 +370,34 @@ const Booking = () => {
                       </>
                     )}
                     <p className="text-sm"><span className="font-medium">Duration:</span> {selectedService?.duration} mins</p>
-                    <p className="text-lg mt-3"><span className="font-bold" style={{ color: 'var(--secondary)' }}>Price: ₹{selectedService?.price}</span></p>
-                    <p className="text-xs mt-2 text-yellow-700 bg-yellow-50 p-2 rounded">💰 Payment: Cash at Parlour</p>
+                    
+                    {/* Price Breakdown */}
+                    <div className="border-t border-gray-300 pt-3 mt-3">
+                      <p className="text-sm flex justify-between">
+                        <span className="font-medium">Original Price:</span>
+                        <span>₹{calculatePrice().original}</span>
+                      </p>
+                      {appliedCoupon && (
+                        <>
+                          <p className="text-sm flex justify-between text-green-600">
+                            <span className="font-medium">Discount ({appliedCoupon.discount_percent}%):</span>
+                            <span>- ₹{calculatePrice().discount.toFixed(2)}</span>
+                          </p>
+                          <p className="text-lg flex justify-between mt-2 font-bold" style={{ color: 'var(--secondary)' }}>
+                            <span>Final Price:</span>
+                            <span>₹{calculatePrice().final.toFixed(2)}</span>
+                          </p>
+                        </>
+                      )}
+                      {!appliedCoupon && (
+                        <p className="text-lg flex justify-between mt-2 font-bold" style={{ color: 'var(--secondary)' }}>
+                          <span>Total Price:</span>
+                          <span>₹{calculatePrice().original}</span>
+                        </p>
+                      )}
+                    </div>
+                    
+                    <p className="text-xs mt-3 text-yellow-700 bg-yellow-50 p-2 rounded">💰 Payment: Cash at Parlour</p>
                   </div>
                 </div>
               )}
