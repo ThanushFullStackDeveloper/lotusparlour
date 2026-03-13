@@ -206,6 +206,56 @@ class ServiceVideoCreate(BaseModel):
     is_active: bool = True
 
 
+class Settings(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = "site_settings"
+    parlour_name: str = "Lotus Beauty Parlour"
+    welcome_text: str = "Welcome to Lotus Beauty Parlour"
+    hero_image: Optional[str] = None
+    logo_image: Optional[str] = None
+    years_experience: str = "5+"
+    opening_time: str = "09:00"
+    closing_time: str = "22:00"
+    updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class SettingsUpdate(BaseModel):
+    parlour_name: Optional[str] = None
+    welcome_text: Optional[str] = None
+    hero_image: Optional[str] = None
+    logo_image: Optional[str] = None
+    years_experience: Optional[str] = None
+    opening_time: Optional[str] = None
+    closing_time: Optional[str] = None
+
+class SupportRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    email: EmailStr
+    phone: str
+    problem: str
+    status: str = "pending"
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class SupportRequestCreate(BaseModel):
+    name: str
+    email: EmailStr
+    phone: str
+    problem: str
+
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+
+class PasswordReset(BaseModel):
+    token: str
+    new_password: str
+
+class AdminPasswordChange(BaseModel):
+    current_password: str
+    new_password: str
+
+
+
 # ============ HELPER FUNCTIONS ============
 
 def hash_password(password: str) -> str:
