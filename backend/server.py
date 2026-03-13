@@ -238,16 +238,16 @@ class SettingsUpdate(BaseModel):
 class SupportRequest(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    name: str
-    email: EmailStr
+    name: Optional[str] = None
+    email: Optional[str] = None
     phone: str
     problem: str
     status: str = "pending"
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 class SupportRequestCreate(BaseModel):
-    name: str
-    email: EmailStr
+    name: Optional[str] = None
+    email: Optional[str] = None
     phone: str
     problem: str
 
@@ -261,6 +261,22 @@ class PasswordReset(BaseModel):
 class AdminPasswordChange(BaseModel):
     current_password: str
     new_password: str
+
+class Enquiry(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    email: str
+    phone: str
+    message: str
+    status: str = "unread"
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class EnquiryCreate(BaseModel):
+    name: str
+    email: str
+    phone: str
+    message: str
 
 
 
@@ -879,6 +895,41 @@ async def admin_reset_customer_password(user_id: str):
     
     return {"message": "Password reset", "temporary_password": temp_password}
 
+@api_router.put("/customers/{user_id}", dependencies=[Depends(verify_admin)])
+async def update_customer(user_id: str, customer_data: dict):
+    update_data = {}
+    if 'name' in customer_data:
+        update_data['name'] = customer_data['name']
+    if 'email' in customer_data:
+        # Check if email is already taken by another user
+        existing = await db.users.find_one({"email": customer_data['email'], "id": {"$ne": user_id}})
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already in use")
+        update_data['email'] = customer_data['email']
+    if 'phone' in customer_data:
+        update_data['phone'] = customer_data['phone']
+    if 'password' in customer_data and customer_data['password']:
+        update_data['password_hash'] = hash_password(customer_data['password'])
+        update_data['force_password_reset'] = True
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No valid fields to update")
+    
+    result = await db.users.update_one({"id": user_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {"message": "Customer updated successfully"}
+
+@api_router.delete("/customers/{user_id}", dependencies=[Depends(verify_admin)])
+async def delete_customer(user_id: str):
+    result = await db.users.delete_one({"id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    # Also delete their appointments
+    await db.appointments.delete_many({"user_id": user_id})
+    return {"message": "Customer deleted successfully"}
+
 # ============ ADMIN PASSWORD CHANGE ============
 
 @api_router.put("/admin/change-password", dependencies=[Depends(verify_admin)])
@@ -970,6 +1021,37 @@ async def seed_admin():
     )
     await db.admins.insert_one(admin.model_dump())
     return {"message": "Admin created", "email": "admin@lotus.com", "password": "admin123"}
+
+# ============ ENQUIRIES ROUTES ============
+
+@api_router.post("/enquiries")
+async def create_enquiry(enquiry_data: EnquiryCreate):
+    enquiry = Enquiry(**enquiry_data.model_dump())
+    doc = enquiry.model_dump()
+    await db.enquiries.insert_one(doc)
+    return {"message": "Enquiry submitted successfully"}
+
+@api_router.get("/enquiries", dependencies=[Depends(verify_admin)])
+async def get_enquiries():
+    enquiries = await db.enquiries.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return enquiries
+
+@api_router.put("/enquiries/{enquiry_id}/status", dependencies=[Depends(verify_admin)])
+async def update_enquiry_status(enquiry_id: str, status: str):
+    result = await db.enquiries.update_one(
+        {"id": enquiry_id},
+        {"$set": {"status": status}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Enquiry not found")
+    return {"message": "Status updated"}
+
+@api_router.delete("/enquiries/{enquiry_id}", dependencies=[Depends(verify_admin)])
+async def delete_enquiry(enquiry_id: str):
+    result = await db.enquiries.delete_one({"id": enquiry_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Enquiry not found")
+    return {"message": "Enquiry deleted"}
 
 # Include router
 app.include_router(api_router)

@@ -104,6 +104,12 @@ export const deleteSupportRequest = (id) => api.delete(`/support/${id}`);
 // Customers
 export const getCustomers = () => api.get('/customers');
 export const adminResetCustomerPassword = (id) => api.put(`/customers/${id}/reset-password`);
+export const deleteCustomer = (id) => api.delete(`/customers/${id}`);
+export const updateCustomer = (id, data) => api.put(`/customers/${id}`, data);
+
+// Enquiries
+export const getEnquiries = () => api.get('/enquiries');
+export const deleteEnquiry = (id) => api.delete(`/enquiries/${id}`);
 
 // Admin
 export const changeAdminPassword = (data) => api.put('/admin/change-password', data);

@@ -1,14 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, User, Calendar, LogOut, ChevronDown } from 'lucide-react';
+import { getSettings } from '../utils/api';
+
+const DEFAULT_LOGO = 'https://customer-assets.emergentagent.com/job_241db126-351c-4832-a8fb-845982688c90/artifacts/41r87k77_4B7AC146-0B06-4B1E-A8D9-0A69F86F7A02.jpeg';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [settings, setSettings] = useState({ parlour_name: 'LOTUS', logo_image: null });
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
   const role = localStorage.getItem('role');
   const userName = localStorage.getItem('userName') || 'User';
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await getSettings();
+        setSettings(response.data);
+      } catch (error) {
+        console.log('Failed to load settings');
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -28,6 +44,12 @@ const Navbar = () => {
     { name: 'Contact', path: '/contact' },
   ];
 
+  // Parse parlour name into title parts
+  const parlourName = settings.parlour_name || 'Lotus Beauty Parlour';
+  const nameParts = parlourName.split(' ');
+  const mainTitle = nameParts[0]?.toUpperCase() || 'LOTUS';
+  const subTitle = nameParts.slice(1).join(' ') || 'Beauty Parlour';
+
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-50" data-testid="navbar">
       <div className="container-custom">
@@ -35,16 +57,16 @@ const Navbar = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3" data-testid="nav-logo">
             <img
-              src="https://customer-assets.emergentagent.com/job_241db126-351c-4832-a8fb-845982688c90/artifacts/41r87k77_4B7AC146-0B06-4B1E-A8D9-0A69F86F7A02.jpeg"
-              alt="Lotus Beauty Parlour"
+              src={settings.logo_image || DEFAULT_LOGO}
+              alt={parlourName}
               className="h-12 w-12 object-contain"
             />
             <div>
               <h1 className="text-xl font-heading font-bold" style={{ color: 'var(--secondary)' }}>
-                LOTUS
+                {mainTitle}
               </h1>
               <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                Beauty Parlour
+                {subTitle}
               </p>
             </div>
           </Link>

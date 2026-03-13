@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { HelpCircle, User, Mail, Phone, MessageSquare, ArrowLeft } from 'lucide-react';
+import { HelpCircle, Phone, MessageSquare, ArrowLeft } from 'lucide-react';
 import { createSupportRequest } from '../utils/api';
 import { toast } from 'sonner';
 
@@ -9,8 +9,6 @@ const SupportRequest = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
     phone: '',
     problem: '',
   });
@@ -25,7 +23,7 @@ const SupportRequest = () => {
     try {
       await createSupportRequest(formData);
       toast.success('Support request submitted successfully! We will contact you soon.');
-      setFormData({ name: '', email: '', phone: '', problem: '' });
+      setFormData({ phone: '', problem: '' });
       setTimeout(() => navigate('/login'), 2000);
     } catch (error) {
       toast.error('Failed to submit support request. Please try again.');
@@ -47,47 +45,13 @@ const SupportRequest = () => {
             <div className="w-16 h-16 bg-[var(--primary-light)] rounded-full flex items-center justify-center mx-auto mb-4">
               <HelpCircle size={32} style={{ color: 'var(--secondary)' }} />
             </div>
-            <h1 className="text-3xl font-bold font-heading mb-2">Need Help?</h1>
+            <h1 className="text-3xl font-bold font-heading mb-2">Account Recovery</h1>
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              Having trouble accessing your account? Submit a support request and we'll assist you.
+              Having trouble accessing your account? Enter your phone number and we'll help you recover it.
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4" data-testid="support-form">
-            <div>
-              <label className="block text-sm font-medium mb-2">Full Name *</label>
-              <div className="relative">
-                <User className="absolute left-3 top-3.5 text-gray-400" size={18} />
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--secondary)] focus:border-transparent"
-                  placeholder="Enter your name"
-                  data-testid="support-name-input"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Email Address *</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3.5 text-gray-400" size={18} />
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--secondary)] focus:border-transparent"
-                  placeholder="Enter your email"
-                  data-testid="support-email-input"
-                />
-              </div>
-            </div>
-
             <div>
               <label className="block text-sm font-medium mb-2">Phone Number *</label>
               <div className="relative">
@@ -99,10 +63,13 @@ const SupportRequest = () => {
                   onChange={handleChange}
                   required
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--secondary)] focus:border-transparent"
-                  placeholder="Enter your phone number"
+                  placeholder="Enter your registered phone number"
                   data-testid="support-phone-input"
                 />
               </div>
+              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                We'll use this to find your account
+              </p>
             </div>
 
             <div>

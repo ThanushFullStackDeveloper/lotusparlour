@@ -191,25 +191,21 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {[
               { 
-                icon: Award, 
                 title: 'Expert Artists', 
                 desc: 'Certified professionals',
                 image: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400&h=300&fit=crop'
               },
               { 
-                icon: Star, 
                 title: '5.0 Rating', 
                 desc: 'Top-rated on Google',
                 image: 'https://images.unsplash.com/photo-1600948836101-f9ffda59d250?w=400&h=300&fit=crop'
               },
               { 
-                icon: Calendar, 
                 title: 'Easy Booking', 
                 desc: 'Book online anytime',
                 image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=300&fit=crop'
               },
               { 
-                icon: Users, 
                 title: 'Happy Clients', 
                 desc: '1000+ satisfied customers',
                 image: 'https://images.unsplash.com/photo-1554139967-ae0fce5d57b7?w=400&h=300&fit=crop'
@@ -225,9 +221,6 @@ const Home = () => {
               >
                 <div className="relative w-full h-32 mb-4 rounded-lg overflow-hidden">
                   <img src={feature.image} alt={feature.title} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-center justify-center">
-                    <feature.icon size={40} className="text-white" />
-                  </div>
                 </div>
                 <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
                 <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{feature.desc}</p>

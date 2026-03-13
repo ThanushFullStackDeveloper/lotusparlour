@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Phone, Mail, MapPin, Clock, Send, Navigation } from 'lucide-react';
 import { toast } from 'sonner';
+import { api } from '../utils/api';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -10,15 +11,24 @@ const Contact = () => {
     phone: '',
     message: '',
   });
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    toast.success('Message sent! We will get back to you soon.');
-    setFormData({ name: '', email: '', phone: '', message: '' });
+    setSubmitting(true);
+    try {
+      await api.post('/enquiries', formData);
+      toast.success('Message sent! We will get back to you soon.');
+      setFormData({ name: '', email: '', phone: '', message: '' });
+    } catch (error) {
+      toast.error('Failed to send message. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const businessInfo = {
@@ -202,9 +212,9 @@ const Contact = () => {
                     data-testid="contact-form-message"
                   ></textarea>
                 </div>
-                <button type="submit" className="btn-primary w-full flex items-center justify-center space-x-2" data-testid="contact-form-submit">
+                <button type="submit" disabled={submitting} className="btn-primary w-full flex items-center justify-center space-x-2 disabled:opacity-50" data-testid="contact-form-submit">
                   <Send size={18} />
-                  <span>Send Message</span>
+                  <span>{submitting ? 'Sending...' : 'Send Message'}</span>
                 </button>
               </form>
             </motion.div>

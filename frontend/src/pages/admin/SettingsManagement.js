@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Save, Clock } from 'lucide-react';
-import { getSettings, updateSettings, uploadImage } from '../../utils/api';
+import { Save, Clock, Lock, Eye, EyeOff } from 'lucide-react';
+import { getSettings, updateSettings, uploadImage, changeAdminPassword } from '../../utils/api';
 import { toast } from 'sonner';
 
 const DEFAULT_WEEKLY_HOURS = [
@@ -26,6 +26,17 @@ const SettingsManagement = () => {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    current_password: '',
+    new_password: '',
+    confirm_password: ''
+  });
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false
+  });
+  const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
     fetchSettings();
@@ -82,6 +93,34 @@ const SettingsManagement = () => {
       toast.error('Failed to update settings');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    if (passwordData.new_password !== passwordData.confirm_password) {
+      toast.error('New passwords do not match');
+      return;
+    }
+    if (passwordData.new_password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+    setChangingPassword(true);
+    try {
+      await changeAdminPassword({
+        current_password: passwordData.current_password,
+        new_password: passwordData.new_password
+      });
+      toast.success('Password changed successfully!');
+      setPasswordData({ current_password: '', new_password: '', confirm_password: '' });
+    } catch (error) {
+      const errorMsg = typeof error.response?.data?.detail === 'string' 
+        ? error.response.data.detail 
+        : 'Failed to change password';
+      toast.error(errorMsg);
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -249,6 +288,92 @@ const SettingsManagement = () => {
           <span>{saving ? 'Saving...' : 'Save All Settings'}</span>
         </button>
       </form>
+
+      {/* Admin Password Reset */}
+      <div className="bg-white p-6 rounded-xl shadow-sm mt-6">
+        <div className="flex items-center space-x-2 mb-4 border-b pb-2">
+          <Lock size={20} className="text-[var(--secondary)]" />
+          <h2 className="text-xl font-semibold">Change Admin Password</h2>
+        </div>
+        
+        <form onSubmit={handlePasswordChange} className="space-y-4" data-testid="password-change-form">
+          <div>
+            <label className="block text-sm font-medium mb-2">Current Password</label>
+            <div className="relative">
+              <input
+                type={showPasswords.current ? 'text' : 'password'}
+                value={passwordData.current_password}
+                onChange={(e) => setPasswordData({ ...passwordData, current_password: e.target.value })}
+                required
+                className="w-full px-4 py-2 pr-10 border rounded-lg"
+                placeholder="Enter current password"
+                data-testid="current-password-input"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPasswords({ ...showPasswords, current: !showPasswords.current })}
+                className="absolute right-3 top-2.5 text-gray-400"
+              >
+                {showPasswords.current ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">New Password</label>
+            <div className="relative">
+              <input
+                type={showPasswords.new ? 'text' : 'password'}
+                value={passwordData.new_password}
+                onChange={(e) => setPasswordData({ ...passwordData, new_password: e.target.value })}
+                required
+                className="w-full px-4 py-2 pr-10 border rounded-lg"
+                placeholder="Enter new password"
+                data-testid="new-password-input"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPasswords({ ...showPasswords, new: !showPasswords.new })}
+                className="absolute right-3 top-2.5 text-gray-400"
+              >
+                {showPasswords.new ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Confirm New Password</label>
+            <div className="relative">
+              <input
+                type={showPasswords.confirm ? 'text' : 'password'}
+                value={passwordData.confirm_password}
+                onChange={(e) => setPasswordData({ ...passwordData, confirm_password: e.target.value })}
+                required
+                className="w-full px-4 py-2 pr-10 border rounded-lg"
+                placeholder="Confirm new password"
+                data-testid="confirm-password-input"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPasswords({ ...showPasswords, confirm: !showPasswords.confirm })}
+                className="absolute right-3 top-2.5 text-gray-400"
+              >
+                {showPasswords.confirm ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </div>
+
+          <button 
+            type="submit" 
+            disabled={changingPassword}
+            className="btn-secondary flex items-center justify-center space-x-2 disabled:opacity-50" 
+            data-testid="change-password-btn"
+          >
+            <Lock size={18} />
+            <span>{changingPassword ? 'Changing...' : 'Change Password'}</span>
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

@@ -16,6 +16,7 @@ import {
   Settings,
   HelpCircle,
   UserCheck,
+  MessageSquare,
 } from 'lucide-react';
 
 // Admin pages
@@ -32,6 +33,7 @@ import VideosManagement from './admin/VideosManagement';
 import SettingsManagement from './admin/SettingsManagement';
 import CustomersManagement from './admin/CustomersManagement';
 import SupportManagement from './admin/SupportManagement';
+import EnquiriesManagement from './admin/EnquiriesManagement';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -55,6 +57,7 @@ const AdminDashboard = () => {
     { icon: Tag, label: 'Coupons', path: '/admin/coupons' },
     { icon: TrendingUp, label: 'Revenue', path: '/admin/revenue' },
     { icon: Calendar, label: 'Staff Calendar', path: '/admin/staff-calendar' },
+    { icon: MessageSquare, label: 'Enquiries', path: '/admin/enquiries' },
     { icon: HelpCircle, label: 'Support', path: '/admin/support' },
     { icon: Settings, label: 'Settings', path: '/admin/settings' },
   ];
@@ -131,6 +134,7 @@ const AdminDashboard = () => {
             <Route path="/coupons" element={<CouponsManagement />} />
             <Route path="/revenue" element={<RevenueAnalytics />} />
             <Route path="/staff-calendar" element={<StaffCalendar />} />
+            <Route path="/enquiries" element={<EnquiriesManagement />} />
             <Route path="/support" element={<SupportManagement />} />
             <Route path="/settings" element={<SettingsManagement />} />
             <Route path="/" element={<DashboardOverview />} />
