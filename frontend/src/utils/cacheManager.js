@@ -8,6 +8,49 @@ const CACHE_CONFIG = {
   reviews: { key: 'lotus_reviews', ttl: 6 * 60 * 60 * 1000 },    // 6 hours
 };
 
+// Broadcast channel for cache invalidation across tabs/windows
+let broadcastChannel = null;
+try {
+  broadcastChannel = new BroadcastChannel('lotus_cache_channel');
+  broadcastChannel.onmessage = (event) => {
+    if (event.data.type === 'INVALIDATE_CACHE') {
+      const cacheType = event.data.cacheType;
+      if (cacheType) {
+        clearCache(cacheType).then(() => {
+          window.dispatchEvent(new CustomEvent('cache-invalidated', { 
+            detail: { type: cacheType } 
+          }));
+        });
+      }
+    }
+  };
+} catch (e) {
+  console.log('BroadcastChannel not supported');
+}
+
+// Invalidate cache and notify all tabs/service worker
+export const invalidateCache = async (cacheType) => {
+  await clearCache(cacheType);
+  
+  // Notify other tabs via BroadcastChannel
+  if (broadcastChannel) {
+    broadcastChannel.postMessage({ type: 'INVALIDATE_CACHE', cacheType });
+  }
+  
+  // Notify service worker to clear its cache
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({
+      type: 'INVALIDATE_API_CACHE',
+      cacheType
+    });
+  }
+  
+  // Dispatch local event
+  window.dispatchEvent(new CustomEvent('cache-invalidated', { 
+    detail: { type: cacheType } 
+  }));
+};
+
 // IndexedDB setup for larger data (images, etc.)
 const DB_NAME = 'LotusBeautyCache';
 const DB_VERSION = 1;

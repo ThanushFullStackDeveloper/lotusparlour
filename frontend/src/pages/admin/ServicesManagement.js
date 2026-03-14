@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Edit2, Trash2, X } from 'lucide-react';
 import { getServices, createService, updateService, deleteService, uploadImage } from '../../utils/api';
+import { invalidateCache } from '../../utils/cacheManager';
 import { toast } from 'sonner';
 
 const ServicesManagement = () => {
@@ -61,6 +62,9 @@ const ServicesManagement = () => {
         toast.success('Service created successfully');
       }
 
+      // Invalidate services cache so PWA users get updated data
+      await invalidateCache('services');
+      
       fetchServices();
       resetForm();
     } catch (error) {
@@ -86,6 +90,7 @@ const ServicesManagement = () => {
       try {
         await deleteService(id);
         toast.success('Service deleted');
+        await invalidateCache('services');
         fetchServices();
       } catch (error) {
         console.error('Error deleting service:', error);

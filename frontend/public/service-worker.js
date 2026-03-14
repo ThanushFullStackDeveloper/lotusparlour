@@ -336,4 +336,31 @@ self.addEventListener('message', (event) => {
       });
     });
   }
+  
+  // Handle cache invalidation for specific API types
+  if (event.data.type === 'INVALIDATE_API_CACHE') {
+    const cacheType = event.data.cacheType;
+    const apiPaths = {
+      services: '/api/services',
+      gallery: '/api/gallery',
+      videos: '/api/videos',
+      staff: '/api/staff',
+      settings: '/api/settings',
+      reviews: '/api/reviews'
+    };
+    
+    const apiPath = apiPaths[cacheType];
+    if (apiPath) {
+      caches.open(API_CACHE).then((cache) => {
+        cache.keys().then((requests) => {
+          requests.forEach((request) => {
+            if (request.url.includes(apiPath)) {
+              cache.delete(request);
+              console.log('[SW] Invalidated cache for:', apiPath);
+            }
+          });
+        });
+      });
+    }
+  }
 });

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Trash2 } from 'lucide-react';
 import { getGallery, createGalleryImage, deleteGalleryImage, uploadImage } from '../../utils/api';
+import { invalidateCache } from '../../utils/cacheManager';
 import { toast } from 'sonner';
 
 const GalleryManagement = () => {
@@ -33,6 +34,7 @@ const GalleryManagement = () => {
       const uploadRes = await uploadImage(imageFile);
       await createGalleryImage({ category, image: uploadRes.data.url });
       toast.success('Image uploaded successfully');
+      await invalidateCache('gallery');
       fetchGallery();
       setCategory('');
       setImageFile(null);
@@ -46,6 +48,7 @@ const GalleryManagement = () => {
       try {
         await deleteGalleryImage(id);
         toast.success('Image deleted');
+        await invalidateCache('gallery');
         fetchGallery();
       } catch (error) {
         toast.error('Failed to delete image');

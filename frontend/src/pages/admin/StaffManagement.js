@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Edit2, Trash2, X } from 'lucide-react';
 import { getStaff, createStaff, updateStaff, deleteStaff, uploadImage } from '../../utils/api';
+import { invalidateCache } from '../../utils/cacheManager';
 import { toast } from 'sonner';
 
 const StaffManagement = () => {
@@ -61,6 +62,7 @@ const StaffManagement = () => {
         toast.success('Staff member added successfully');
       }
 
+      await invalidateCache('staff');
       fetchStaff();
       resetForm();
     } catch (error) {
@@ -86,6 +88,7 @@ const StaffManagement = () => {
       try {
         await deleteStaff(id);
         toast.success('Staff member deleted');
+        await invalidateCache('staff');
         fetchStaff();
       } catch (error) {
         console.error('Error deleting staff:', error);

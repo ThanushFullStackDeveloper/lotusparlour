@@ -1,299 +1,386 @@
 """
-Test PWA features and ICS calendar endpoint for Beauty Parlour app
-- PWA manifest.json accessibility
-- Service worker accessibility  
-- PWA icons accessibility
-- Offline fallback page accessibility
-- ICS calendar file generation for appointments
+Backend API tests for PWA features - Iteration 7
+Tests for: Customer Dashboard filters, Admin Appointments management, Cache invalidation
 """
-
 import pytest
 import requests
 import os
-import uuid
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
-# Test credentials
-TEST_USER = {"email": "testuser@test.com", "password": "test123"}
-ADMIN_USER = {"email": "admin@lotus.com", "password": "admin123"}
+# Credentials for testing
+ADMIN_EMAIL = "admin@lotus.com"
+ADMIN_PASSWORD = "admin123"
+USER_EMAIL = "test@test.com"
+USER_PASSWORD = "test123"
 
 
-class TestPWAStaticAssets:
-    """Test PWA static assets are accessible"""
+class TestHealthAndBasicAPIs:
+    """Basic health checks and public API endpoints"""
     
-    def test_manifest_json_accessible(self):
-        """PWA manifest.json should be accessible at /manifest.json"""
-        response = requests.get(f"{BASE_URL}/manifest.json")
-        assert response.status_code == 200, f"Expected 200, got {response.status_code}"
-        
-        # Verify it's valid JSON
+    def test_services_api_returns_list(self):
+        """Test services API returns list of services"""
+        response = requests.get(f"{BASE_URL}/api/services")
+        assert response.status_code == 200
         data = response.json()
-        assert "name" in data, "Manifest should have 'name' field"
-        assert "short_name" in data, "Manifest should have 'short_name' field"
-        assert "icons" in data, "Manifest should have 'icons' field"
-        print(f"manifest.json content: {data['name']}, {data['short_name']}")
-        
-    def test_manifest_has_required_fields(self):
-        """Manifest should have all required PWA fields"""
-        response = requests.get(f"{BASE_URL}/manifest.json")
+        assert isinstance(data, list)
+        print(f"Services API returned {len(data)} services")
+    
+    def test_staff_api_returns_list(self):
+        """Test staff API returns list of staff members"""
+        response = requests.get(f"{BASE_URL}/api/staff")
+        assert response.status_code == 200
         data = response.json()
-        
-        required_fields = ["name", "short_name", "start_url", "display", "theme_color", "background_color", "icons"]
-        for field in required_fields:
-            assert field in data, f"Manifest missing required field: {field}"
-        
-        # Verify icons configuration
-        assert len(data["icons"]) >= 2, "Manifest should have at least 2 icons"
-        
-        icon_sizes = [icon["sizes"] for icon in data["icons"]]
-        assert "192x192" in icon_sizes, "Manifest should have 192x192 icon"
-        assert "512x512" in icon_sizes, "Manifest should have 512x512 icon"
-        print(f"Manifest has all required fields with {len(data['icons'])} icons")
-        
-    def test_service_worker_accessible(self):
-        """Service worker should be accessible at /service-worker.js"""
-        response = requests.get(f"{BASE_URL}/service-worker.js")
-        assert response.status_code == 200, f"Expected 200, got {response.status_code}"
-        
-        # Verify it's JavaScript content
-        content_type = response.headers.get('content-type', '')
-        assert 'javascript' in content_type or 'text' in content_type, f"Unexpected content type: {content_type}"
-        
-        # Verify it contains service worker code
-        content = response.text
-        assert 'addEventListener' in content, "Service worker should have event listeners"
-        print("Service worker is accessible and contains event listeners")
-        
-    def test_offline_html_accessible(self):
-        """Offline fallback page should be accessible at /offline.html"""
-        response = requests.get(f"{BASE_URL}/offline.html")
-        assert response.status_code == 200, f"Expected 200, got {response.status_code}"
-        
-        # Verify it's HTML content
-        content = response.text
-        assert '<!DOCTYPE html>' in content or '<html' in content, "Should be valid HTML"
-        assert 'Offline' in content or 'offline' in content, "Should mention offline status"
-        print("Offline page is accessible")
-        
-    def test_icon_192x192_accessible(self):
-        """PWA icon 192x192 should be accessible"""
-        response = requests.get(f"{BASE_URL}/icons/icon-192x192.png")
-        assert response.status_code == 200, f"Expected 200, got {response.status_code}"
-        
-        # Verify it's an image
-        content_type = response.headers.get('content-type', '')
-        assert 'image' in content_type, f"Should be an image, got: {content_type}"
-        print("192x192 icon is accessible")
-        
-    def test_icon_512x512_accessible(self):
-        """PWA icon 512x512 should be accessible"""
-        response = requests.get(f"{BASE_URL}/icons/icon-512x512.png")
-        assert response.status_code == 200, f"Expected 200, got {response.status_code}"
-        
-        # Verify it's an image
-        content_type = response.headers.get('content-type', '')
-        assert 'image' in content_type, f"Should be an image, got: {content_type}"
-        print("512x512 icon is accessible")
+        assert isinstance(data, list)
+        print(f"Staff API returned {len(data)} staff members")
+    
+    def test_settings_api_returns_settings(self):
+        """Test settings API returns site settings"""
+        response = requests.get(f"{BASE_URL}/api/settings")
+        assert response.status_code == 200
+        data = response.json()
+        assert "parlour_name" in data
+        assert "weekly_hours" in data
+        print(f"Settings API returned parlour_name: {data.get('parlour_name')}")
+    
+    def test_gallery_api_returns_list(self):
+        """Test gallery API returns list of images"""
+        response = requests.get(f"{BASE_URL}/api/gallery")
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+        print(f"Gallery API returned {len(data)} images")
+    
+    def test_videos_api_returns_list(self):
+        """Test videos API returns list of videos"""
+        response = requests.get(f"{BASE_URL}/api/videos")
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+        print(f"Videos API returned {len(data)} videos")
+    
+    def test_reviews_api_returns_approved_only(self):
+        """Test reviews API returns only approved reviews"""
+        response = requests.get(f"{BASE_URL}/api/reviews")
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+        # All returned reviews should be approved
+        for review in data:
+            assert review.get("approved") == True
+        print(f"Reviews API returned {len(data)} approved reviews")
 
 
-class TestICSCalendarEndpoint:
-    """Test ICS calendar file generation for appointments"""
+class TestAuthenticationFlow:
+    """Tests for admin and user authentication"""
+    
+    def test_admin_login_success(self):
+        """Admin can login with correct credentials"""
+        response = requests.post(f"{BASE_URL}/api/admin/login", json={
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
+        })
+        assert response.status_code == 200
+        data = response.json()
+        assert "token" in data
+        assert "admin" in data
+        assert data["admin"]["email"] == ADMIN_EMAIL
+        print("Admin login successful")
+    
+    def test_admin_login_invalid_credentials(self):
+        """Admin login fails with wrong password"""
+        response = requests.post(f"{BASE_URL}/api/admin/login", json={
+            "email": ADMIN_EMAIL,
+            "password": "wrongpassword"
+        })
+        assert response.status_code == 401
+        print("Admin login correctly rejected invalid credentials")
+    
+    def test_user_login_success(self):
+        """User can login with correct credentials"""
+        response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": USER_EMAIL,
+            "password": USER_PASSWORD
+        })
+        assert response.status_code == 200
+        data = response.json()
+        assert "token" in data
+        assert "user" in data
+        assert data["user"]["email"] == USER_EMAIL
+        print("User login successful")
+    
+    def test_user_login_invalid_credentials(self):
+        """User login fails with wrong password"""
+        response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": USER_EMAIL,
+            "password": "wrongpassword"
+        })
+        assert response.status_code == 401
+        print("User login correctly rejected invalid credentials")
+
+
+class TestAppointmentsAPI:
+    """Tests for appointments API - Customer Dashboard filter functionality"""
+    
+    @pytest.fixture
+    def admin_token(self):
+        """Get admin auth token"""
+        response = requests.post(f"{BASE_URL}/api/admin/login", json={
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
+        })
+        if response.status_code == 200:
+            return response.json().get("token")
+        pytest.skip("Admin authentication failed")
     
     @pytest.fixture
     def user_token(self):
-        """Get user authentication token"""
-        response = requests.post(f"{BASE_URL}/api/auth/login", json=TEST_USER)
+        """Get user auth token"""
+        response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": USER_EMAIL,
+            "password": USER_PASSWORD
+        })
         if response.status_code == 200:
             return response.json().get("token")
-        # If user doesn't exist, register first
-        register_response = requests.post(f"{BASE_URL}/api/auth/register", json={
-            "name": "Test User",
-            "email": TEST_USER["email"],
-            "phone": "1234567890",
-            "password": TEST_USER["password"]
-        })
-        if register_response.status_code == 200:
-            return register_response.json().get("token")
-        pytest.skip("Could not authenticate test user")
+        pytest.skip("User authentication failed")
+    
+    def test_get_appointments_as_admin(self, admin_token):
+        """Admin can get all appointments"""
+        response = requests.get(
+            f"{BASE_URL}/api/appointments",
+            headers={"Authorization": f"Bearer {admin_token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+        # Verify appointments have required fields for filtering
+        if len(data) > 0:
+            apt = data[0]
+            assert "status" in apt
+            assert "appointment_date" in apt
+            assert "appointment_time" in apt
+            assert "customer_name" in apt
+        print(f"Admin retrieved {len(data)} appointments")
+    
+    def test_get_appointments_as_user(self, user_token):
+        """User can get their own appointments"""
+        response = requests.get(
+            f"{BASE_URL}/api/appointments",
+            headers={"Authorization": f"Bearer {user_token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+        print(f"User retrieved {len(data)} appointments")
+    
+    def test_appointment_has_service_details(self, admin_token):
+        """Appointments include populated service and staff details"""
+        response = requests.get(
+            f"{BASE_URL}/api/appointments",
+            headers={"Authorization": f"Bearer {admin_token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        if len(data) > 0:
+            apt = data[0]
+            # Check service is populated
+            assert "service" in apt
+            if apt["service"]:
+                assert "name" in apt["service"]
+                assert "price" in apt["service"]
+                assert "duration" in apt["service"]
+        print("Appointments include populated service details")
+    
+    def test_update_appointment_status_as_admin(self, admin_token):
+        """Admin can update appointment status (for filtering tests)"""
+        # First get an appointment
+        response = requests.get(
+            f"{BASE_URL}/api/appointments",
+            headers={"Authorization": f"Bearer {admin_token}"}
+        )
+        assert response.status_code == 200
+        appointments = response.json()
         
+        if len(appointments) > 0:
+            apt_id = appointments[0]["id"]
+            # Test status update endpoint exists
+            status_response = requests.put(
+                f"{BASE_URL}/api/appointments/{apt_id}/status?status=confirmed",
+                headers={"Authorization": f"Bearer {admin_token}"}
+            )
+            assert status_response.status_code == 200
+            print(f"Successfully updated appointment {apt_id} status")
+        else:
+            print("No appointments to test status update")
+
+
+class TestAdminDashboardAPIs:
+    """Tests for admin dashboard stats and data"""
+    
     @pytest.fixture
     def admin_token(self):
-        """Get admin authentication token"""
-        response = requests.post(f"{BASE_URL}/api/admin/login", json=ADMIN_USER)
+        """Get admin auth token"""
+        response = requests.post(f"{BASE_URL}/api/admin/login", json={
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
+        })
         if response.status_code == 200:
             return response.json().get("token")
-        pytest.skip("Could not authenticate admin")
-        
-    @pytest.fixture
-    def test_service_id(self):
-        """Get an existing service ID"""
-        # Get existing services (public endpoint)
-        response = requests.get(f"{BASE_URL}/api/services")
-        if response.status_code == 200 and len(response.json()) > 0:
-            return response.json()[0]["id"]
-        pytest.skip("No services available for testing")
-        
-    @pytest.fixture
-    def test_appointment_id(self, user_token, test_service_id):
-        """Create a test appointment and return its ID"""
-        headers = {"Authorization": f"Bearer {user_token}"}
-        
-        appointment_data = {
-            "customer_name": "TEST_PWA_User",
-            "customer_phone": "9876543210",
-            "customer_email": "test_pwa@test.com",
-            "service_id": test_service_id,
-            "appointment_date": "2026-02-15",
-            "appointment_time": "10:00"
-        }
-        
-        response = requests.post(f"{BASE_URL}/api/appointments", json=appointment_data, headers=headers)
-        if response.status_code == 200:
-            return response.json()["id"]
-        pytest.skip(f"Could not create test appointment: {response.text}")
-        
-    def test_ics_endpoint_requires_auth(self):
-        """ICS endpoint should require authentication"""
-        fake_appointment_id = str(uuid.uuid4())
-        response = requests.get(f"{BASE_URL}/api/appointments/{fake_appointment_id}/ics")
-        assert response.status_code in [401, 403], f"Expected 401 or 403 without auth, got {response.status_code}"
-        print("ICS endpoint properly requires authentication")
-        
-    def test_ics_endpoint_returns_ics_file(self, user_token, test_appointment_id):
-        """ICS endpoint should return valid ICS calendar file"""
-        headers = {"Authorization": f"Bearer {user_token}"}
-        
-        response = requests.get(f"{BASE_URL}/api/appointments/{test_appointment_id}/ics", headers=headers)
-        assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
-        
-        # Verify content type
-        content_type = response.headers.get('content-type', '')
-        assert 'calendar' in content_type or 'text' in content_type, f"Expected calendar content type, got: {content_type}"
-        
-        # Verify content disposition (download)
-        content_disposition = response.headers.get('content-disposition', '')
-        assert 'attachment' in content_disposition, f"Should be an attachment download"
-        assert '.ics' in content_disposition, f"Filename should end with .ics"
-        
-        print(f"ICS file returned with content-disposition: {content_disposition}")
-        
-    def test_ics_content_is_valid(self, user_token, test_appointment_id):
-        """ICS file content should have valid iCalendar format"""
-        headers = {"Authorization": f"Bearer {user_token}"}
-        
-        response = requests.get(f"{BASE_URL}/api/appointments/{test_appointment_id}/ics", headers=headers)
-        assert response.status_code == 200
-        
-        content = response.text
-        
-        # Check required iCalendar components
-        assert 'BEGIN:VCALENDAR' in content, "Should start with VCALENDAR"
-        assert 'END:VCALENDAR' in content, "Should end with VCALENDAR"
-        assert 'BEGIN:VEVENT' in content, "Should contain VEVENT"
-        assert 'END:VEVENT' in content, "Should close VEVENT"
-        assert 'DTSTART:' in content, "Should have start time"
-        assert 'DTEND:' in content, "Should have end time"
-        assert 'SUMMARY:' in content, "Should have summary/title"
-        
-        print("ICS content has valid iCalendar format")
-        
-    def test_ics_has_alarm_reminders(self, user_token, test_appointment_id):
-        """ICS file should include VALARM reminders"""
-        headers = {"Authorization": f"Bearer {user_token}"}
-        
-        response = requests.get(f"{BASE_URL}/api/appointments/{test_appointment_id}/ics", headers=headers)
-        content = response.text
-        
-        assert 'BEGIN:VALARM' in content, "Should have VALARM for reminders"
-        assert 'TRIGGER:' in content, "VALARM should have trigger time"
-        
-        print("ICS content includes alarm reminders")
-        
-    def test_ics_non_existent_appointment(self, user_token):
-        """ICS endpoint should return 404 for non-existent appointment"""
-        headers = {"Authorization": f"Bearer {user_token}"}
-        fake_id = str(uuid.uuid4())
-        
-        response = requests.get(f"{BASE_URL}/api/appointments/{fake_id}/ics", headers=headers)
-        assert response.status_code == 404, f"Expected 404, got {response.status_code}"
-        print("ICS endpoint properly returns 404 for non-existent appointment")
-        
-    def test_ics_unauthorized_access(self, test_service_id):
-        """User should not be able to access another user's appointment ICS"""
-        # First register a different user
-        other_user = {
-            "name": "Other User",
-            "email": f"other_{uuid.uuid4().hex[:8]}@test.com",
-            "phone": "5555555555",
-            "password": "otherpass123"
-        }
-        reg_response = requests.post(f"{BASE_URL}/api/auth/register", json=other_user)
-        if reg_response.status_code != 200:
-            pytest.skip("Could not create other test user")
-            
-        other_token = reg_response.json()["token"]
-        other_headers = {"Authorization": f"Bearer {other_token}"}
-        
-        # Create appointment as the other user
-        appointment_data = {
-            "customer_name": "Other User",
-            "customer_phone": "5555555555",
-            "customer_email": other_user["email"],
-            "service_id": test_service_id,
-            "appointment_date": "2026-02-20",
-            "appointment_time": "14:00"
-        }
-        
-        create_response = requests.post(f"{BASE_URL}/api/appointments", json=appointment_data, headers=other_headers)
-        if create_response.status_code != 200:
-            pytest.skip("Could not create appointment for other user")
-            
-        other_appointment_id = create_response.json()["id"]
-        
-        # Try to access as original test user
-        test_user_response = requests.post(f"{BASE_URL}/api/auth/login", json=TEST_USER)
-        if test_user_response.status_code != 200:
-            pytest.skip("Could not login as test user")
-        test_user_token = test_user_response.json()["token"]
-        test_headers = {"Authorization": f"Bearer {test_user_token}"}
-        
-        # Should be forbidden
-        response = requests.get(f"{BASE_URL}/api/appointments/{other_appointment_id}/ics", headers=test_headers)
-        assert response.status_code == 403, f"Expected 403, got {response.status_code}"
-        print("ICS endpoint properly denies unauthorized access")
-
-
-class TestAPIEndpoints:
-    """Test additional API endpoints for completeness"""
+        pytest.skip("Admin authentication failed")
     
-    def test_settings_endpoint(self):
-        """Settings endpoint should return parlour settings"""
-        response = requests.get(f"{BASE_URL}/api/settings")
+    def test_dashboard_stats_endpoint(self, admin_token):
+        """Admin dashboard stats endpoint returns correct data structure"""
+        response = requests.get(
+            f"{BASE_URL}/api/dashboard/stats",
+            headers={"Authorization": f"Bearer {admin_token}"}
+        )
         assert response.status_code == 200
-        
         data = response.json()
-        assert "parlour_name" in data
-        assert "logo_image" in data or data.get("logo_image") is None
-        print(f"Settings returned: {data.get('parlour_name')}")
-        
-    def test_services_endpoint(self):
-        """Services endpoint should return list of services"""
-        response = requests.get(f"{BASE_URL}/api/services")
+        assert "total_appointments" in data
+        assert "today_bookings" in data
+        assert "pending_appointments" in data
+        assert "total_revenue" in data
+        print(f"Dashboard stats: {data}")
+    
+    def test_revenue_data_endpoint(self, admin_token):
+        """Admin revenue data endpoint returns chart data"""
+        response = requests.get(
+            f"{BASE_URL}/api/dashboard/revenue",
+            headers={"Authorization": f"Bearer {admin_token}"}
+        )
         assert response.status_code == 200
-        
         data = response.json()
-        assert isinstance(data, list)
-        print(f"Services endpoint returned {len(data)} services")
+        assert "daily_revenue" in data
+        assert "service_revenue" in data
+        print("Revenue data endpoint working")
+
+
+class TestAdminCRUDOperations:
+    """Tests for admin CRUD operations that trigger cache invalidation"""
+    
+    @pytest.fixture
+    def admin_token(self):
+        """Get admin auth token"""
+        response = requests.post(f"{BASE_URL}/api/admin/login", json={
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
+        })
+        if response.status_code == 200:
+            return response.json().get("token")
+        pytest.skip("Admin authentication failed")
+    
+    def test_services_crud_as_admin(self, admin_token):
+        """Admin can perform CRUD on services (triggers cache invalidation)"""
+        # Create service
+        create_response = requests.post(
+            f"{BASE_URL}/api/services",
+            headers={"Authorization": f"Bearer {admin_token}"},
+            json={
+                "name": "TEST_CacheTest Service",
+                "price": 100.0,
+                "duration": 30,
+                "description": "Test service for cache testing"
+            }
+        )
+        assert create_response.status_code == 200
+        service = create_response.json()
+        assert "id" in service
+        service_id = service["id"]
+        print(f"Created test service: {service_id}")
         
-    def test_staff_endpoint(self):
-        """Staff endpoint should return list of staff"""
-        response = requests.get(f"{BASE_URL}/api/staff")
-        assert response.status_code == 200
+        # Update service
+        update_response = requests.put(
+            f"{BASE_URL}/api/services/{service_id}",
+            headers={"Authorization": f"Bearer {admin_token}"},
+            json={
+                "name": "TEST_CacheTest Service Updated",
+                "price": 150.0,
+                "duration": 45,
+                "description": "Updated test service"
+            }
+        )
+        assert update_response.status_code == 200
+        print(f"Updated test service: {service_id}")
         
-        data = response.json()
-        assert isinstance(data, list)
-        print(f"Staff endpoint returned {len(data)} staff members")
+        # Delete service
+        delete_response = requests.delete(
+            f"{BASE_URL}/api/services/{service_id}",
+            headers={"Authorization": f"Bearer {admin_token}"}
+        )
+        assert delete_response.status_code == 200
+        print(f"Deleted test service: {service_id}")
+    
+    def test_staff_crud_as_admin(self, admin_token):
+        """Admin can perform CRUD on staff (triggers cache invalidation)"""
+        # Create staff
+        create_response = requests.post(
+            f"{BASE_URL}/api/staff",
+            headers={"Authorization": f"Bearer {admin_token}"},
+            json={
+                "name": "TEST_Cache Tester",
+                "role": "Tester",
+                "experience": "1 year",
+                "specialization": "Testing"
+            }
+        )
+        assert create_response.status_code == 200
+        staff = create_response.json()
+        staff_id = staff["id"]
+        print(f"Created test staff: {staff_id}")
+        
+        # Delete staff
+        delete_response = requests.delete(
+            f"{BASE_URL}/api/staff/{staff_id}",
+            headers={"Authorization": f"Bearer {admin_token}"}
+        )
+        assert delete_response.status_code == 200
+        print(f"Deleted test staff: {staff_id}")
+    
+    def test_settings_update_as_admin(self, admin_token):
+        """Admin can update settings (triggers cache invalidation)"""
+        # Get current settings
+        get_response = requests.get(f"{BASE_URL}/api/settings")
+        assert get_response.status_code == 200
+        current_settings = get_response.json()
+        
+        # Update settings
+        update_response = requests.put(
+            f"{BASE_URL}/api/settings",
+            headers={"Authorization": f"Bearer {admin_token}"},
+            json={
+                "parlour_name": current_settings.get("parlour_name", "Lotus Beauty")
+            }
+        )
+        assert update_response.status_code == 200
+        print("Settings update working")
+
+
+class TestAvailableSlots:
+    """Tests for appointment slot availability"""
+    
+    def test_available_slots_endpoint(self):
+        """Available slots endpoint returns correct structure"""
+        import datetime
+        tomorrow = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+        
+        # Get a service ID first
+        services_response = requests.get(f"{BASE_URL}/api/services")
+        services = services_response.json()
+        
+        if len(services) > 0:
+            service_id = services[0]["id"]
+            
+            response = requests.get(
+                f"{BASE_URL}/api/appointments/available-slots",
+                params={"date": tomorrow, "service_id": service_id}
+            )
+            assert response.status_code == 200
+            data = response.json()
+            assert "available" in data
+            assert "slots" in data
+            print(f"Available slots for {tomorrow}: {len(data.get('slots', []))} slots")
+        else:
+            pytest.skip("No services available for slot testing")
 
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Edit2, Trash2, X, Eye, EyeOff } from 'lucide-react';
 import { getAllVideos, createVideo, updateVideo, deleteVideo } from '../../utils/api';
+import { invalidateCache } from '../../utils/cacheManager';
 import { toast } from 'sonner';
 
 const VideosManagement = () => {
@@ -48,6 +49,7 @@ const VideosManagement = () => {
         await createVideo(formData);
         toast.success('Video added successfully');
       }
+      await invalidateCache('videos');
       fetchVideos();
       resetForm();
     } catch (error) {
@@ -73,6 +75,7 @@ const VideosManagement = () => {
       try {
         await deleteVideo(id);
         toast.success('Video deleted');
+        await invalidateCache('videos');
         fetchVideos();
       } catch (error) {
         console.error('Error deleting video:', error);

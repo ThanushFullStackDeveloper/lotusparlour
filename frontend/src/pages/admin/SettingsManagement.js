@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Save, Clock, Lock, Eye, EyeOff } from 'lucide-react';
 import { getSettings, updateSettings, uploadImage, changeAdminPassword } from '../../utils/api';
+import { invalidateCache } from '../../utils/cacheManager';
 import { toast } from 'sonner';
 
 const DEFAULT_WEEKLY_HOURS = [
@@ -88,6 +89,8 @@ const SettingsManagement = () => {
     try {
       await updateSettings(settings);
       toast.success('Settings updated successfully!');
+      // Invalidate settings cache so PWA users get updated data
+      await invalidateCache('settings');
       fetchSettings();
       // Dispatch event to notify Navbar to refresh settings (for logo update)
       window.dispatchEvent(new CustomEvent('settings-updated'));

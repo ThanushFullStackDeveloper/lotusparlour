@@ -1,17 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, User, CheckCircle, XCircle, Loader } from 'lucide-react';
+import { Calendar, Clock, User, CheckCircle, XCircle, Loader, Filter } from 'lucide-react';
 import { getAppointments, getCurrentUser } from '../utils/api';
 import { toast } from 'sonner';
 
 const CustomerDashboard = () => {
   const [appointments, setAppointments] = useState([]);
+  const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState('all');
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    filterAppointments();
+  }, [activeFilter, appointments]);
 
   const fetchData = async () => {
     try {
@@ -19,7 +25,13 @@ const CustomerDashboard = () => {
         getAppointments(),
         getCurrentUser(),
       ]);
-      setAppointments(appointmentsRes.data);
+      // Sort by date descending (newest first)
+      const sortedAppointments = appointmentsRes.data.sort((a, b) => {
+        const dateA = new Date(`${a.appointment_date} ${a.appointment_time}`);
+        const dateB = new Date(`${b.appointment_date} ${b.appointment_time}`);
+        return dateB - dateA;
+      });
+      setAppointments(sortedAppointments);
       setUser(userRes.data.user);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -29,16 +41,24 @@ const CustomerDashboard = () => {
     }
   };
 
+  const filterAppointments = () => {
+    if (activeFilter === 'all') {
+      setFilteredAppointments(appointments);
+    } else {
+      setFilteredAppointments(appointments.filter(apt => apt.status === activeFilter));
+    }
+  };
+
   const getStatusIcon = (status) => {
     switch (status) {
       case 'confirmed':
-        return <CheckCircle size={20} className="text-green-600" />;
+        return <CheckCircle size={18} className="text-green-600" />;
       case 'cancelled':
-        return <XCircle size={20} className="text-red-600" />;
+        return <XCircle size={18} className="text-red-600" />;
       case 'completed':
-        return <CheckCircle size={20} className="text-blue-600" />;
+        return <CheckCircle size={18} className="text-blue-600" />;
       default:
-        return <Loader size={20} className="text-yellow-600" />;
+        return <Loader size={18} className="text-yellow-600" />;
     }
   };
 
@@ -55,125 +75,142 @@ const CustomerDashboard = () => {
     }
   };
 
+  const filterTabs = [
+    { key: 'all', label: 'All', count: appointments.length },
+    { key: 'pending', label: 'Pending', count: appointments.filter(a => a.status === 'pending').length },
+    { key: 'confirmed', label: 'Confirmed', count: appointments.filter(a => a.status === 'confirmed').length },
+    { key: 'completed', label: 'Completed', count: appointments.filter(a => a.status === 'completed').length },
+  ];
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-lg">Loading dashboard...</p>
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="w-12 h-12 rounded-full bg-[var(--secondary)]/30"></div>
+          <p className="mt-4 text-gray-500">Loading dashboard...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="customer-dashboard section-spacing" data-testid="customer-dashboard">
-      <div className="container-custom">
-        {/* Welcome Section */}
+    <div className="customer-dashboard py-4 md:py-8" data-testid="customer-dashboard">
+      <div className="container-custom px-4">
+        {/* Welcome Section - Compact for mobile */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-12"
+          transition={{ duration: 0.4 }}
+          className="mb-6"
         >
-          <h1 className="text-4xl md:text-5xl font-bold font-heading mb-2">Welcome, {user?.name}!</h1>
-          <p className="text-base md:text-lg" style={{ color: 'var(--text-secondary)' }}>
-            Manage your appointments and beauty journey
+          <h1 className="text-2xl md:text-4xl font-bold font-heading mb-1">
+            Hi, {user?.name?.split(' ')[0]}!
+          </h1>
+          <p className="text-sm md:text-base" style={{ color: 'var(--text-secondary)' }}>
+            Manage your beauty appointments
           </p>
         </motion.div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12" data-testid="stats-section">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="stat-card"
-          >
-            <h3 className="text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Total Appointments</h3>
-            <p className="text-3xl font-bold" style={{ color: 'var(--secondary)' }}>{appointments.length}</p>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="stat-card"
-          >
-            <h3 className="text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Confirmed</h3>
-            <p className="text-3xl font-bold text-green-600">
-              {appointments.filter(a => a.status === 'confirmed').length}
-            </p>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="stat-card"
-          >
-            <h3 className="text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Pending</h3>
-            <p className="text-3xl font-bold text-yellow-600">
-              {appointments.filter(a => a.status === 'pending').length}
-            </p>
-          </motion.div>
+        {/* Stats Cards - Horizontal scroll on mobile */}
+        <div className="flex gap-3 overflow-x-auto pb-2 mb-6 scrollbar-hide" data-testid="stats-section">
+          {filterTabs.map((tab, index) => (
+            <motion.button
+              key={tab.key}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.1 }}
+              onClick={() => setActiveFilter(tab.key)}
+              className={`flex-shrink-0 px-4 py-3 rounded-xl transition-all touch-manipulation ${
+                activeFilter === tab.key
+                  ? 'bg-[var(--secondary)] text-white shadow-lg'
+                  : 'bg-white text-gray-700 shadow-sm'
+              }`}
+              data-testid={`filter-${tab.key}`}
+            >
+              <p className="text-2xl font-bold">{tab.count}</p>
+              <p className="text-xs font-medium whitespace-nowrap">{tab.label}</p>
+            </motion.button>
+          ))}
         </div>
 
         {/* Appointments List */}
         <div data-testid="appointments-list">
-          <h2 className="text-3xl font-bold font-heading mb-6">Your Appointments</h2>
-          {appointments.length === 0 ? (
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg md:text-xl font-bold font-heading">
+              {activeFilter === 'all' ? 'All Appointments' : `${activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1)} Appointments`}
+            </h2>
+            <span className="text-sm text-gray-500">{filteredAppointments.length} found</span>
+          </div>
+
+          {filteredAppointments.length === 0 ? (
             <div className="text-center py-12 bg-white rounded-xl shadow-sm">
-              <Calendar size={48} className="mx-auto mb-4" style={{ color: 'var(--text-muted)' }} />
-              <p className="text-lg mb-4" style={{ color: 'var(--text-secondary)' }}>No appointments yet</p>
-              <a href="/booking">
-                <button className="btn-primary">Book Your First Appointment</button>
-              </a>
+              <Calendar size={40} className="mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
+              <p className="text-base mb-4" style={{ color: 'var(--text-secondary)' }}>
+                {activeFilter === 'all' ? 'No appointments yet' : `No ${activeFilter} appointments`}
+              </p>
+              {activeFilter === 'all' && (
+                <a href="/booking">
+                  <button className="btn-primary">Book Appointment</button>
+                </a>
+              )}
             </div>
           ) : (
-            <div className="space-y-4">
-              {appointments.map((appointment, index) => (
+            <div className="space-y-3">
+              {filteredAppointments.map((appointment, index) => (
                 <motion.div
                   key={appointment.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.03, duration: 0.3 }}
+                  className="bg-white p-4 rounded-xl shadow-sm"
                   data-testid={`appointment-card-${index}`}
                 >
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-3">
-                        <h3 className="text-xl font-semibold">{appointment.service?.name || 'Service'}</h3>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>
-                          {appointment.status.toUpperCase()}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                        <div className="flex items-center space-x-2">
-                          <Calendar size={16} />
-                          <span>{appointment.appointment_date}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Clock size={16} />
-                          <span>{appointment.appointment_time}</span>
-                        </div>
-                        {appointment.staff && (
-                          <div className="flex items-center space-x-2">
-                            <User size={16} />
-                            <span>{appointment.staff.name}</span>
-                          </div>
-                        )}
-                      </div>
-                      {appointment.service && (
-                        <p className="mt-2 text-sm">
-                          Duration: {appointment.service.duration} mins | Price: <span className="font-bold" style={{ color: 'var(--secondary)' }}>₹{appointment.service.price}</span>
-                        </p>
-                      )}
+                  {/* Header with service name and status */}
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base font-semibold truncate">
+                        {appointment.service?.name || 'Service'}
+                      </h3>
+                      <p className="text-xs text-gray-500">
+                        {appointment.service?.duration} mins • ₹{appointment.service?.price}
+                      </p>
                     </div>
-                    <div className="mt-4 md:mt-0 md:ml-4">
+                    <span className={`ml-2 px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getStatusColor(appointment.status)}`}>
                       {getStatusIcon(appointment.status)}
+                      <span className="hidden sm:inline">{appointment.status}</span>
+                    </span>
+                  </div>
+
+                  {/* Date, Time, Staff */}
+                  <div className="flex flex-wrap gap-3 text-sm text-gray-600">
+                    <div className="flex items-center gap-1.5">
+                      <Calendar size={14} />
+                      <span>{appointment.appointment_date}</span>
                     </div>
+                    <div className="flex items-center gap-1.5">
+                      <Clock size={14} />
+                      <span>{appointment.appointment_time}</span>
+                    </div>
+                    {appointment.staff && (
+                      <div className="flex items-center gap-1.5">
+                        <User size={14} />
+                        <span>{appointment.staff.name}</span>
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               ))}
             </div>
           )}
+        </div>
+
+        {/* Book More Button - Fixed at bottom on mobile */}
+        <div className="mt-6 pb-4">
+          <a href="/booking" className="block">
+            <button className="btn-primary w-full py-3 text-base">
+              Book New Appointment
+            </button>
+          </a>
         </div>
       </div>
     </div>
