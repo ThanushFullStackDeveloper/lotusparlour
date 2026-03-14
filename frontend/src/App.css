@@ -1,5 +1,21 @@
 /* Additional custom styles */
 
+/* Toast center styling */
+[data-sonner-toaster] {
+  --width: 90vw;
+  max-width: 400px;
+}
+
+[data-sonner-toaster][data-x-position="center"] {
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+.toast-center {
+  font-size: 14px;
+  font-weight: 500;
+}
+
 /* Fade-in animation for smooth loading */
 @keyframes fadeIn {
   from { opacity: 0; }

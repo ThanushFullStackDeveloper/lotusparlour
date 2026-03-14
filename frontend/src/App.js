@@ -64,7 +64,17 @@ function App() {
       <BrowserRouter>
         <WebSocketProvider>
           <ScrollToTop />
-          <Toaster position="top-center" richColors />
+          <Toaster 
+            position="top-center" 
+            richColors 
+            expand={false}
+            toastOptions={{
+              style: {
+                marginTop: '35vh',
+              },
+              className: 'toast-center',
+            }}
+          />
           <Routes>
             {/* Admin Routes */}
             <Route path="/admin/login" element={<AdminLogin />} />
