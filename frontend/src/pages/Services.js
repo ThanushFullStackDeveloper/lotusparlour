@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Clock, IndianRupee, Eye } from 'lucide-react';
 import { getServices, getServiceImage } from '../utils/api';
+import { compressImage } from '../utils/imageCompressor';
 import PageHeader from '../components/PageHeader';
 import { toast } from 'sonner';
 import useWebSocket from '../hooks/useWebSocket';
@@ -39,9 +40,12 @@ const Services = () => {
         
         try {
           const imgResponse = await getServiceImage(service.id);
-          const imageUrl = imgResponse.data.image;
+          let imageUrl = imgResponse.data.image;
           
           if (imageUrl) {
+            // Compress large images for faster display
+            imageUrl = await compressImage(imageUrl, 600, 0.7);
+            
             loadedIds.current.add(service.id);
             setImageData(prev => {
               const updated = { ...prev, [service.id]: imageUrl };

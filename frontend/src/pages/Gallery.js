@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
 import { getGallery, getGalleryImage } from '../utils/api';
+import { compressImage } from '../utils/imageCompressor';
 import PageHeader from '../components/PageHeader';
 import { toast } from 'sonner';
 import useWebSocket from '../hooks/useWebSocket';
@@ -43,9 +44,12 @@ const Gallery = () => {
         
         try {
           const imgResponse = await getGalleryImage(img.id);
-          const imageUrl = imgResponse.data.image;
+          let imageUrl = imgResponse.data.image;
           
           if (imageUrl) {
+            // Compress large images for faster display
+            imageUrl = await compressImage(imageUrl, 600, 0.7);
+            
             loadedIds.current.add(img.id);
             setImageData(prev => {
               const updated = { ...prev, [img.id]: imageUrl };
