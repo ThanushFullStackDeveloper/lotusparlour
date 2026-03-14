@@ -241,26 +241,30 @@ const Home = () => {
               Discover our range of beauty and wellness treatments
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
             {services.map((service, index) => (
               <motion.div
                 key={service.id}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1, duration: 0.4 }}
-                className="service-card"
+                className="service-card bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
                 data-testid={`service-card-${index}`}
               >
-                <img
-                  src={service.image || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400'}
-                  alt={service.name}
-                  className="w-full h-40 lg:h-44 object-cover rounded-lg mb-4"
-                />
-                <h3 className="text-lg font-semibold mb-2">{service.name}</h3>
-                <p className="text-sm mb-4 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{service.description}</p>
-                <div className="flex justify-between items-center">
-                  <p className="text-xl font-bold" style={{ color: 'var(--secondary)' }}>₹{service.price}</p>
-                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{service.duration} mins</p>
+                <div className="aspect-[4/3] w-full overflow-hidden">
+                  <img
+                    src={service.image || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400'}
+                    alt={service.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-3 md:p-4">
+                  <h3 className="text-sm md:text-lg font-semibold mb-1 md:mb-2 truncate">{service.name}</h3>
+                  <p className="text-xs md:text-sm mb-2 md:mb-4 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{service.description}</p>
+                  <div className="flex justify-between items-center">
+                    <p className="text-base md:text-xl font-bold" style={{ color: 'var(--secondary)' }}>₹{service.price}</p>
+                    <p className="text-xs md:text-sm" style={{ color: 'var(--text-muted)' }}>{service.duration} mins</p>
+                  </div>
                 </div>
               </motion.div>
             ))}

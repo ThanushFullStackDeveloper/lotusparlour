@@ -113,11 +113,13 @@ const Services = () => {
           {services.length === 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="service-card-mobile">
-                  <div className="aspect-square rounded-xl mb-3 max-h-[180px] lg:max-h-[200px] skeleton-shimmer" />
-                  <div className="h-4 rounded w-3/4 mb-2 skeleton-shimmer" />
-                  <div className="h-3 rounded w-1/2 mb-2 skeleton-shimmer" />
-                  <div className="h-9 rounded w-full skeleton-shimmer" />
+                <div key={i} className="bg-white rounded-xl overflow-hidden shadow-sm">
+                  <div className="aspect-[4/3] skeleton-shimmer" />
+                  <div className="p-3">
+                    <div className="h-4 rounded w-3/4 mb-2 skeleton-shimmer" />
+                    <div className="h-3 rounded w-1/2 mb-2 skeleton-shimmer" />
+                    <div className="h-9 rounded w-full skeleton-shimmer" />
+                  </div>
                 </div>
               ))}
             </div>
@@ -127,10 +129,10 @@ const Services = () => {
                 <motion.div
                   key={service.id}
                   whileTap={{ scale: 0.98 }}
-                  className="service-card-mobile group"
+                  className="service-card-mobile group bg-white rounded-xl overflow-hidden shadow-sm"
                   data-testid={`service-card-${index}`}
                 >
-                  <div className="relative aspect-square overflow-hidden rounded-xl mb-3 max-h-[180px] lg:max-h-[200px] bg-gray-100">
+                  <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
                     {imageData[service.id] ? (
                       <img
                         src={imageData[service.id]}
@@ -155,16 +157,18 @@ const Services = () => {
                       <span className="text-sm font-bold text-[var(--secondary)]">₹{service.price}</span>
                     </div>
                   </div>
-                  <h3 className="text-sm md:text-base font-semibold mb-1 line-clamp-1">{service.name}</h3>
-                  <div className="flex items-center text-xs text-gray-500 mb-2">
-                    <Clock size={12} className="mr-1" />
-                    <span>{service.duration} mins</span>
+                  <div className="p-3">
+                    <h3 className="text-sm md:text-base font-semibold mb-1 line-clamp-1">{service.name}</h3>
+                    <div className="flex items-center text-xs text-gray-500 mb-2">
+                      <Clock size={12} className="mr-1" />
+                      <span>{service.duration} mins</span>
+                    </div>
+                    <Link to="/booking" state={{ selectedService: { ...service, image: imageData[service.id] } }} className="block">
+                      <button className="w-full py-2 text-sm font-medium rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--primary-hover)] transition-colors touch-manipulation">
+                        Book Now
+                      </button>
+                    </Link>
                   </div>
-                  <Link to="/booking" state={{ selectedService: { ...service, image: imageData[service.id] } }} className="block">
-                    <button className="w-full py-2 text-sm font-medium rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--primary-hover)] transition-colors touch-manipulation">
-                      Book Now
-                    </button>
-                  </Link>
                 </motion.div>
               ))}
             </div>
