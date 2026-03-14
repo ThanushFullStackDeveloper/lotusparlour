@@ -22,6 +22,15 @@ Build a full-stack Beauty Parlour Appointment Booking Web Application for LOTUS 
 - [x] Review submission form
 - [x] WhatsApp button with touch-expand behavior
 
+### Navigation & UI (Updated March 14, 2026)
+- [x] **Back Arrow Navigation** on all internal pages:
+  - Services, Gallery, Videos, Staff, About, Contact, Booking
+  - Customer Dashboard, Admin Dashboard (mobile)
+- [x] **PageHeader Component** - Reusable header with back button
+- [x] **Home Page Scroll Fix** - Smooth scrolling without jumps
+- [x] **Desktop Layout Optimization** - Proper spacing for 1366px, 1440px screens
+- [x] **Admin Customers Mobile Cards** - Table converts to cards on mobile for accessible action buttons
+
 ### Authentication (Updated March 14, 2026)
 - [x] **Unified Login Page** - Both customers AND admins can log in from /login
 - [x] **Role-Based Redirection** - Admin → /admin/dashboard, Customer → /dashboard
@@ -50,19 +59,11 @@ Build a full-stack Beauty Parlour Appointment Booking Web Application for LOTUS 
 
 ### Smart Caching System
 - [x] **IndexedDB Cache Manager** with TTL-based expiration
-- [x] **Cache-First Strategy** for static data:
-  - Services: 24-hour TTL
-  - Gallery: 12-hour TTL
-  - Videos: 24-hour TTL
-  - Staff: 24-hour TTL
-  - Settings: 1-hour TTL
-  - Reviews: 6-hour TTL
-- [x] **Network-First Strategy** for dynamic data (Appointments, Auth, Admin)
+- [x] **Cache-First Strategy** for static data
+- [x] **Network-First Strategy** for dynamic data
 - [x] **Background Refresh** when cache is >50% through TTL
 - [x] **Offline Support** - Shows cached data when offline
 - [x] **OfflineBanner Component** - Displays "You're viewing cached data"
-- [x] **Manual Refresh Button** on all cached pages
-- [x] **useCachedData Hook** for React components
 
 ### Native Mobile App UI
 - [x] Mobile Bottom Navigation with elevated Book button
@@ -72,35 +73,27 @@ Build a full-stack Beauty Parlour Appointment Booking Web Application for LOTUS 
 - [x] Staff: Mobile-optimized 2-column grid
 - [x] Admin Dashboard: Mobile header + bottom nav + slide-out menu
 
-### Performance Optimizations
-- [x] Service Worker precaches static assets
-- [x] Image lazy loading with loading="lazy"
-- [x] Cache-first for API responses
-- [x] Background data refresh
-- [x] Minimal API calls on repeat visits
-
 ### Admin Dashboard
 - [x] All management features (Appointments, Customers, Services, Staff, Gallery, Videos, Reviews, Coupons, Revenue, Settings)
 - [x] Mobile-responsive with touch-friendly controls
 - [x] Enquiries and Support request management
 - [x] Advanced appointment filtering and sorting
+- [x] **Mobile Card Layout for Customers** - Easy access to Edit, Reset, Delete buttons
+
+## Key Components
+- `/app/frontend/src/components/PageHeader.js` - Reusable page header with back button
+- `/app/frontend/src/components/BottomNav.js` - Mobile bottom navigation
+- `/app/frontend/src/components/InstallPWA.js` - PWA install prompt
+- `/app/frontend/src/utils/cacheManager.js` - IndexedDB cache management
 
 ## Key API Endpoints
 - POST `/api/auth/unified-login` - Unified login for customers & admins
-- GET `/api/services` - Cache-first, 24h TTL
-- GET `/api/gallery` - Cache-first, 12h TTL
-- GET `/api/videos` - Cache-first, 24h TTL
-- GET `/api/staff` - Cache-first, 24h TTL
-- GET `/api/settings` - Cache-first, 1h TTL
-- GET `/api/reviews` - Cache-first, 6h TTL
-- GET/POST `/api/appointments` - Network-first (dynamic)
 - GET `/api/appointments/{id}/ics` - ICS calendar file download
+- GET `/api/services`, `/api/gallery`, `/api/videos`, `/api/staff` - Cache-first endpoints
 
 ## Test Reports
+- `/app/test_reports/iteration_9.json` - Navigation & UI improvements (100% pass)
 - `/app/test_reports/iteration_8.json` - Unified Login & ICS Calendar (100% pass)
-- `/app/test_reports/iteration_7.json` - Dashboard filters (100% pass)
-- `/app/test_reports/iteration_6.json` - PWA caching (100% pass)
-- `/app/test_reports/iteration_5.json` - Mobile PWA UI (100% pass)
 
 ## Test Credentials
 - **Admin:** admin@lotus.com / admin123
