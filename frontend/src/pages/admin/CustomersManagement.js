@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Edit2, Trash2, RefreshCw, X, Save, Eye, EyeOff } from 'lucide-react';
+import { Search, Edit2, Trash2, RefreshCw, X, Save, Eye, EyeOff, Phone, Mail, User, Calendar } from 'lucide-react';
 import { getCustomers, adminResetCustomerPassword, deleteCustomer, updateCustomer } from '../../utils/api';
 import { toast } from 'sonner';
 
@@ -117,7 +117,8 @@ const CustomersManagement = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      {/* Desktop Table View */}
+      <div className="hidden md:block bg-white rounded-xl shadow-sm overflow-hidden">
         <table className="w-full" data-testid="customers-table">
           <thead className="bg-gray-50 border-b">
             <tr>
@@ -179,6 +180,77 @@ const CustomersManagement = () => {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-3" data-testid="customers-cards-mobile">
+        {filteredCustomers.length === 0 ? (
+          <div className="bg-white rounded-xl p-8 text-center text-gray-500">
+            {searchQuery ? 'No customers found matching your search' : 'No customers yet'}
+          </div>
+        ) : (
+          filteredCustomers.map((customer, index) => (
+            <motion.div
+              key={customer.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.03 }}
+              className="bg-white rounded-xl p-4 shadow-sm"
+              data-testid={`customer-card-${index}`}
+            >
+              {/* Customer Info */}
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <h3 className="font-semibold text-base flex items-center gap-2">
+                    <User size={16} className="text-gray-400" />
+                    {customer.name}
+                  </h3>
+                  <div className="mt-2 space-y-1">
+                    <p className="text-sm text-gray-600 flex items-center gap-2">
+                      <Mail size={14} className="text-gray-400" />
+                      <span className="truncate max-w-[200px]">{customer.email}</span>
+                    </p>
+                    <p className="text-sm text-gray-600 flex items-center gap-2">
+                      <Phone size={14} className="text-gray-400" />
+                      {customer.phone}
+                    </p>
+                  </div>
+                </div>
+                <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium flex items-center gap-1">
+                  <Calendar size={12} />
+                  {customer.total_bookings} bookings
+                </span>
+              </div>
+              
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+                <button
+                  onClick={() => handleEditCustomer(customer)}
+                  className="flex-1 py-2 px-3 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors flex items-center justify-center gap-1.5"
+                  data-testid={`edit-customer-mobile-${index}`}
+                >
+                  <Edit2 size={14} />
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleResetPassword(customer.id, customer.name)}
+                  className="flex-1 py-2 px-3 text-sm font-medium text-orange-600 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors flex items-center justify-center gap-1.5"
+                  data-testid={`reset-password-mobile-${index}`}
+                >
+                  <RefreshCw size={14} />
+                  Reset
+                </button>
+                <button
+                  onClick={() => handleDeleteCustomer(customer.id, customer.name)}
+                  className="py-2 px-3 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors flex items-center justify-center"
+                  data-testid={`delete-customer-mobile-${index}`}
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </motion.div>
+          ))
+        )}
       </div>
 
       {/* Edit Customer Modal */}

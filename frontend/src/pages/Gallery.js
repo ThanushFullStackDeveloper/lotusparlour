@@ -4,6 +4,7 @@ import { X, ChevronLeft, ChevronRight, Maximize2, RefreshCw } from 'lucide-react
 import { getGallery } from '../utils/api';
 import { useCachedData } from '../hooks/useCachedData';
 import OfflineBanner from '../components/OfflineBanner';
+import PageHeader from '../components/PageHeader';
 import { toast } from 'sonner';
 
 const Gallery = () => {
@@ -69,24 +70,23 @@ const Gallery = () => {
       {/* Offline/Stale Banner */}
       <OfflineBanner isOffline={isOffline} isStale={isStale} onRefresh={refresh} />
       
-      {/* Compact Hero */}
-      <section className="py-6 md:py-12 bg-[var(--background-alt)]" data-testid="gallery-hero">
-        <div className="container-custom text-center">
-          <h1 className="text-3xl md:text-5xl font-bold font-heading mb-2">Our Gallery</h1>
-          <p className="text-sm md:text-base" style={{ color: 'var(--text-secondary)' }}>
-            Explore our beautiful transformations
-          </p>
-          {fromCache && !isOffline && (
-            <button 
-              onClick={refresh}
-              className="mt-2 text-xs text-gray-500 flex items-center gap-1 mx-auto hover:text-[var(--secondary)]"
-            >
-              <RefreshCw size={12} />
-              Refresh
-            </button>
-          )}
+      {/* Page Header with Back Button */}
+      <PageHeader 
+        title="Our Gallery" 
+        subtitle="Explore our beautiful transformations"
+      />
+      
+      {fromCache && !isOffline && (
+        <div className="container-custom text-center -mt-4 mb-4">
+          <button 
+            onClick={refresh}
+            className="text-xs text-gray-500 flex items-center gap-1 mx-auto hover:text-[var(--secondary)]"
+          >
+            <RefreshCw size={12} />
+            Refresh
+          </button>
         </div>
-      </section>
+      )}
 
       {/* Category Filter - Scrollable on mobile */}
       <section className="py-4 bg-white sticky top-14 md:top-16 z-40 shadow-sm" data-testid="gallery-filter">

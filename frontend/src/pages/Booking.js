@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, User, Tag, CheckCircle, CalendarPlus } from 'lucide-react';
+import { Calendar, Clock, User, Tag, CheckCircle, CalendarPlus, ArrowLeft } from 'lucide-react';
 import { getServices, getStaff, createAppointment, getAvailableSlots, getHolidays, getCurrentUser, validateCoupon } from '../utils/api';
 import { toast } from 'sonner';
 
@@ -315,6 +315,16 @@ const Booking = () => {
   return (
     <div className="booking-page section-spacing" data-testid="booking-page">
       <div className="container-custom max-w-4xl mx-auto">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 mb-4 text-gray-600 hover:text-[var(--secondary)] transition-colors touch-manipulation"
+          data-testid="booking-back-btn"
+        >
+          <ArrowLeft size={20} />
+          <span className="text-sm font-medium">Back</span>
+        </button>
+        
         <div className="text-center mb-12">
           <h1 className="text-5xl md:text-6xl font-bold font-heading mb-4">Book Your Appointment</h1>
           <p className="text-base md:text-lg" style={{ color: 'var(--text-secondary)' }}>

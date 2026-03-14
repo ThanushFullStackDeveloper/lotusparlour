@@ -18,6 +18,7 @@ import {
   UserCheck,
   MessageSquare,
   ChevronRight,
+  ArrowLeft,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -83,11 +84,28 @@ const AdminDashboard = () => {
     return current?.label || 'Dashboard';
   };
 
+  const handleBack = () => {
+    // If on main dashboard, go to home page
+    if (location.pathname === '/admin/dashboard' || location.pathname === '/admin') {
+      navigate('/');
+    } else {
+      // Otherwise go to dashboard
+      navigate('/admin/dashboard');
+    }
+  };
+
   return (
     <div className="admin-dashboard flex flex-col md:flex-row min-h-screen bg-gray-50" data-testid="admin-dashboard">
       {/* Mobile Header */}
       <header className="md:hidden fixed top-0 left-0 right-0 bg-white z-50 border-b border-gray-100 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
+          <button
+            onClick={handleBack}
+            className="p-1 -ml-1 text-gray-600 hover:text-[var(--secondary)] transition-colors touch-manipulation"
+            data-testid="admin-back-btn"
+          >
+            <ArrowLeft size={22} />
+          </button>
           <img
             src="https://customer-assets.emergentagent.com/job_241db126-351c-4832-a8fb-845982688c90/artifacts/41r87k77_4B7AC146-0B06-4B1E-A8D9-0A69F86F7A02.jpeg"
             alt="Logo"

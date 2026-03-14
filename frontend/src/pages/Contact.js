@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Phone, Mail, MapPin, Clock, Send, Navigation } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, Send, Navigation, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { api } from '../utils/api';
 
 const Contact = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -49,11 +51,23 @@ const Contact = () => {
     <div className="contact-page" data-testid="contact-page">
       {/* Hero */}
       <section className="section-spacing bg-[var(--background-alt)]" data-testid="contact-hero">
-        <div className="container-custom text-center">
-          <h1 className="text-5xl md:text-6xl font-bold font-heading mb-6">Get In Touch</h1>
-          <p className="text-base md:text-lg max-w-3xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
-            We'd love to hear from you. Reach out for appointments, inquiries, or just to say hello!
-          </p>
+        <div className="container-custom">
+          {/* Back Button */}
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 mb-6 text-gray-600 hover:text-[var(--secondary)] transition-colors touch-manipulation"
+            data-testid="contact-back-btn"
+          >
+            <ArrowLeft size={20} />
+            <span className="text-sm font-medium">Back</span>
+          </button>
+          
+          <div className="text-center">
+            <h1 className="text-5xl md:text-6xl font-bold font-heading mb-6">Get In Touch</h1>
+            <p className="text-base md:text-lg max-w-3xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
+              We'd love to hear from you. Reach out for appointments, inquiries, or just to say hello!
+            </p>
+          </div>
         </div>
       </section>
 

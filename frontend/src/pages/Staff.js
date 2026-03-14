@@ -4,6 +4,7 @@ import { RefreshCw } from 'lucide-react';
 import { getStaff } from '../utils/api';
 import { useCachedData } from '../hooks/useCachedData';
 import OfflineBanner from '../components/OfflineBanner';
+import PageHeader from '../components/PageHeader';
 import { toast } from 'sonner';
 
 const Staff = () => {
@@ -38,24 +39,23 @@ const Staff = () => {
       {/* Offline/Stale Banner */}
       <OfflineBanner isOffline={isOffline} isStale={isStale} onRefresh={refresh} />
       
-      {/* Hero */}
-      <section className="py-6 md:py-12 bg-[var(--background-alt)]" data-testid="staff-hero">
-        <div className="container-custom text-center">
-          <h1 className="text-3xl md:text-5xl font-bold font-heading mb-2">Our Expert Team</h1>
-          <p className="text-sm md:text-base max-w-3xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
-            Meet our talented professionals
-          </p>
-          {fromCache && !isOffline && (
-            <button 
-              onClick={refresh}
-              className="mt-2 text-xs text-gray-500 flex items-center gap-1 mx-auto hover:text-[var(--secondary)]"
-            >
-              <RefreshCw size={12} />
-              Refresh
-            </button>
-          )}
+      {/* Page Header with Back Button */}
+      <PageHeader 
+        title="Our Expert Team" 
+        subtitle="Meet our talented professionals"
+      />
+      
+      {fromCache && !isOffline && (
+        <div className="container-custom text-center -mt-4 mb-4">
+          <button 
+            onClick={refresh}
+            className="text-xs text-gray-500 flex items-center gap-1 mx-auto hover:text-[var(--secondary)]"
+          >
+            <RefreshCw size={12} />
+            Refresh
+          </button>
         </div>
-      </section>
+      )}
 
       {/* Staff Grid */}
       <section className="py-6 md:py-12" data-testid="staff-grid">

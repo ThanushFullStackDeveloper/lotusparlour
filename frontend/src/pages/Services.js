@@ -5,6 +5,7 @@ import { Clock, IndianRupee, Eye, RefreshCw } from 'lucide-react';
 import { getServices } from '../utils/api';
 import { useCachedData } from '../hooks/useCachedData';
 import OfflineBanner from '../components/OfflineBanner';
+import PageHeader from '../components/PageHeader';
 import { toast } from 'sonner';
 
 const Services = () => {
@@ -49,24 +50,23 @@ const Services = () => {
       {/* Offline/Stale Banner */}
       <OfflineBanner isOffline={isOffline} isStale={isStale} onRefresh={refresh} />
       
-      {/* Compact Hero for Mobile */}
-      <section className="py-6 md:py-12 bg-[var(--background-alt)]" data-testid="services-hero">
-        <div className="container-custom text-center">
-          <h1 className="text-3xl md:text-5xl font-bold font-heading mb-2 md:mb-4">Our Services</h1>
-          <p className="text-sm md:text-base max-w-3xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
-            Premium beauty & wellness treatments
-          </p>
-          {fromCache && !isOffline && (
-            <button 
-              onClick={refresh}
-              className="mt-2 text-xs text-gray-500 flex items-center gap-1 mx-auto hover:text-[var(--secondary)]"
-            >
-              <RefreshCw size={12} />
-              Refresh
-            </button>
-          )}
+      {/* Page Header with Back Button */}
+      <PageHeader 
+        title="Our Services" 
+        subtitle="Premium beauty & wellness treatments"
+      />
+      
+      {fromCache && !isOffline && (
+        <div className="container-custom text-center -mt-4 mb-4">
+          <button 
+            onClick={refresh}
+            className="text-xs text-gray-500 flex items-center gap-1 mx-auto hover:text-[var(--secondary)]"
+          >
+            <RefreshCw size={12} />
+            Refresh
+          </button>
         </div>
-      </section>
+      )}
 
       {/* Services Grid - Card Layout */}
       <section className="py-6 md:py-12" data-testid="services-grid">

@@ -1,13 +1,26 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Award, Heart, Users, Star } from 'lucide-react';
+import { Award, Heart, Users, Star, ArrowLeft } from 'lucide-react';
 
 const About = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="about-page" data-testid="about-page">
       {/* Hero */}
       <section className="section-spacing bg-[var(--background-alt)]" data-testid="about-hero">
         <div className="container-custom">
+          {/* Back Button */}
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 mb-6 text-gray-600 hover:text-[var(--secondary)] transition-colors touch-manipulation"
+            data-testid="about-back-btn"
+          >
+            <ArrowLeft size={20} />
+            <span className="text-sm font-medium">Back</span>
+          </button>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <motion.div
               initial={{ opacity: 0, x: -50 }}

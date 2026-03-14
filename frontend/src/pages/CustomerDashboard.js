@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, User, CheckCircle, XCircle, Loader, CalendarPlus } from 'lucide-react';
+import { Calendar, Clock, User, CheckCircle, XCircle, Loader, CalendarPlus, ArrowLeft } from 'lucide-react';
 import { getAppointments, getCurrentUser, getAppointmentICS } from '../utils/api';
 import { toast } from 'sonner';
 
 const CustomerDashboard = () => {
+  const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
   const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [user, setUser] = useState(null);
@@ -138,6 +140,16 @@ const CustomerDashboard = () => {
   return (
     <div className="customer-dashboard py-4 md:py-8" data-testid="customer-dashboard">
       <div className="container-custom px-4">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2 mb-4 text-gray-600 hover:text-[var(--secondary)] transition-colors touch-manipulation"
+          data-testid="dashboard-back-btn"
+        >
+          <ArrowLeft size={20} />
+          <span className="text-sm font-medium">Back to Home</span>
+        </button>
+        
         {/* Welcome Section - Compact for mobile */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
