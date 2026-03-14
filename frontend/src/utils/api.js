@@ -31,7 +31,8 @@ export const getCurrentUser = () => api.get('/auth/me');
 export const unifiedLogin = (data) => api.post('/auth/unified-login', data);
 
 // Services
-export const getServices = () => api.get('/services');
+export const getServices = () => api.get('/services/light');
+export const getServicesFull = () => api.get('/services');
 export const createService = (data) => api.post('/services', data);
 export const updateService = (id, data) => api.put(`/services/${id}`, data);
 export const deleteService = (id) => api.delete(`/services/${id}`);
@@ -60,6 +61,8 @@ export const deleteReview = (id) => api.delete(`/reviews/${id}`);
 
 // Gallery
 export const getGallery = () => api.get('/gallery');
+export const getGalleryFull = () => api.get('/gallery/full');
+export const getGalleryImage = (id) => api.get(`/gallery/${id}/image`);
 export const createGalleryImage = (data) => api.post('/gallery', data);
 export const deleteGalleryImage = (id) => api.delete(`/gallery/${id}`);
 

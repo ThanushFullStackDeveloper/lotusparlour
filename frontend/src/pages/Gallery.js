@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
-import { getGallery } from '../utils/api';
+import { getGallery, getGalleryImage } from '../utils/api';
 import PageHeader from '../components/PageHeader';
 import { toast } from 'sonner';
 
 const Gallery = () => {
   const [images, setImages] = useState([]);
+  const [imageData, setImageData] = useState({});
   const [filteredImages, setFilteredImages] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -25,11 +26,28 @@ const Gallery = () => {
       const response = await getGallery();
       setImages(response.data);
       setFilteredImages(response.data);
+      // Load images lazily
+      loadImages(response.data);
     } catch (error) {
       console.error('Error fetching gallery:', error);
       toast.error('Failed to load gallery');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadImages = async (imageList) => {
+    // Load images in batches for faster perceived loading
+    for (const img of imageList) {
+      try {
+        const response = await getGalleryImage(img.id);
+        setImageData(prev => ({
+          ...prev,
+          [img.id]: response.data.image
+        }));
+      } catch (error) {
+        console.error('Error loading image:', img.id);
+      }
     }
   };
 
@@ -112,16 +130,22 @@ const Gallery = () => {
                   initial={{ opacity: 1 }}
                   animate={{ opacity: 1 }}
                   whileTap={{ scale: 0.98 }}
-                  className="relative aspect-square overflow-hidden cursor-pointer group max-h-[150px] md:max-h-[180px]"
+                  className="relative aspect-square overflow-hidden cursor-pointer group max-h-[150px] md:max-h-[180px] bg-gray-100"
                   onClick={() => openLightbox(index)}
                   data-testid={`gallery-item-${index}`}
                 >
-                  <img
-                    src={img.image}
-                    alt={`Gallery ${index + 1}`}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    loading="lazy"
-                  />
+                  {imageData[img.id] ? (
+                    <img
+                      src={imageData[img.id]}
+                      alt={`Gallery ${index + 1}`}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <div className="w-6 h-6 border-2 border-[var(--secondary)] border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  )}
                   {/* Hover overlay - desktop only */}
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all hidden md:flex items-center justify-center opacity-0 group-hover:opacity-100">
                     <Maximize2 size={24} className="text-white" />

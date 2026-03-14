@@ -460,7 +460,30 @@ async def delete_staff(staff_id: str):
 
 @api_router.get("/services")
 async def get_all_services():
+    # Return services without large image data for faster loading
     services = await db.services.find({}, {"_id": 0}).to_list(1000)
+    # Truncate base64 images - only return URL-based images or short strings
+    for service in services:
+        if service.get('image') and len(service.get('image', '')) > 500:
+            # It's a base64 image, truncate it for listing
+            service['image_preview'] = service['image'][:100] + '...'
+            service['has_large_image'] = True
+        else:
+            service['has_large_image'] = False
+    return services
+
+@api_router.get("/services/light")
+async def get_services_light():
+    # Return only essential service info without images
+    services = await db.services.find({}, {
+        "_id": 0, 
+        "id": 1, 
+        "name": 1, 
+        "price": 1, 
+        "duration": 1, 
+        "category": 1,
+        "description": 1
+    }).to_list(1000)
     return services
 
 @api_router.post("/services", dependencies=[Depends(verify_admin)])
@@ -766,8 +789,23 @@ async def delete_review(review_id: str):
 
 @api_router.get("/gallery")
 async def get_gallery():
+    # Return only metadata without base64 images for faster loading
+    images = await db.gallery.find({}, {"_id": 0, "id": 1, "category": 1, "created_at": 1}).to_list(1000)
+    return images
+
+@api_router.get("/gallery/full")
+async def get_gallery_full():
+    # Return full gallery with images (for admin or when needed)
     images = await db.gallery.find({}, {"_id": 0}).to_list(1000)
     return images
+
+@api_router.get("/gallery/{image_id}/image")
+async def get_gallery_image(image_id: str):
+    # Get single image by ID
+    image = await db.gallery.find_one({"id": image_id}, {"_id": 0, "image": 1})
+    if not image:
+        raise HTTPException(status_code=404, detail="Image not found")
+    return {"image": image.get("image", "")}
 
 @api_router.post("/gallery", dependencies=[Depends(verify_admin)])
 async def create_gallery_image(gallery_data: GalleryCreate):
