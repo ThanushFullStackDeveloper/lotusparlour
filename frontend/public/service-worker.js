@@ -1,6 +1,6 @@
 // Service Worker for Lotus Beauty Parlour PWA
-// Version 6 - Network-first for profile data
-const CACHE_VERSION = 'v6';
+// Version 7 - Direct network for services/gallery
+const CACHE_VERSION = 'v7';
 const STATIC_CACHE = `lotus-static-${CACHE_VERSION}`;
 const API_CACHE = `lotus-api-${CACHE_VERSION}`;
 const IMAGE_CACHE = `lotus-images-${CACHE_VERSION}`;
@@ -26,15 +26,15 @@ const PRECACHE_ASSETS = [
 const NO_CACHE_API = [
   '/api/appointments',
   '/api/auth',
-  '/api/customers/me'
+  '/api/customers/me',
+  '/api/services',
+  '/api/gallery',
+  '/api/staff'
 ];
 
 // API endpoints using network-first with cache fallback
 const NETWORK_FIRST_API = [
-  '/api/services',
-  '/api/gallery',
   '/api/videos',
-  '/api/staff',
   '/api/settings',
   '/api/reviews',
   '/api/admin',

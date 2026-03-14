@@ -53,7 +53,7 @@ export const invalidateCache = async (cacheType) => {
 
 // IndexedDB setup for larger data (images, etc.)
 const DB_NAME = 'LotusBeautyCache';
-const DB_VERSION = 3;  // Bumped version for network-first profile data
+const DB_VERSION = 4;  // Bumped to clear old cache
 const STORE_NAME = 'apiCache';
 
 let dbInstance = null;
