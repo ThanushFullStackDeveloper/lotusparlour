@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import Lightbox from 'yet-another-react-lightbox';
-import 'yet-another-react-lightbox/styles.css';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
 import { getGallery } from '../utils/api';
 import { toast } from 'sonner';
 
@@ -45,40 +44,49 @@ const Gallery = () => {
     setLightboxOpen(true);
   };
 
-  const lightboxSlides = filteredImages.map(img => ({ src: img.image }));
+  const nextImage = () => {
+    setLightboxIndex((prev) => (prev + 1) % filteredImages.length);
+  };
+
+  const prevImage = () => {
+    setLightboxIndex((prev) => (prev - 1 + filteredImages.length) % filteredImages.length);
+  };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-lg">Loading gallery...</p>
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="w-12 h-12 rounded-full bg-[var(--secondary)]/30"></div>
+          <p className="mt-4 text-gray-500">Loading gallery...</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="gallery-page" data-testid="gallery-page">
-      {/* Hero */}
-      <section className="section-spacing bg-[var(--background-alt)]" data-testid="gallery-hero">
+      {/* Compact Hero */}
+      <section className="py-6 md:py-12 bg-[var(--background-alt)]" data-testid="gallery-hero">
         <div className="container-custom text-center">
-          <h1 className="text-5xl md:text-6xl font-bold font-heading mb-6">Our Gallery</h1>
-          <p className="text-base md:text-lg max-w-3xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
-            Explore our work and get inspired for your next transformation
+          <h1 className="text-3xl md:text-5xl font-bold font-heading mb-2">Our Gallery</h1>
+          <p className="text-sm md:text-base" style={{ color: 'var(--text-secondary)' }}>
+            Explore our beautiful transformations
           </p>
         </div>
       </section>
 
-      {/* Category Filter */}
-      <section className="py-8 bg-white sticky top-16 z-40 shadow-sm" data-testid="gallery-filter">
+      {/* Category Filter - Scrollable on mobile */}
+      <section className="py-4 bg-white sticky top-14 md:top-16 z-40 shadow-sm" data-testid="gallery-filter">
         <div className="container-custom">
-          <div className="flex flex-wrap gap-3 justify-center">
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
             {categories.map((category) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
-                className={`px-6 py-2 rounded-full font-medium transition-all ${
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap touch-manipulation ${
                   selectedCategory === category
                     ? 'bg-[var(--secondary)] text-white shadow-md'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 text-gray-700 active:bg-gray-200'
                 }`}
                 data-testid={`filter-btn-${category.toLowerCase().replace(' ', '-')}`}
               >
@@ -89,30 +97,36 @@ const Gallery = () => {
         </div>
       </section>
 
-      {/* Gallery Grid */}
-      <section className="section-spacing" data-testid="gallery-grid">
+      {/* Instagram-Style Gallery Grid */}
+      <section className="py-4 md:py-8" data-testid="gallery-grid">
         <div className="container-custom">
           {filteredImages.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>No images in this category yet.</p>
+              <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>No images in this category.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-3 gap-0.5 md:gap-1">
               {filteredImages.map((img, index) => (
                 <motion.div
                   key={img.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
                   transition={{ delay: index * 0.02 }}
-                  className="gallery-item aspect-square"
+                  whileTap={{ scale: 0.98 }}
+                  className="relative aspect-square overflow-hidden cursor-pointer group"
                   onClick={() => openLightbox(index)}
                   data-testid={`gallery-item-${index}`}
                 >
                   <img
                     src={img.image}
                     alt={`Gallery ${index + 1}`}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    loading="lazy"
                   />
+                  {/* Hover overlay - desktop only */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all hidden md:flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <Maximize2 size={24} className="text-white" />
+                  </div>
                 </motion.div>
               ))}
             </div>
@@ -120,13 +134,76 @@ const Gallery = () => {
         </div>
       </section>
 
-      {/* Lightbox */}
-      <Lightbox
-        open={lightboxOpen}
-        close={() => setLightboxOpen(false)}
-        slides={lightboxSlides}
-        index={lightboxIndex}
-      />
+      {/* Custom Lightbox */}
+      <AnimatePresence>
+        {lightboxOpen && filteredImages[lightboxIndex] && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black z-50 flex flex-col"
+            data-testid="gallery-lightbox"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 text-white">
+              <span className="text-sm">{lightboxIndex + 1} / {filteredImages.length}</span>
+              <button 
+                onClick={() => setLightboxOpen(false)}
+                className="p-2 rounded-full hover:bg-white/10 transition-colors touch-manipulation"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Image Container */}
+            <div className="flex-1 flex items-center justify-center px-4 relative">
+              <motion.img
+                key={lightboxIndex}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                src={filteredImages[lightboxIndex].image}
+                alt={`Gallery ${lightboxIndex + 1}`}
+                className="max-w-full max-h-full object-contain"
+              />
+              
+              {/* Navigation Buttons - Desktop */}
+              <button
+                onClick={prevImage}
+                className="hidden md:flex absolute left-4 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+              >
+                <ChevronLeft size={28} className="text-white" />
+              </button>
+              <button
+                onClick={nextImage}
+                className="hidden md:flex absolute right-4 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+              >
+                <ChevronRight size={28} className="text-white" />
+              </button>
+            </div>
+
+            {/* Mobile Swipe Instructions */}
+            <div className="md:hidden text-center text-white/50 text-sm pb-8">
+              Swipe or tap edges to navigate
+            </div>
+
+            {/* Mobile Navigation */}
+            <div className="md:hidden flex justify-around pb-8">
+              <button
+                onClick={prevImage}
+                className="p-4 rounded-full bg-white/10 touch-manipulation"
+              >
+                <ChevronLeft size={28} className="text-white" />
+              </button>
+              <button
+                onClick={nextImage}
+                className="p-4 rounded-full bg-white/10 touch-manipulation"
+              >
+                <ChevronRight size={28} className="text-white" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

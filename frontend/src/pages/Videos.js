@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Play, X } from 'lucide-react';
 import { getVideos } from '../utils/api';
 import { toast } from 'sonner';
@@ -60,35 +60,38 @@ const Videos = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-lg">Loading videos...</p>
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="w-12 h-12 rounded-full bg-[var(--secondary)]/30"></div>
+          <p className="mt-4 text-gray-500">Loading videos...</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="videos-page" data-testid="videos-page">
-      {/* Hero */}
-      <section className="section-spacing bg-[var(--background-alt)]" data-testid="videos-hero">
+      {/* Compact Hero */}
+      <section className="py-6 md:py-12 bg-[var(--background-alt)]" data-testid="videos-hero">
         <div className="container-custom text-center">
-          <h1 className="text-5xl md:text-6xl font-bold font-heading mb-6">Service Videos</h1>
-          <p className="text-base md:text-lg max-w-3xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
-            Watch our beauty service demonstrations and tutorials
+          <h1 className="text-3xl md:text-5xl font-bold font-heading mb-2">Service Videos</h1>
+          <p className="text-sm md:text-base" style={{ color: 'var(--text-secondary)' }}>
+            Watch our beauty tutorials
           </p>
         </div>
       </section>
 
-      {/* Category Filter */}
-      <section className="py-8 bg-white sticky top-16 z-40 shadow-sm" data-testid="videos-filter">
+      {/* Category Filter - Scrollable */}
+      <section className="py-4 bg-white sticky top-14 md:top-16 z-40 shadow-sm" data-testid="videos-filter">
         <div className="container-custom">
-          <div className="flex flex-wrap gap-3 justify-center">
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
             {categories.map((category) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
-                className={`px-6 py-2 rounded-full font-medium transition-all ${
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap touch-manipulation ${
                   selectedCategory === category
                     ? 'bg-[var(--secondary)] text-white shadow-md'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 text-gray-700 active:bg-gray-200'
                 }`}
                 data-testid={`filter-btn-${category.toLowerCase()}`}
               >
@@ -99,45 +102,50 @@ const Videos = () => {
         </div>
       </section>
 
-      {/* Videos Grid */}
-      <section className="section-spacing" data-testid="videos-grid">
+      {/* Videos Grid - Responsive Cards */}
+      <section className="py-4 md:py-8" data-testid="videos-grid">
         <div className="container-custom">
           {filteredVideos.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>No videos in this category yet.</p>
+              <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>No videos in this category.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
               {filteredVideos.map((video, index) => (
                 <motion.div
                   key={video.id}
-                  initial={{ opacity: 0, y: 30 }}
+                  initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
+                  whileTap={{ scale: 0.98 }}
                   className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all cursor-pointer group"
                   onClick={() => openVideo(video)}
                   data-testid={`video-card-${index}`}
                 >
-                  <div className="relative">
+                  <div className="relative aspect-video">
                     <img
                       src={getThumbnail(video.youtube_url)}
                       alt={video.title}
-                      className="w-full h-56 object-cover"
+                      className="w-full h-full object-cover"
+                      loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all flex items-center justify-center">
-                      <div className="w-16 h-16 rounded-full bg-[var(--secondary)] opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
-                        <Play size={28} color="white" fill="white" />
-                      </div>
+                    {/* Play Button Overlay */}
+                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all flex items-center justify-center">
+                      <motion.div 
+                        whileHover={{ scale: 1.1 }}
+                        className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-[var(--secondary)] flex items-center justify-center shadow-lg"
+                      >
+                        <Play size={20} className="text-white ml-1" fill="white" />
+                      </motion.div>
                     </div>
-                    <div className="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-medium bg-[var(--secondary)] text-white">
+                    {/* Category Badge */}
+                    <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-xs font-medium bg-black/60 text-white">
                       {video.category}
                     </div>
                   </div>
-                  <div className="p-5">
-                    <h3 className="text-xl font-semibold mb-2">{video.title}</h3>
-                    <p className="text-sm line-clamp-2" style={{ color: 'var(--text-secondary)' }}>
-                      {video.description}
-                    </p>
+                  <div className="p-3 md:p-4">
+                    <h3 className="text-sm md:text-base font-semibold line-clamp-2 mb-1">{video.title}</h3>
+                    <p className="text-xs text-gray-500 line-clamp-1 hidden md:block">{video.description}</p>
                   </div>
                 </motion.div>
               ))}
@@ -147,38 +155,54 @@ const Videos = () => {
       </section>
 
       {/* Video Modal */}
-      {selectedVideo && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4"
-          onClick={closeVideo}
-          data-testid="video-modal"
-        >
-          <div className="relative w-full max-w-5xl" onClick={(e) => e.stopPropagation()}>
-            <button
-              onClick={closeVideo}
-              className="absolute -top-12 right-0 text-white hover:text-[var(--secondary)] transition-colors"
-              data-testid="close-video-btn"
-            >
-              <X size={32} />
-            </button>
-            <div className="relative pt-[56.25%]">
-              <iframe
-                className="absolute inset-0 w-full h-full rounded-lg"
-                src={`https://www.youtube.com/embed/${getYouTubeId(selectedVideo.youtube_url)}?autoplay=1`}
-                title={selectedVideo.title}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                data-testid="youtube-player"
-              ></iframe>
+      <AnimatePresence>
+        {selectedVideo && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black z-50 flex flex-col"
+            onClick={closeVideo}
+            data-testid="video-modal"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-end p-4">
+              <button
+                onClick={closeVideo}
+                className="p-2 rounded-full hover:bg-white/10 transition-colors touch-manipulation"
+                data-testid="close-video-btn"
+              >
+                <X size={28} className="text-white" />
+              </button>
             </div>
-            <div className="bg-white p-4 rounded-b-lg">
-              <h2 className="text-2xl font-bold mb-2">{selectedVideo.title}</h2>
-              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{selectedVideo.description}</p>
+
+            {/* Video Player */}
+            <div className="flex-1 flex items-center justify-center px-4" onClick={(e) => e.stopPropagation()}>
+              <div className="w-full max-w-4xl">
+                <div className="relative pt-[56.25%] rounded-xl overflow-hidden">
+                  <iframe
+                    className="absolute inset-0 w-full h-full"
+                    src={`https://www.youtube.com/embed/${getYouTubeId(selectedVideo.youtube_url)}?autoplay=1`}
+                    title={selectedVideo.title}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    data-testid="youtube-player"
+                  ></iframe>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+
+            {/* Video Info */}
+            <div className="p-4 md:p-6 bg-gradient-to-t from-black/80 to-transparent">
+              <div className="max-w-4xl mx-auto">
+                <h2 className="text-xl md:text-2xl font-bold text-white mb-1">{selectedVideo.title}</h2>
+                <p className="text-sm text-gray-300 line-clamp-2">{selectedVideo.description}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

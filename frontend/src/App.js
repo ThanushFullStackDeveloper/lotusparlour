@@ -23,6 +23,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import WhatsAppFloat from './components/WhatsAppFloat';
 import BottomNav from './components/BottomNav';
+import InstallPWA from './components/InstallPWA';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -76,7 +77,7 @@ function App() {
             element={
               <>
                 <Navbar />
-                <div style={{ minHeight: '80vh', paddingBottom: '70px' }} className="md:pb-0">
+                <main className="min-h-screen pb-20 md:pb-0">
                   <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/about" element={<About />} />
@@ -97,10 +98,11 @@ function App() {
                       }
                     />
                   </Routes>
-                </div>
+                </main>
                 <Footer />
                 <WhatsAppFloat />
                 <BottomNav />
+                <InstallPWA />
               </>
             }
           />
