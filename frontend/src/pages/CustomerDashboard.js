@@ -138,35 +138,50 @@ const CustomerDashboard = () => {
   }
 
   return (
-    <div className="customer-dashboard py-4 md:py-8" data-testid="customer-dashboard">
-      <div className="container-custom px-4">
-        {/* Back Button */}
-        <button
-          onClick={() => navigate('/')}
-          className="flex items-center gap-2 mb-4 text-gray-600 hover:text-[var(--secondary)] transition-colors touch-manipulation"
-          data-testid="dashboard-back-btn"
-        >
-          <ArrowLeft size={20} />
-          <span className="text-sm font-medium">Back to Home</span>
-        </button>
-        
-        {/* Welcome Section - Compact for mobile */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="mb-6"
-        >
-          <h1 className="text-2xl md:text-4xl font-bold font-heading mb-1">
-            Hi, {user?.name?.split(' ')[0]}!
-          </h1>
-          <p className="text-sm md:text-base" style={{ color: 'var(--text-secondary)' }}>
-            Manage your beauty appointments
-          </p>
-        </motion.div>
+    <div className="customer-dashboard" data-testid="customer-dashboard">
+      {/* Sticky Back Button - Mobile Only */}
+      <div className="md:hidden sticky top-[60px] z-30 bg-white/95 backdrop-blur-sm border-b border-gray-100/50">
+        <div className="container-custom px-4 py-2">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 text-gray-600 hover:text-[var(--secondary)] transition-colors touch-manipulation"
+            data-testid="dashboard-back-btn-mobile"
+          >
+            <ArrowLeft size={20} />
+            <span className="text-sm font-medium">Back to Home</span>
+          </button>
+        </div>
+      </div>
+      
+      <div className="py-4 md:py-8">
+        <div className="container-custom px-4">
+          {/* Desktop Back Button */}
+          <button
+            onClick={() => navigate('/')}
+            className="hidden md:flex items-center gap-2 mb-4 text-gray-600 hover:text-[var(--secondary)] transition-colors"
+            data-testid="dashboard-back-btn"
+          >
+            <ArrowLeft size={20} />
+            <span className="text-sm font-medium">Back to Home</span>
+          </button>
+          
+          {/* Welcome Section - Compact for mobile */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="mb-6"
+          >
+            <h1 className="text-2xl md:text-4xl font-bold font-heading mb-1">
+              Hi, {user?.name?.split(' ')[0]}!
+            </h1>
+            <p className="text-sm md:text-base" style={{ color: 'var(--text-secondary)' }}>
+              Manage your beauty appointments
+            </p>
+          </motion.div>
 
-        {/* Stats Cards - Horizontal scroll on mobile */}
-        <div className="flex gap-3 overflow-x-auto pb-2 mb-6 scrollbar-hide" data-testid="stats-section">
+          {/* Stats Cards - Horizontal scroll on mobile */}
+          <div className="flex gap-3 overflow-x-auto pb-2 mb-6 scrollbar-hide" data-testid="stats-section">
           {filterTabs.map((tab, index) => (
             <motion.button
               key={tab.key}
@@ -277,6 +292,7 @@ const CustomerDashboard = () => {
               Book New Appointment
             </button>
           </a>
+        </div>
         </div>
       </div>
     </div>

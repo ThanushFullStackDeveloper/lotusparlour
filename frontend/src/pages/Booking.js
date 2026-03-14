@@ -314,11 +314,25 @@ const Booking = () => {
 
   return (
     <div className="booking-page section-spacing" data-testid="booking-page">
+      {/* Sticky Back Button - Mobile Only */}
+      <div className="md:hidden sticky top-[60px] z-30 bg-white/95 backdrop-blur-sm border-b border-gray-100/50">
+        <div className="container-custom py-2">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-gray-600 hover:text-[var(--secondary)] transition-colors touch-manipulation"
+            data-testid="booking-back-btn-mobile"
+          >
+            <ArrowLeft size={20} />
+            <span className="text-sm font-medium">Back</span>
+          </button>
+        </div>
+      </div>
+      
       <div className="container-custom max-w-4xl mx-auto">
-        {/* Back Button */}
+        {/* Desktop Back Button */}
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 mb-4 text-gray-600 hover:text-[var(--secondary)] transition-colors touch-manipulation"
+          className="hidden md:flex items-center gap-2 mb-4 text-gray-600 hover:text-[var(--secondary)] transition-colors"
           data-testid="booking-back-btn"
         >
           <ArrowLeft size={20} />

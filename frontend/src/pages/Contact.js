@@ -49,13 +49,27 @@ const Contact = () => {
 
   return (
     <div className="contact-page" data-testid="contact-page">
+      {/* Sticky Back Button - Mobile Only */}
+      <div className="md:hidden sticky top-[60px] z-30 bg-white/95 backdrop-blur-sm border-b border-gray-100/50">
+        <div className="container-custom py-2">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-gray-600 hover:text-[var(--secondary)] transition-colors touch-manipulation"
+            data-testid="contact-back-btn-mobile"
+          >
+            <ArrowLeft size={20} />
+            <span className="text-sm font-medium">Back</span>
+          </button>
+        </div>
+      </div>
+      
       {/* Hero */}
       <section className="section-spacing bg-[var(--background-alt)]" data-testid="contact-hero">
         <div className="container-custom">
-          {/* Back Button */}
+          {/* Desktop Back Button */}
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 mb-6 text-gray-600 hover:text-[var(--secondary)] transition-colors touch-manipulation"
+            className="hidden md:flex items-center gap-2 mb-6 text-gray-600 hover:text-[var(--secondary)] transition-colors"
             data-testid="contact-back-btn"
           >
             <ArrowLeft size={20} />
