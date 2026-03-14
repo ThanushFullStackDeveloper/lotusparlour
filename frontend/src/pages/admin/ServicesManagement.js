@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Edit2, Trash2, X } from 'lucide-react';
-import { getServices, createService, updateService, deleteService, uploadImage } from '../../utils/api';
+import { getServicesFull, createService, updateService, deleteService, uploadImage } from '../../utils/api';
 import { invalidateCache } from '../../utils/cacheManager';
 import { toast } from 'sonner';
 
@@ -25,7 +25,7 @@ const ServicesManagement = () => {
 
   const fetchServices = async () => {
     try {
-      const response = await getServices();
+      const response = await getServicesFull();
       setServices(response.data);
     } catch (error) {
       console.error('Error fetching services:', error);

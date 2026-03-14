@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Trash2 } from 'lucide-react';
-import { getGallery, createGalleryImage, deleteGalleryImage, uploadImage } from '../../utils/api';
+import { getGalleryFull, createGalleryImage, deleteGalleryImage, uploadImage } from '../../utils/api';
 import { invalidateCache } from '../../utils/cacheManager';
 import { toast } from 'sonner';
 
@@ -16,7 +16,7 @@ const GalleryManagement = () => {
 
   const fetchGallery = async () => {
     try {
-      const response = await getGallery();
+      const response = await getGalleryFull();
       setImages(response.data);
     } catch (error) {
       toast.error('Failed to load gallery');
