@@ -168,6 +168,15 @@ input:focus, textarea:focus, select:focus {
   display: flex;
   align-items: center;
   background: linear-gradient(180deg, rgba(212, 165, 165, 0.1) 0%, rgba(253, 251, 247, 0) 100%);
+  padding-top: 0;
+}
+
+@media (max-width: 767px) {
+  .hero-section {
+    min-height: auto;
+    padding-top: 0.5rem;
+    padding-bottom: 1rem;
+  }
 }
 
 /* Mobile-first responsive design */
