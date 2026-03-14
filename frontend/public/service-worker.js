@@ -1,6 +1,6 @@
 // Service Worker for Lotus Beauty Parlour PWA
-// Version 5 - Cache cleared
-const CACHE_VERSION = 'v5';
+// Version 6 - Network-first for profile data
+const CACHE_VERSION = 'v6';
 const STATIC_CACHE = `lotus-static-${CACHE_VERSION}`;
 const API_CACHE = `lotus-api-${CACHE_VERSION}`;
 const IMAGE_CACHE = `lotus-images-${CACHE_VERSION}`;
@@ -22,7 +22,14 @@ const PRECACHE_ASSETS = [
   '/icons/apple-touch-icon.png'
 ];
 
-// API endpoints - NOW using network-first for real-time updates
+// API endpoints that should NEVER be cached (always fresh)
+const NO_CACHE_API = [
+  '/api/appointments',
+  '/api/auth',
+  '/api/customers/me'
+];
+
+// API endpoints using network-first with cache fallback
 const NETWORK_FIRST_API = [
   '/api/services',
   '/api/gallery',
@@ -30,8 +37,6 @@ const NETWORK_FIRST_API = [
   '/api/staff',
   '/api/settings',
   '/api/reviews',
-  '/api/appointments',
-  '/api/auth',
   '/api/admin',
   '/api/customers',
   '/api/coupons',
@@ -92,8 +97,23 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Handle API requests - ALWAYS use network-first for real-time updates
+  // Handle API requests
   if (url.pathname.startsWith('/api/')) {
+    // Check if this endpoint should never be cached
+    const shouldSkipCache = NO_CACHE_API.some(path => url.pathname.includes(path));
+    
+    if (shouldSkipCache) {
+      // Direct network request, no caching
+      event.respondWith(fetch(request).catch(() => {
+        return new Response(JSON.stringify({ error: 'Offline' }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }));
+      return;
+    }
+    
+    // Use network-first for other API endpoints
     event.respondWith(networkFirst(request));
     return;
   }
