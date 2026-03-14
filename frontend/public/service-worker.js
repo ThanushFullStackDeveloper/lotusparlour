@@ -1,6 +1,6 @@
 // Service Worker for Lotus Beauty Parlour PWA
-// Version 4 - Fixed for real-time updates
-const CACHE_VERSION = 'v4';
+// Version 5 - Cache cleared
+const CACHE_VERSION = 'v5';
 const STATIC_CACHE = `lotus-static-${CACHE_VERSION}`;
 const API_CACHE = `lotus-api-${CACHE_VERSION}`;
 const IMAGE_CACHE = `lotus-images-${CACHE_VERSION}`;
