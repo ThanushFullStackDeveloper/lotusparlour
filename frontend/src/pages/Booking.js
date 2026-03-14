@@ -314,17 +314,24 @@ const Booking = () => {
 
   return (
     <div className="booking-page section-spacing" data-testid="booking-page">
+      {/* Fixed Back Button */}
+      <div className="fixed left-0 right-0 top-[60px] md:top-[72px] z-30 bg-white/95 backdrop-blur-sm border-b border-gray-100/50 shadow-sm">
+        <div className="container-custom max-w-4xl mx-auto py-2">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-gray-600 hover:text-[var(--secondary)] transition-colors touch-manipulation"
+            data-testid="booking-back-btn"
+          >
+            <ArrowLeft size={20} />
+            <span className="text-sm font-medium">Back</span>
+          </button>
+        </div>
+      </div>
+      
+      {/* Spacer for fixed back button */}
+      <div className="h-[44px]"></div>
+      
       <div className="container-custom max-w-4xl mx-auto">
-        {/* Back Button */}
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 mb-4 text-gray-600 hover:text-[var(--secondary)] transition-colors touch-manipulation"
-          data-testid="booking-back-btn"
-        >
-          <ArrowLeft size={20} />
-          <span className="text-sm font-medium">Back</span>
-        </button>
-        
         <div className="text-center mb-12">
           <h1 className="text-5xl md:text-6xl font-bold font-heading mb-4">Book Your Appointment</h1>
           <p className="text-base md:text-lg" style={{ color: 'var(--text-secondary)' }}>

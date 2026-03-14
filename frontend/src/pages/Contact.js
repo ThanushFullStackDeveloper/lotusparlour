@@ -49,19 +49,26 @@ const Contact = () => {
 
   return (
     <div className="contact-page" data-testid="contact-page">
-      {/* Hero */}
-      <section className="section-spacing bg-[var(--background-alt)]" data-testid="contact-hero">
-        <div className="container-custom">
-          {/* Back Button */}
+      {/* Fixed Back Button */}
+      <div className="fixed left-0 right-0 top-[60px] md:top-[72px] z-30 bg-white/95 backdrop-blur-sm border-b border-gray-100/50 shadow-sm">
+        <div className="container-custom py-2">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 mb-6 text-gray-600 hover:text-[var(--secondary)] transition-colors touch-manipulation"
+            className="flex items-center gap-2 text-gray-600 hover:text-[var(--secondary)] transition-colors touch-manipulation"
             data-testid="contact-back-btn"
           >
             <ArrowLeft size={20} />
             <span className="text-sm font-medium">Back</span>
           </button>
-          
+        </div>
+      </div>
+      
+      {/* Spacer for fixed back button */}
+      <div className="h-[44px]"></div>
+      
+      {/* Hero */}
+      <section className="section-spacing bg-[var(--background-alt)]" data-testid="contact-hero">
+        <div className="container-custom">
           <div className="text-center">
             <h1 className="text-5xl md:text-6xl font-bold font-heading mb-6">Get In Touch</h1>
             <p className="text-base md:text-lg max-w-3xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
