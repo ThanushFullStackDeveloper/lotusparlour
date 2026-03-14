@@ -1,7 +1,7 @@
 # Lotus Beauty Parlour - Product Requirements Document
 
 ## Original Problem Statement
-Build a full-stack Beauty Parlour Appointment Booking Web Application for LOTUS BEAUTY PARLOUR with customer website, appointment booking, customer login, and comprehensive admin dashboard. Convert to a Progressive Web App (PWA) with offline support, installability, and mobile-friendly bottom navigation.
+Build a full-stack Beauty Parlour Appointment Booking Web Application for LOTUS BEAUTY PARLOUR with customer website, appointment booking, customer login, and comprehensive admin dashboard. Convert to a Progressive Web App (PWA) with offline support, installability, native mobile app-like UI, and enhanced mobile experience.
 
 ## Tech Stack
 - **Frontend:** React, React Router, Tailwind CSS, Axios, Framer Motion
@@ -21,19 +21,30 @@ Build a full-stack Beauty Parlour Appointment Booking Web Application for LOTUS 
 - [x] Account Recovery (phone only)
 - [x] Customer dashboard
 - [x] Review submission form
-- [x] WhatsApp button with "Book Now on WhatsApp" text
+- [x] WhatsApp button with touch-expand behavior
 - [x] Dynamic navbar logo from settings (with reactive updates)
 
-### PWA Features (NEW - March 14, 2026)
+### PWA Features (March 14, 2026)
 - [x] manifest.json with app icons (192x192, 512x512)
 - [x] iOS PWA meta tags (apple-mobile-web-app-capable, touch-icon)
 - [x] Service Worker with cache strategies (cache-first for static, network-first for API)
 - [x] Offline fallback page
-- [x] Mobile bottom navigation (Home, Services, Book, Gallery, Videos, Profile)
+- [x] **PWA Install Prompt** - Auto-shows on mobile with "Add to Home Screen" button
+- [x] **iOS Install Instructions Modal** - Step-by-step guide for Safari users
 - [x] Add to Calendar feature (.ICS file download for appointments)
-- [x] 1-hour and 1-day appointment reminders in ICS
 
-### Admin Dashboard
+### Native Mobile App UI (March 14, 2026)
+- [x] **Mobile Bottom Navigation** (Home, Services, Gallery, Videos, Book, Profile)
+- [x] **Elevated "Book" button** in center of bottom nav (highlighted with gradient)
+- [x] **WhatsApp Button** - Icon only by default, expands on tap, auto-collapses after 3s
+- [x] **Services Page** - 2-column card grid with price badges and Quick View modal
+- [x] **Gallery Page** - Instagram-style 3-column grid with scrollable filters
+- [x] **Videos Page** - Responsive grid cards with play button overlays
+- [x] Full-screen standalone mode when installed
+- [x] Touch-friendly buttons with manipulation CSS
+- [x] Smooth page transitions with Framer Motion
+
+### Admin Dashboard (Mobile PWA)
 - [x] Dashboard overview with stats
 - [x] Appointments management
 - [x] Customers management (search, edit, reset password, delete)
@@ -48,13 +59,16 @@ Build a full-stack Beauty Parlour Appointment Booking Web Application for LOTUS 
 - [x] Enquiries (contact form messages)
 - [x] Support requests
 - [x] Settings (homepage content, weekly hours, admin password)
+- [x] **Mobile Header** with current page title
+- [x] **Mobile Bottom Navigation** (Home, Bookings, Customers, Gallery, More)
+- [x] **Slide-out Menu** from right side with all navigation options
 
 ### Key API Endpoints
 - `/api/auth/login`, `/api/auth/register`, `/api/auth/login-phone`
 - `/api/admin/login`, `/api/admin/change-password`
 - `/api/services`, `/api/staff`, `/api/gallery`, `/api/reviews`
 - `/api/appointments`, `/api/appointments/available-slots`
-- `/api/appointments/{id}/ics` (NEW - ICS calendar file)
+- `/api/appointments/{id}/ics` - ICS calendar file generation
 - `/api/coupons/validate/{code}`
 - `/api/settings`
 - `/api/customers`, `/api/customers/{id}`, `/api/customers/{id}/reset-password`
@@ -63,20 +77,19 @@ Build a full-stack Beauty Parlour Appointment Booking Web Application for LOTUS 
 
 ### Admin Credentials
 - Email: admin@lotus.com
-- Password: admin123
+- Password: admin123 (may have been changed via admin settings)
 
 ## Recent Updates (March 14, 2026)
 
-### PWA Implementation
-- Created `/public/manifest.json` with app name, icons, theme color, display:standalone
-- Created `/public/service-worker.js` with caching strategies
-- Created `/public/offline.html` for offline fallback
-- Generated PWA icons (192x192, 512x512, apple-touch-icon)
-- Added iOS PWA meta tags in `index.html`
-- Registered service worker in `index.js`
-- Created `BottomNav.js` component for mobile navigation
-- Added ICS endpoint in backend for Add to Calendar feature
-- Fixed navbar logo reactivity (settings-updated event)
+### PWA Native Mobile Experience
+- Created `InstallPWA.js` component with auto-prompt and iOS instructions
+- Enhanced `BottomNav.js` with elevated Book button and smooth animations
+- Updated `WhatsAppFloat.js` with touch-expand behavior (icon only → tooltip)
+- Redesigned `Services.js` with 2-column mobile grid and Quick View modal
+- Redesigned `Gallery.js` with Instagram-style 3-col grid and custom lightbox
+- Redesigned `Videos.js` with responsive grid cards and full-screen video modal
+- Enhanced `AdminDashboard.js` with mobile header, bottom nav, and slide-out menu
+- Added PWA-specific CSS (safe areas, touch manipulation, animations)
 
 ## Pending Features (P2-P3)
 
@@ -98,7 +111,8 @@ Build a full-stack Beauty Parlour Appointment Booking Web Application for LOTUS 
 - `/app/test_reports/iteration_1.json` - Initial testing
 - `/app/test_reports/iteration_2.json` - Customer management testing
 - `/app/test_reports/iteration_3.json` - Settings and enquiries testing
-- `/app/test_reports/iteration_4.json` - PWA features testing (100% pass)
+- `/app/test_reports/iteration_4.json` - PWA foundation testing (100% pass)
+- `/app/test_reports/iteration_5.json` - Mobile PWA UI testing (100% pass)
 
 ---
 *Last updated: March 14, 2026*
