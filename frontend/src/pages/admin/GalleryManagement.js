@@ -82,17 +82,35 @@ const GalleryManagement = () => {
         </form>
       </div>
 
-      {/* Medium size gallery grid */}
-      <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-3">
+      {/* Gallery grid - Bigger cards with fitted images */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {images.map((img, index) => (
-          <motion.div key={img.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative group" data-testid={`gallery-item-${index}`}>
-            <img src={img.image} alt={img.category} className="w-full h-28 object-cover rounded-lg" />
-            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center rounded-lg">
-              <button onClick={() => handleDelete(img.id)} className="opacity-0 group-hover:opacity-100 p-1.5 bg-red-500 text-white rounded-lg" data-testid={`delete-image-${index}`}>
-                <Trash2 size={16} />
+          <motion.div 
+            key={img.id} 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            className="relative group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all" 
+            data-testid={`gallery-item-${index}`}
+          >
+            <div className="aspect-square w-full overflow-hidden">
+              <img 
+                src={img.image} 
+                alt={img.category} 
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" 
+              />
+            </div>
+            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all flex items-center justify-center">
+              <button 
+                onClick={() => handleDelete(img.id)} 
+                className="opacity-0 group-hover:opacity-100 p-2 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-colors" 
+                data-testid={`delete-image-${index}`}
+              >
+                <Trash2 size={20} />
               </button>
             </div>
-            <p className="text-xs mt-1 text-center truncate">{img.category}</p>
+            <div className="p-2 bg-white">
+              <p className="text-sm text-center font-medium truncate">{img.category}</p>
+            </div>
           </motion.div>
         ))}
       </div>

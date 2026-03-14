@@ -121,29 +121,37 @@ const StaffManagement = () => {
         </button>
       </div>
 
-      {/* Staff Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Staff Grid - Bigger cards with fitted images */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
         {staff.map((member, index) => (
           <motion.div
             key={member.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all"
+            className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all"
             data-testid={`staff-card-${index}`}
           >
-            <img src={member.photo || 'https://via.placeholder.com/300x400'} alt={member.name} className="w-full h-64 object-cover" />
+            <div className="aspect-[3/4] w-full overflow-hidden">
+              <img 
+                src={member.photo || 'https://via.placeholder.com/300x400'} 
+                alt={member.name} 
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" 
+              />
+            </div>
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-1">{member.name}</h3>
               <p className="text-sm mb-2" style={{ color: 'var(--secondary)' }}>{member.role}</p>
               <p className="text-xs text-gray-600 mb-1">Experience: {member.experience}</p>
-              <p className="text-xs text-gray-600 mb-4">{member.specialization}</p>
+              <p className="text-xs text-gray-600 mb-4 line-clamp-2">{member.specialization}</p>
               <div className="flex space-x-2">
-                <button onClick={() => handleEdit(member)} className="flex-1 py-2 px-3 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors flex items-center justify-center" data-testid={`edit-staff-${index}`}>
+                <button onClick={() => handleEdit(member)} className="flex-1 py-2 px-3 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors flex items-center justify-center space-x-1" data-testid={`edit-staff-${index}`}>
                   <Edit2 size={14} />
+                  <span className="text-sm">Edit</span>
                 </button>
-                <button onClick={() => handleDelete(member.id)} className="flex-1 py-2 px-3 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors flex items-center justify-center" data-testid={`delete-staff-${index}`}>
+                <button onClick={() => handleDelete(member.id)} className="flex-1 py-2 px-3 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors flex items-center justify-center space-x-1" data-testid={`delete-staff-${index}`}>
                   <Trash2 size={14} />
+                  <span className="text-sm">Delete</span>
                 </button>
               </div>
             </div>
