@@ -79,7 +79,7 @@ const Staff = () => {
                     <img
                       src={member.photo || 'https://images.unsplash.com/photo-1616723355486-eac8780bfcb9?w=400'}
                       alt={member.name}
-                      className="w-full h-36 md:h-44 lg:h-48 object-cover"
+                      className="w-full aspect-[3/4] object-cover object-top"
                       loading="lazy"
                     />
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">

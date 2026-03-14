@@ -88,10 +88,10 @@ const Gallery = () => {
         </div>
       )}
 
-      {/* Category Filter - Scrollable on mobile */}
-      <section className="py-4 bg-white sticky top-14 md:top-16 z-40 shadow-sm" data-testid="gallery-filter">
-        <div className="container-custom">
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+      {/* Category Filter - Scrollable on mobile, centered on desktop */}
+      <section className="py-4 bg-white sticky top-[72px] z-40 shadow-sm" data-testid="gallery-filter">
+        <div className="w-full px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto">
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide md:justify-center">
             {categories.map((category) => (
               <button
                 key={category}

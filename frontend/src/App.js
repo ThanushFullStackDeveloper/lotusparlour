@@ -24,6 +24,7 @@ import Footer from './components/Footer';
 import WhatsAppFloat from './components/WhatsAppFloat';
 import BottomNav from './components/BottomNav';
 import InstallPWA from './components/InstallPWA';
+import ScrollToTop from './components/ScrollToTop';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -58,6 +59,7 @@ function App() {
   return (
     <div className="App">
       <BrowserRouter>
+        <ScrollToTop />
         <Toaster position="top-right" richColors />
         <Routes>
           {/* Admin Routes */}
