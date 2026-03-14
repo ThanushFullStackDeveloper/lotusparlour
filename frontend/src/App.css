@@ -192,14 +192,35 @@ html, body {
   overflow-x: hidden;
 }
 
-/* PWA Standalone Mode - Hide browser chrome */
+/* PWA Standalone Mode - Handle safe areas for iOS */
+.safe-area-spacer {
+  height: 0;
+  width: 100%;
+  background-color: white;
+}
+
+/* iOS PWA standalone mode */
 @media all and (display-mode: standalone) {
-  body {
-    padding-top: env(safe-area-inset-top);
+  .safe-area-spacer {
+    height: constant(safe-area-inset-top); /* iOS 11.0-11.2 */
+    height: env(safe-area-inset-top, 0px); /* iOS 11.2+ */
   }
   
-  .navbar {
-    padding-top: env(safe-area-inset-top);
+  .navbar-safe-area {
+    background-color: white;
+  }
+  
+  /* Increase main content top padding to account for safe area + navbar */
+  main {
+    padding-top: calc(constant(safe-area-inset-top) + 48px) !important; /* iOS 11.0-11.2 */
+    padding-top: calc(env(safe-area-inset-top, 0px) + 48px) !important; /* iOS 11.2+ */
+  }
+  
+  @media (min-width: 768px) {
+    main {
+      padding-top: calc(constant(safe-area-inset-top) + 72px) !important;
+      padding-top: calc(env(safe-area-inset-top, 0px) + 72px) !important;
+    }
   }
 }
 

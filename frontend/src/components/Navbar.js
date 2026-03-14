@@ -63,7 +63,12 @@ const Navbar = () => {
   const subTitle = nameParts.slice(1).join(' ') || 'Beauty Parlour';
 
   return (
-    <nav className="bg-white shadow-sm fixed top-0 left-0 right-0 z-50" data-testid="navbar">
+    <nav 
+      className="bg-white shadow-sm fixed top-0 left-0 right-0 z-50 navbar-safe-area" 
+      data-testid="navbar"
+    >
+      {/* Safe area spacer for iOS PWA */}
+      <div className="safe-area-spacer"></div>
       <div className="container-custom">
         <div className="flex justify-between items-center py-2 md:py-4">
           {/* Logo */}
