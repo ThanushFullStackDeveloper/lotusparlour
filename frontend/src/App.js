@@ -77,7 +77,7 @@ function App() {
             element={
               <>
                 <Navbar />
-                <main className="min-h-screen pb-20 md:pb-0">
+                <main className="min-h-screen pb-20 md:pb-0 pt-[72px]">
                   <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/about" element={<About />} />

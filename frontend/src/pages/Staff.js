@@ -59,13 +59,13 @@ const Staff = () => {
 
       {/* Staff Grid */}
       <section className="py-6 md:py-12" data-testid="staff-grid">
-        <div className="container-custom">
+        <div className="container-custom max-w-5xl mx-auto">
           {(!staff || staff.length === 0) ? (
             <div className="text-center py-12">
               <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>No staff members available.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
               {staff.map((member, index) => (
                 <motion.div
                   key={member.id}
@@ -79,7 +79,7 @@ const Staff = () => {
                     <img
                       src={member.photo || 'https://images.unsplash.com/photo-1616723355486-eac8780bfcb9?w=400'}
                       alt={member.name}
-                      className="w-full h-40 md:h-56 object-cover"
+                      className="w-full h-36 md:h-44 lg:h-48 object-cover"
                       loading="lazy"
                     />
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">

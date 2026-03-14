@@ -112,13 +112,13 @@ const Gallery = () => {
 
       {/* Instagram-Style Gallery Grid */}
       <section className="py-4 md:py-8" data-testid="gallery-grid">
-        <div className="container-custom">
+        <div className="container-custom max-w-5xl mx-auto">
           {filteredImages.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>No images in this category.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-0.5 md:gap-1">
+            <div className="grid grid-cols-3 md:grid-cols-4 gap-0.5 md:gap-2">
               {filteredImages.map((img, index) => (
                 <motion.div
                   key={img.id}
@@ -126,7 +126,7 @@ const Gallery = () => {
                   animate={{ opacity: 1 }}
                   transition={{ delay: Math.min(index * 0.02, 0.3), duration: 0.3 }}
                   whileTap={{ scale: 0.98 }}
-                  className="relative aspect-square overflow-hidden cursor-pointer group"
+                  className="relative aspect-square overflow-hidden cursor-pointer group max-h-[150px] md:max-h-[180px]"
                   onClick={() => openLightbox(index)}
                   data-testid={`gallery-item-${index}`}
                 >

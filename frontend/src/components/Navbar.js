@@ -63,7 +63,7 @@ const Navbar = () => {
   const subTitle = nameParts.slice(1).join(' ') || 'Beauty Parlour';
 
   return (
-    <nav className="bg-white shadow-sm sticky top-0 z-50" data-testid="navbar">
+    <nav className="bg-white shadow-sm fixed top-0 left-0 right-0 z-50" data-testid="navbar">
       <div className="container-custom">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
