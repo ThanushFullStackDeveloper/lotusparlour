@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
 import { getGallery, getGalleryImage } from '../utils/api';
@@ -7,115 +7,106 @@ import PageHeader from '../components/PageHeader';
 import { toast } from 'sonner';
 import useWebSocket from '../hooks/useWebSocket';
 
-const CACHE_KEY = 'gallery_cache';
-
-// Load everything from cache immediately
-const getCache = () => {
-  try {
-    const cached = localStorage.getItem(CACHE_KEY);
-    if (cached) {
-      const data = JSON.parse(cached);
-      return {
-        images: data.images || [],
-        imageData: data.imageData || {}
-      };
-    }
-  } catch {}
-  return { images: [], imageData: {} };
-};
-
-const initialCache = getCache();
+const CACHE_KEY = 'gallery_cache_v2';
 
 const Gallery = () => {
-  const [images, setImages] = useState(initialCache.images);
-  const [imageData, setImageData] = useState(initialCache.imageData);
-  const [filteredImages, setFilteredImages] = useState(initialCache.images);
+  const [images, setImages] = useState([]);
+  const [imageData, setImageData] = useState({});
+  const [filteredImages, setFilteredImages] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
-  const loadedIds = useRef(new Set(Object.keys(initialCache.imageData)));
-  const hasFetched = useRef(false);
 
   const categories = ['All', 'Bridal Makeup', 'Hair Styling', 'Facial', 'Salon Interior'];
+
+  // Load from cache on mount
+  useEffect(() => {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const data = JSON.parse(cached);
+        if (data.images) {
+          setImages(data.images);
+          setFilteredImages(data.images);
+        }
+        if (data.imageData) setImageData(data.imageData);
+      }
+    } catch {}
+  }, []);
 
   const saveCache = useCallback((imagesData, imageDataMap) => {
     try {
       localStorage.setItem(CACHE_KEY, JSON.stringify({
         images: imagesData,
-        imageData: imageDataMap,
-        timestamp: Date.now()
+        imageData: imageDataMap
       }));
     } catch {}
   }, []);
 
-  const fetchGallery = useCallback(async (forceRefresh = false) => {
-    if (hasFetched.current && !forceRefresh) return;
-    hasFetched.current = true;
-
+  const fetchGallery = useCallback(async () => {
     try {
       const response = await getGallery();
       const newImages = response.data;
       setImages(newImages);
       setFilteredImages(newImages);
       
-      // Load only new images
-      const toLoad = newImages.filter(
-        img => forceRefresh || !loadedIds.current.has(img.id)
-      );
-      
-      if (toLoad.length === 0) {
-        saveCache(newImages, imageData);
-        return;
-      }
-
-      // Load all images in parallel
-      const newImageData = { ...imageData };
+      // Load all images
+      const newImageData = {};
       await Promise.all(
-        toLoad.map(async (img) => {
+        newImages.map(async (img) => {
           try {
             const imgResponse = await getGalleryImage(img.id);
             let imageUrl = imgResponse.data.image;
-            
             if (imageUrl) {
-              imageUrl = await compressImage(imageUrl, 600, 0.7);
-              loadedIds.current.add(img.id);
+              if (imageUrl.startsWith('data:image')) {
+                imageUrl = await compressImage(imageUrl, 600, 0.7);
+              }
               newImageData[img.id] = imageUrl;
             }
-          } catch {}
+          } catch (e) {
+            console.error('Error loading image for', img.id, e);
+          }
         })
       );
 
-      setImageData(newImageData);
-      saveCache(newImages, newImageData);
+      setImageData(prev => {
+        const merged = { ...prev, ...newImageData };
+        saveCache(newImages, merged);
+        return merged;
+      });
     } catch (error) {
       console.error('Error fetching gallery:', error);
-      if (images.length === 0) {
-        toast.error('Failed to load gallery');
-      }
+      toast.error('Failed to load gallery');
     }
-  }, [imageData, saveCache, images.length]);
+  }, [saveCache]);
 
   const handleWebSocketUpdate = useCallback((data) => {
     if (data.entity === 'gallery') {
       localStorage.removeItem(CACHE_KEY);
-      loadedIds.current.clear();
-      hasFetched.current = false;
       setImageData({});
-      setImages([]);
-      setFilteredImages([]);
-      fetchGallery(true);
+      fetchGallery();
     }
   }, [fetchGallery]);
 
   useWebSocket(handleWebSocketUpdate);
 
   useEffect(() => {
-    fetchGallery();
+    // Check if we need to fetch
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      const data = JSON.parse(cached);
+      const hasAllImages = data.images?.length > 0 && 
+        Object.keys(data.imageData || {}).length >= data.images.length;
+      if (!hasAllImages) {
+        fetchGallery();
+      }
+    } else {
+      fetchGallery();
+    }
   }, [fetchGallery]);
 
   useEffect(() => {
     if (!images) return;
-    
     if (selectedCategory === 'All') {
       setFilteredImages(images);
     } else {
@@ -169,8 +160,7 @@ const Gallery = () => {
           {filteredImages.length === 0 ? (
             <div className="grid grid-cols-3 md:grid-cols-4 gap-0.5 md:gap-2">
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="aspect-square max-h-[150px] md:max-h-[180px] bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]" 
-                  style={{ animation: 'shimmer 1.5s infinite' }} />
+                <div key={i} className="aspect-square max-h-[150px] md:max-h-[180px] skeleton-shimmer" />
               ))}
             </div>
           ) : (
@@ -178,8 +168,6 @@ const Gallery = () => {
               {filteredImages.map((img, index) => (
                 <motion.div
                   key={img.id}
-                  initial={{ opacity: 1 }}
-                  animate={{ opacity: 1 }}
                   whileTap={{ scale: 0.98 }}
                   className="relative aspect-square overflow-hidden cursor-pointer group max-h-[150px] md:max-h-[180px] bg-gray-100"
                   onClick={() => openLightbox(index)}
@@ -192,8 +180,7 @@ const Gallery = () => {
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]" 
-                      style={{ animation: 'shimmer 1.5s infinite' }} />
+                    <div className="w-full h-full skeleton-shimmer" />
                   )}
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all hidden md:flex items-center justify-center opacity-0 group-hover:opacity-100">
                     <Maximize2 size={24} className="text-white" />

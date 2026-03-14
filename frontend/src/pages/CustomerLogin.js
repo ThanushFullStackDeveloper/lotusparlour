@@ -11,6 +11,7 @@ const CustomerLogin = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [loginMethod, setLoginMethod] = useState('email'); // 'email' or 'phone'
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({ type: '', text: '' }); // For inline messages
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -20,6 +21,7 @@ const CustomerLogin = () => {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setMessage({ type: '', text: '' }); // Clear message on input
   };
 
   // Validation functions
@@ -33,25 +35,36 @@ const CustomerLogin = () => {
     return phoneRegex.test(phone);
   };
 
+  const showMessage = (type, text) => {
+    setMessage({ type, text });
+    // Also show toast for better visibility
+    if (type === 'error') {
+      toast.error(text);
+    } else {
+      toast.success(text);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setMessage({ type: '', text: '' });
     
     // Validation for registration
     if (!isLogin) {
       if (!formData.name || formData.name.trim().length < 2) {
-        toast.error('Please enter a valid name (at least 2 characters)');
+        showMessage('error', 'Please enter a valid name (at least 2 characters)');
         return;
       }
       if (!validateEmail(formData.email)) {
-        toast.error('Please enter a valid email address');
+        showMessage('error', 'Please enter a valid email address');
         return;
       }
       if (!validatePhone(formData.phone)) {
-        toast.error('Please enter a valid 10-digit mobile number');
+        showMessage('error', 'Please enter a valid 10-digit mobile number');
         return;
       }
       if (!formData.password || formData.password.length < 6) {
-        toast.error('Password must be at least 6 characters');
+        showMessage('error', 'Password must be at least 6 characters');
         return;
       }
     }
@@ -72,10 +85,10 @@ const CustomerLogin = () => {
         localStorage.setItem('userName', user?.name || 'User');
         
         if (role === 'admin') {
-          toast.success('Admin login successful!');
+          showMessage('success', 'Admin login successful!');
           navigate('/admin/dashboard');
         } else {
-          toast.success('Login successful!');
+          showMessage('success', 'Login successful!');
           // Check for password reset requirement
           if (force_password_reset) {
             toast.info('Please reset your password');
@@ -87,7 +100,7 @@ const CustomerLogin = () => {
       } else {
         // Registration - always for customers
         response = await register(formData);
-        toast.success('Registration successful!');
+        showMessage('success', 'Registration successful!');
         
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('role', 'user');
@@ -98,7 +111,7 @@ const CustomerLogin = () => {
       }
     } catch (error) {
       console.error('Auth error:', error);
-      toast.error(error.response?.data?.detail || 'Authentication failed');
+      showMessage('error', error.response?.data?.detail || 'Authentication failed');
     } finally {
       setLoading(false);
     }
@@ -129,6 +142,20 @@ const CustomerLogin = () => {
               {isLogin ? 'Login to manage your appointments' : 'Register to book your first appointment'}
             </p>
           </div>
+
+          {/* Inline Message Display */}
+          {message.text && (
+            <div 
+              className={`mb-4 p-3 rounded-lg text-sm font-medium text-center ${
+                message.type === 'error' 
+                  ? 'bg-red-50 text-red-600 border border-red-200' 
+                  : 'bg-green-50 text-green-600 border border-green-200'
+              }`}
+              data-testid="auth-message"
+            >
+              {message.text}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4" data-testid="auth-form">
             {!isLogin && (

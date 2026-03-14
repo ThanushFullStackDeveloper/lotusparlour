@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Clock, IndianRupee, Eye } from 'lucide-react';
@@ -8,120 +8,97 @@ import PageHeader from '../components/PageHeader';
 import { toast } from 'sonner';
 import useWebSocket from '../hooks/useWebSocket';
 
-const CACHE_KEY = 'services_cache';
-
-// Load everything from cache immediately
-const getCache = () => {
-  try {
-    const cached = localStorage.getItem(CACHE_KEY);
-    if (cached) {
-      const data = JSON.parse(cached);
-      return {
-        services: data.services || [],
-        images: data.images || {}
-      };
-    }
-  } catch {}
-  return { services: [], images: {} };
-};
-
-const initialCache = getCache();
+const CACHE_KEY = 'services_cache_v2';
 
 const Services = () => {
+  const [services, setServices] = useState([]);
+  const [imageData, setImageData] = useState({});
   const [selectedService, setSelectedService] = useState(null);
-  const [services, setServices] = useState(initialCache.services);
-  const [imageData, setImageData] = useState(initialCache.images);
-  const loadedIds = useRef(new Set(Object.keys(initialCache.images)));
-  const hasFetched = useRef(false);
+
+  // Load from cache on mount
+  useEffect(() => {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const data = JSON.parse(cached);
+        if (data.services) setServices(data.services);
+        if (data.images) setImageData(data.images);
+      }
+    } catch {}
+  }, []);
 
   const saveCache = useCallback((servicesData, imagesData) => {
     try {
       localStorage.setItem(CACHE_KEY, JSON.stringify({
         services: servicesData,
-        images: imagesData,
-        timestamp: Date.now()
+        images: imagesData
       }));
     } catch {}
   }, []);
 
-  const fetchServices = useCallback(async (forceRefresh = false) => {
-    if (hasFetched.current && !forceRefresh) return;
-    hasFetched.current = true;
-
+  const fetchServices = useCallback(async () => {
     try {
       const response = await getServices();
       const newServices = response.data;
       setServices(newServices);
       
-      // Load only new images
-      const toLoad = newServices.filter(
-        service => forceRefresh || !loadedIds.current.has(service.id)
-      );
-      
-      if (toLoad.length === 0) {
-        saveCache(newServices, imageData);
-        return;
-      }
-
-      // Load all images in parallel
-      const newImages = { ...imageData };
+      // Load all images
+      const newImages = {};
       await Promise.all(
-        toLoad.map(async (service) => {
+        newServices.map(async (service) => {
           try {
             const imgResponse = await getServiceImage(service.id);
             let imageUrl = imgResponse.data.image;
-            
             if (imageUrl) {
-              imageUrl = await compressImage(imageUrl, 600, 0.7);
-              loadedIds.current.add(service.id);
+              if (imageUrl.startsWith('data:image')) {
+                imageUrl = await compressImage(imageUrl, 600, 0.7);
+              }
               newImages[service.id] = imageUrl;
             }
-          } catch {}
+          } catch (e) {
+            console.error('Error loading image for', service.id, e);
+          }
         })
       );
 
-      setImageData(newImages);
-      saveCache(newServices, newImages);
+      setImageData(prev => {
+        const merged = { ...prev, ...newImages };
+        saveCache(newServices, merged);
+        return merged;
+      });
     } catch (error) {
       console.error('Error fetching services:', error);
-      if (services.length === 0) {
-        toast.error('Failed to load services');
-      }
+      toast.error('Failed to load services');
     }
-  }, [imageData, saveCache, services.length]);
+  }, [saveCache]);
 
   const handleWebSocketUpdate = useCallback((data) => {
     if (data.entity === 'services') {
       localStorage.removeItem(CACHE_KEY);
-      loadedIds.current.clear();
-      hasFetched.current = false;
       setImageData({});
-      setServices([]);
-      fetchServices(true);
+      fetchServices();
     }
   }, [fetchServices]);
 
   useWebSocket(handleWebSocketUpdate);
 
   useEffect(() => {
-    fetchServices();
+    // Check if we need to fetch
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      const data = JSON.parse(cached);
+      const hasAllImages = data.services?.length > 0 && 
+        Object.keys(data.images || {}).length >= data.services.length;
+      if (!hasAllImages) {
+        fetchServices();
+      }
+    } else {
+      fetchServices();
+    }
   }, [fetchServices]);
 
-  const handleOpenServiceDetail = async (service) => {
-    if (imageData[service.id]) {
-      setSelectedService({ ...service, image: imageData[service.id] });
-    } else {
-      try {
-        const response = await getServiceImage(service.id);
-        const fullImage = response.data.image;
-        const newImages = { ...imageData, [service.id]: fullImage };
-        setImageData(newImages);
-        saveCache(services, newImages);
-        setSelectedService({ ...service, image: fullImage });
-      } catch {
-        setSelectedService(service);
-      }
-    }
+  const handleOpenServiceDetail = (service) => {
+    setSelectedService({ ...service, image: imageData[service.id] || service.image });
   };
 
   return (
@@ -137,11 +114,10 @@ const Services = () => {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="service-card-mobile">
-                  <div className="aspect-square rounded-xl mb-3 max-h-[180px] lg:max-h-[200px] bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]" 
-                    style={{ animation: 'shimmer 1.5s infinite' }} />
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
-                  <div className="h-3 bg-gray-200 rounded w-1/2 mb-2" />
-                  <div className="h-9 bg-gray-200 rounded w-full" />
+                  <div className="aspect-square rounded-xl mb-3 max-h-[180px] lg:max-h-[200px] skeleton-shimmer" />
+                  <div className="h-4 rounded w-3/4 mb-2 skeleton-shimmer" />
+                  <div className="h-3 rounded w-1/2 mb-2 skeleton-shimmer" />
+                  <div className="h-9 rounded w-full skeleton-shimmer" />
                 </div>
               ))}
             </div>
@@ -150,8 +126,6 @@ const Services = () => {
               {services.map((service, index) => (
                 <motion.div
                   key={service.id}
-                  initial={{ opacity: 1 }}
-                  animate={{ opacity: 1 }}
                   whileTap={{ scale: 0.98 }}
                   className="service-card-mobile group"
                   data-testid={`service-card-${index}`}
@@ -164,8 +138,7 @@ const Services = () => {
                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]" 
-                        style={{ animation: 'shimmer 1.5s infinite' }} />
+                      <div className="w-full h-full skeleton-shimmer" />
                     )}
                     <button
                       onClick={(e) => {
