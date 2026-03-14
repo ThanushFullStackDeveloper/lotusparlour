@@ -594,7 +594,7 @@ const Booking = () => {
             </div>
           )}
         </motion.div>
-          </>
+        </>
         )}
       </div>
     </div>
