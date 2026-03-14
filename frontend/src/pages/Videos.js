@@ -178,10 +178,10 @@ const Videos = () => {
             data-testid="video-modal"
           >
             {/* Header */}
-            <div className="flex items-center justify-end p-4">
+            <div className="flex items-center justify-end p-4 pt-12 md:pt-4">
               <button
                 onClick={closeVideo}
-                className="p-2 rounded-full hover:bg-white/10 transition-colors touch-manipulation"
+                className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors touch-manipulation"
                 data-testid="close-video-btn"
               >
                 <X size={28} className="text-white" />

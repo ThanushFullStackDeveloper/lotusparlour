@@ -22,8 +22,40 @@ const CustomerLogin = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Validation functions
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePhone = (phone) => {
+    const phoneRegex = /^[6-9]\d{9}$/;
+    return phoneRegex.test(phone);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validation for registration
+    if (!isLogin) {
+      if (!formData.name || formData.name.trim().length < 2) {
+        toast.error('Please enter a valid name (at least 2 characters)');
+        return;
+      }
+      if (!validateEmail(formData.email)) {
+        toast.error('Please enter a valid email address');
+        return;
+      }
+      if (!validatePhone(formData.phone)) {
+        toast.error('Please enter a valid 10-digit mobile number');
+        return;
+      }
+      if (!formData.password || formData.password.length < 6) {
+        toast.error('Password must be at least 6 characters');
+        return;
+      }
+    }
+    
     setLoading(true);
     try {
       let response;

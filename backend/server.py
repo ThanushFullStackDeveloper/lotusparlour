@@ -374,6 +374,11 @@ async def register_user(user_data: UserCreate):
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
     
+    # Check for duplicate phone number
+    existing_phone = await db.users.find_one({"phone": user_data.phone}, {"_id": 0})
+    if existing_phone:
+        raise HTTPException(status_code=400, detail="Mobile number already registered")
+    
     user = User(
         name=user_data.name,
         email=user_data.email,

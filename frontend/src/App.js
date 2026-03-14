@@ -64,7 +64,7 @@ function App() {
       <BrowserRouter>
         <WebSocketProvider>
           <ScrollToTop />
-          <Toaster position="top-right" richColors />
+          <Toaster position="top-center" richColors />
           <Routes>
             {/* Admin Routes */}
             <Route path="/admin/login" element={<AdminLogin />} />
