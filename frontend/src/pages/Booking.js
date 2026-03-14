@@ -314,22 +314,8 @@ const Booking = () => {
 
   return (
     <div className="booking-page section-spacing" data-testid="booking-page">
-      {/* Sticky Back Button - Mobile Only */}
-      <div className="md:hidden sticky top-[60px] z-30 bg-white/95 backdrop-blur-sm border-b border-gray-100/50">
-        <div className="container-custom py-2">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-gray-600 hover:text-[var(--secondary)] transition-colors touch-manipulation"
-            data-testid="booking-back-btn-mobile"
-          >
-            <ArrowLeft size={20} />
-            <span className="text-sm font-medium">Back</span>
-          </button>
-        </div>
-      </div>
-      
-      <div className="container-custom max-w-4xl mx-auto">
-        {/* Desktop Back Button */}
+      <div className="w-full px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto">
+        {/* Desktop Back Button Only */}
         <button
           onClick={() => navigate(-1)}
           className="hidden md:flex items-center gap-2 mb-4 text-gray-600 hover:text-[var(--secondary)] transition-colors"
@@ -339,9 +325,9 @@ const Booking = () => {
           <span className="text-sm font-medium">Back</span>
         </button>
         
-        <div className="text-center mb-12">
-          <h1 className="text-5xl md:text-6xl font-bold font-heading mb-4">Book Your Appointment</h1>
-          <p className="text-base md:text-lg" style={{ color: 'var(--text-secondary)' }}>
+        <div className="text-center mb-8 md:mb-12">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold font-heading mb-4">Book Your Appointment</h1>
+          <p className="text-sm md:text-base lg:text-lg" style={{ color: 'var(--text-secondary)' }}>
             Follow the simple steps to schedule your beauty treatment
           </p>
         </div>

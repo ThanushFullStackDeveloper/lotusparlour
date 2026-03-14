@@ -139,25 +139,17 @@ const CustomerDashboard = () => {
 
   return (
     <div className="customer-dashboard" data-testid="customer-dashboard">
-      {/* Sticky Back Button - Mobile Only */}
-      <div className="md:hidden sticky top-[60px] z-30 bg-white/95 backdrop-blur-sm border-b border-gray-100/50">
-        <div className="container-custom px-4 py-2">
+      <div className="py-4 md:py-8">
+        <div className="w-full px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto">
+          {/* Desktop Back Button Only */}
           <button
             onClick={() => navigate('/')}
-            className="flex items-center gap-2 text-gray-600 hover:text-[var(--secondary)] transition-colors touch-manipulation"
-            data-testid="dashboard-back-btn-mobile"
+            className="hidden md:flex items-center gap-2 mb-4 text-gray-600 hover:text-[var(--secondary)] transition-colors"
+            data-testid="dashboard-back-btn"
           >
             <ArrowLeft size={20} />
             <span className="text-sm font-medium">Back to Home</span>
           </button>
-        </div>
-      </div>
-      
-      <div className="py-4 md:py-8">
-        <div className="container-custom px-4">
-          {/* Desktop Back Button */}
-          <button
-            onClick={() => navigate('/')}
             className="hidden md:flex items-center gap-2 mb-4 text-gray-600 hover:text-[var(--secondary)] transition-colors"
             data-testid="dashboard-back-btn"
           >

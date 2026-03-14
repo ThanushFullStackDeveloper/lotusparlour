@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, Lock, Mail, Phone, HelpCircle, Shield } from 'lucide-react';
+import { User, Lock, Mail, Phone, HelpCircle, Shield, ArrowLeft } from 'lucide-react';
 import { login, register, loginWithPhone, unifiedLogin } from '../utils/api';
 import { toast } from 'sonner';
 
@@ -74,16 +74,26 @@ const CustomerLogin = () => {
 
   return (
     <div className="customer-login-page section-spacing" data-testid="customer-login-page">
-      <div className="container-custom max-w-md mx-auto">
+      <div className="w-full px-4 md:px-8 lg:px-16 max-w-md mx-auto">
+        {/* Desktop Back Button Only */}
+        <button
+          onClick={() => navigate('/')}
+          className="hidden md:flex items-center gap-2 mb-4 text-gray-600 hover:text-[var(--secondary)] transition-colors"
+          data-testid="login-back-btn"
+        >
+          <ArrowLeft size={20} />
+          <span className="text-sm font-medium">Back</span>
+        </button>
+        
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-white p-8 rounded-2xl shadow-lg"
+          className="bg-white p-6 md:p-8 rounded-2xl shadow-lg"
         >
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold font-heading mb-2">{isLogin ? 'Welcome Back' : 'Create Account'}</h1>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+          <div className="text-center mb-6 md:mb-8">
+            <h1 className="text-2xl md:text-4xl font-bold font-heading mb-2">{isLogin ? 'Welcome Back' : 'Create Account'}</h1>
+            <p className="text-xs md:text-sm" style={{ color: 'var(--text-secondary)' }}>
               {isLogin ? 'Login to manage your appointments' : 'Register to book your first appointment'}
             </p>
           </div>

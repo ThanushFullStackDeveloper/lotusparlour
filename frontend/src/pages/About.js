@@ -8,24 +8,10 @@ const About = () => {
 
   return (
     <div className="about-page" data-testid="about-page">
-      {/* Sticky Back Button - Mobile Only */}
-      <div className="md:hidden sticky top-[60px] z-30 bg-white/95 backdrop-blur-sm border-b border-gray-100/50">
-        <div className="w-full px-4 py-2">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-gray-600 hover:text-[var(--secondary)] transition-colors touch-manipulation"
-            data-testid="about-back-btn-mobile"
-          >
-            <ArrowLeft size={20} />
-            <span className="text-sm font-medium">Back</span>
-          </button>
-        </div>
-      </div>
-      
       {/* Hero */}
       <section className="section-spacing bg-[var(--background-alt)]" data-testid="about-hero">
         <div className="w-full px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto">
-          {/* Desktop Back Button */}
+          {/* Desktop Back Button Only */}
           <button
             onClick={() => navigate(-1)}
             className="hidden md:flex items-center gap-2 mb-6 text-gray-600 hover:text-[var(--secondary)] transition-colors"
