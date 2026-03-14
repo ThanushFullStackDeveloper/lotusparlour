@@ -33,32 +33,36 @@ const Services = () => {
       const response = await getServices();
       setServices(response.data);
       
-      // Load images that aren't cached
-      for (const service of response.data) {
-        // Skip if already loaded this session (unless force refresh)
-        if (!forceRefresh && loadedIds.current.has(service.id)) continue;
-        
-        try {
-          const imgResponse = await getServiceImage(service.id);
-          let imageUrl = imgResponse.data.image;
-          
-          if (imageUrl) {
-            // Compress large images for faster display
-            imageUrl = await compressImage(imageUrl, 600, 0.7);
+      // Filter services that need image loading
+      const toLoad = response.data.filter(
+        service => forceRefresh || !loadedIds.current.has(service.id)
+      );
+      
+      // Load ALL images in parallel for maximum speed
+      await Promise.all(
+        toLoad.map(async (service) => {
+          try {
+            const imgResponse = await getServiceImage(service.id);
+            let imageUrl = imgResponse.data.image;
             
-            loadedIds.current.add(service.id);
-            setImageData(prev => {
-              const updated = { ...prev, [service.id]: imageUrl };
-              try {
-                localStorage.setItem(CACHE_KEY, JSON.stringify(updated));
-              } catch {}
-              return updated;
-            });
+            if (imageUrl) {
+              // Compress large images for faster display
+              imageUrl = await compressImage(imageUrl, 600, 0.7);
+              
+              loadedIds.current.add(service.id);
+              setImageData(prev => {
+                const updated = { ...prev, [service.id]: imageUrl };
+                try {
+                  localStorage.setItem(CACHE_KEY, JSON.stringify(updated));
+                } catch {}
+                return updated;
+              });
+            }
+          } catch (error) {
+            console.error('Error loading image:', service.id);
           }
-        } catch (error) {
-          console.error('Error loading image:', service.id);
-        }
-      }
+        })
+      );
     } catch (error) {
       console.error('Error fetching services:', error);
       toast.error('Failed to load services');
@@ -142,8 +146,8 @@ const Services = () => {
                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <div className="w-6 h-6 border-2 border-[var(--secondary)] border-t-transparent rounded-full animate-spin"></div>
+                      <div className="w-full h-full animate-pulse bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]" 
+                        style={{ animation: 'shimmer 1.5s infinite' }}>
                       </div>
                     )}
                     <button

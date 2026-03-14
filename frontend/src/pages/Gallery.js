@@ -38,31 +38,36 @@ const Gallery = () => {
       setImages(response.data);
       setFilteredImages(response.data);
       
-      // Load images that aren't cached
-      for (const img of response.data) {
-        if (!forceRefresh && loadedIds.current.has(img.id)) continue;
-        
-        try {
-          const imgResponse = await getGalleryImage(img.id);
-          let imageUrl = imgResponse.data.image;
-          
-          if (imageUrl) {
-            // Compress large images for faster display
-            imageUrl = await compressImage(imageUrl, 600, 0.7);
+      // Filter images that need loading
+      const toLoad = response.data.filter(
+        img => forceRefresh || !loadedIds.current.has(img.id)
+      );
+      
+      // Load ALL images in parallel for maximum speed
+      await Promise.all(
+        toLoad.map(async (img) => {
+          try {
+            const imgResponse = await getGalleryImage(img.id);
+            let imageUrl = imgResponse.data.image;
             
-            loadedIds.current.add(img.id);
-            setImageData(prev => {
-              const updated = { ...prev, [img.id]: imageUrl };
-              try {
-                localStorage.setItem(CACHE_KEY, JSON.stringify(updated));
-              } catch {}
-              return updated;
-            });
+            if (imageUrl) {
+              // Compress large images for faster display
+              imageUrl = await compressImage(imageUrl, 600, 0.7);
+              
+              loadedIds.current.add(img.id);
+              setImageData(prev => {
+                const updated = { ...prev, [img.id]: imageUrl };
+                try {
+                  localStorage.setItem(CACHE_KEY, JSON.stringify(updated));
+                } catch {}
+                return updated;
+              });
+            }
+          } catch (error) {
+            console.error('Error loading image:', img.id);
           }
-        } catch (error) {
-          console.error('Error loading image:', img.id);
-        }
-      }
+        })
+      );
     } catch (error) {
       console.error('Error fetching gallery:', error);
       toast.error('Failed to load gallery');
@@ -173,8 +178,8 @@ const Gallery = () => {
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <div className="w-6 h-6 border-2 border-[var(--secondary)] border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-full h-full animate-pulse bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]" 
+                      style={{ animation: 'shimmer 1.5s infinite' }}>
                     </div>
                   )}
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all hidden md:flex items-center justify-center opacity-0 group-hover:opacity-100">
