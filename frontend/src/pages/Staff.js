@@ -59,7 +59,7 @@ const Staff = () => {
 
       {/* Staff Grid */}
       <section className="py-6 md:py-12" data-testid="staff-grid">
-        <div className="container-custom max-w-5xl mx-auto">
+        <div className="w-full px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto">
           {(!staff || staff.length === 0) ? (
             <div className="text-center py-12">
               <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>No staff members available.</p>

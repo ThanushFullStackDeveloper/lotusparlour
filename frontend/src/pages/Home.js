@@ -221,7 +221,7 @@ const Home = () => {
 
       {/* Featured Services */}
       <section className="section-spacing" data-testid="featured-services-section">
-        <div className="container-custom max-w-5xl mx-auto">
+        <div className="w-full px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold font-heading mb-4">Our Premium Services</h2>
             <p className="text-base md:text-lg" style={{ color: 'var(--text-secondary)' }}>
@@ -262,7 +262,7 @@ const Home = () => {
 
       {/* Staff Preview */}
       <section className="section-spacing bg-[var(--background-alt)]" data-testid="staff-preview-section">
-        <div className="container-custom">
+        <div className="w-full px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold font-heading mb-4">Meet Our Experts</h2>
             <p className="text-base md:text-lg" style={{ color: 'var(--text-secondary)' }}>
@@ -303,7 +303,7 @@ const Home = () => {
 
       {/* Testimonials */}
       <section className="section-spacing" data-testid="testimonials-section">
-        <div className="container-custom">
+        <div className="w-full px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold font-heading mb-4">What Our Clients Say</h2>
             <p className="text-base md:text-lg" style={{ color: 'var(--text-secondary)' }}>
@@ -340,7 +340,7 @@ const Home = () => {
 
       {/* CTA Section */}
       <section className="section-spacing" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)' }} data-testid="cta-section">
-        <div className="container-custom text-center text-white">
+        <div className="w-full px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto text-center text-white">
           <h2 className="text-4xl md:text-5xl font-bold font-heading mb-6">Ready to Transform Your Look?</h2>
           <p className="text-base md:text-lg mb-8 max-w-2xl mx-auto">
             Book your appointment today and experience the best beauty services in Tirunelveli

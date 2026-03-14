@@ -117,7 +117,7 @@ const Videos = () => {
 
       {/* Videos Grid - Responsive Cards */}
       <section className="py-4 md:py-8" data-testid="videos-grid">
-        <div className="container-custom">
+        <div className="w-full px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto">
           {filteredVideos.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>No videos in this category.</p>
