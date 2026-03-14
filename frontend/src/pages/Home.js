@@ -161,7 +161,7 @@ const Home = () => {
       
       {/* Hero Section */}
       <section className="hero-section" data-testid="hero-section">
-        <div className="container-custom">
+        <div className="w-full px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <motion.div
               initial={{ opacity: 0, x: -50 }}
