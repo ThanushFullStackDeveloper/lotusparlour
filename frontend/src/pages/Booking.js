@@ -25,7 +25,7 @@ const Booking = () => {
   const [couponLoading, setCouponLoading] = useState(false);
   const [bookingComplete, setBookingComplete] = useState(false);
   const [bookedAppointment, setBookedAppointment] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     service_id: preSelectedService?.id || '',

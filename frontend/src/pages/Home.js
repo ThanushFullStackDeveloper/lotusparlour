@@ -254,7 +254,7 @@ const Home = () => {
                 <img
                   src={service.image || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400'}
                   alt={service.name}
-                  className="w-full h-40 lg:h-44 object-contain rounded-lg mb-4 bg-gray-50"
+                  className="w-full h-40 lg:h-44 object-cover rounded-lg mb-4"
                 />
                 <h3 className="text-lg font-semibold mb-2">{service.name}</h3>
                 <p className="text-sm mb-4 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{service.description}</p>
