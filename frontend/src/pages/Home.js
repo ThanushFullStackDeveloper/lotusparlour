@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Star, Calendar, Users, Award, Send, RefreshCw } from 'lucide-react';
 import { getServices, getStaff, getReviews, getSettings, createReview } from '../utils/api';
-import { getCachedData } from '../utils/cacheManager';
+import { getCachedData, clearCache } from '../utils/cacheManager';
 import OfflineBanner from '../components/OfflineBanner';
 import { toast } from 'sonner';
+import { useWebSocketContext } from '../contexts/WebSocketContext';
 
 const Home = () => {
   const [services, setServices] = useState([]);
@@ -22,6 +23,17 @@ const Home = () => {
   const [fromCache, setFromCache] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [isStale, setIsStale] = useState(false);
+  
+  const { lastUpdate } = useWebSocketContext();
+
+  // Listen for WebSocket updates
+  useEffect(() => {
+    if (lastUpdate && ['services', 'staff', 'settings'].includes(lastUpdate.entity)) {
+      // Clear cache for updated entity and refetch
+      clearCache(lastUpdate.entity);
+      fetchData();
+    }
+  }, [lastUpdate]);
 
   useEffect(() => {
     fetchData();

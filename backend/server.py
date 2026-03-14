@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, UploadFile, File, Form
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, UploadFile, File, Form, WebSocket, WebSocketDisconnect
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import Response
 from dotenv import load_dotenv
@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone, timedelta
+import json
 
 # IST Timezone (UTC+5:30)
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -18,6 +19,13 @@ import jwt
 import bcrypt
 from twilio.rest import Client
 import base64
+
+# Setup logging early
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -43,6 +51,37 @@ if TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN:
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
 security = HTTPBearer()
+
+# ============ WEBSOCKET CONNECTION MANAGER ============
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+        logger.info(f"WebSocket connected. Total connections: {len(self.active_connections)}")
+
+    def disconnect(self, websocket: WebSocket):
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
+        logger.info(f"WebSocket disconnected. Total connections: {len(self.active_connections)}")
+
+    async def broadcast(self, message: dict):
+        """Broadcast message to all connected clients"""
+        disconnected = []
+        for connection in self.active_connections:
+            try:
+                await connection.send_json(message)
+            except Exception as e:
+                logger.error(f"Error sending to websocket: {e}")
+                disconnected.append(connection)
+        # Clean up disconnected clients
+        for conn in disconnected:
+            self.disconnect(conn)
+
+manager = ConnectionManager()
 
 # ============ MODELS ============
 
@@ -387,6 +426,8 @@ async def create_staff(staff_data: StaffCreate):
     staff = Staff(**staff_data.model_dump())
     doc = staff.model_dump()
     await db.staff.insert_one(doc)
+    # Broadcast update to all connected clients
+    await manager.broadcast({"type": "update", "entity": "staff", "action": "create"})
     return staff
 
 @api_router.put("/staff/{staff_id}", dependencies=[Depends(verify_admin)])
@@ -397,6 +438,8 @@ async def update_staff(staff_id: str, staff_data: StaffCreate):
     )
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Staff not found")
+    # Broadcast update to all connected clients
+    await manager.broadcast({"type": "update", "entity": "staff", "action": "update"})
     return {"message": "Staff updated successfully"}
 
 @api_router.delete("/staff/{staff_id}", dependencies=[Depends(verify_admin)])
@@ -404,6 +447,8 @@ async def delete_staff(staff_id: str):
     result = await db.staff.delete_one({"id": staff_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Staff not found")
+    # Broadcast update to all connected clients
+    await manager.broadcast({"type": "update", "entity": "staff", "action": "delete"})
     return {"message": "Staff deleted successfully"}
 
 # ============ SERVICE ROUTES ============
@@ -418,6 +463,8 @@ async def create_service(service_data: ServiceCreate):
     service = Service(**service_data.model_dump())
     doc = service.model_dump()
     await db.services.insert_one(doc)
+    # Broadcast update to all connected clients
+    await manager.broadcast({"type": "update", "entity": "services", "action": "create"})
     return service
 
 @api_router.put("/services/{service_id}", dependencies=[Depends(verify_admin)])
@@ -428,6 +475,8 @@ async def update_service(service_id: str, service_data: ServiceCreate):
     )
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Service not found")
+    # Broadcast update to all connected clients
+    await manager.broadcast({"type": "update", "entity": "services", "action": "update"})
     return {"message": "Service updated successfully"}
 
 @api_router.delete("/services/{service_id}", dependencies=[Depends(verify_admin)])
@@ -435,6 +484,8 @@ async def delete_service(service_id: str):
     result = await db.services.delete_one({"id": service_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Service not found")
+    # Broadcast update to all connected clients
+    await manager.broadcast({"type": "update", "entity": "services", "action": "delete"})
     return {"message": "Service deleted successfully"}
 
 # ============ APPOINTMENT ROUTES ============
@@ -706,6 +757,8 @@ async def create_gallery_image(gallery_data: GalleryCreate):
     gallery = Gallery(**gallery_data.model_dump())
     doc = gallery.model_dump()
     await db.gallery.insert_one(doc)
+    # Broadcast update to all connected clients
+    await manager.broadcast({"type": "update", "entity": "gallery", "action": "create"})
     return gallery
 
 @api_router.delete("/gallery/{image_id}", dependencies=[Depends(verify_admin)])
@@ -713,6 +766,8 @@ async def delete_gallery_image(image_id: str):
     result = await db.gallery.delete_one({"id": image_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Image not found")
+    # Broadcast update to all connected clients
+    await manager.broadcast({"type": "update", "entity": "gallery", "action": "delete"})
     return {"message": "Image deleted"}
 
 # ============ HOLIDAY ROUTES ============
@@ -921,6 +976,8 @@ async def update_settings(settings_data: SettingsUpdate):
         {"$set": update_data},
         upsert=True
     )
+    # Broadcast update to all connected clients
+    await manager.broadcast({"type": "update", "entity": "settings", "action": "update"})
     return {"message": "Settings updated successfully"}
 
 # ============ SUPPORT ROUTES ============
@@ -1131,6 +1188,8 @@ async def create_video(video_data: ServiceVideoCreate):
     video = ServiceVideo(**video_data.model_dump())
     doc = video.model_dump()
     await db.service_videos.insert_one(doc)
+    # Broadcast update to all connected clients
+    await manager.broadcast({"type": "update", "entity": "videos", "action": "create"})
     return video
 
 @api_router.put("/videos/{video_id}", dependencies=[Depends(verify_admin)])
@@ -1141,6 +1200,8 @@ async def update_video(video_id: str, video_data: ServiceVideoCreate):
     )
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Video not found")
+    # Broadcast update to all connected clients
+    await manager.broadcast({"type": "update", "entity": "videos", "action": "update"})
     return {"message": "Video updated successfully"}
 
 @api_router.delete("/videos/{video_id}", dependencies=[Depends(verify_admin)])
@@ -1148,6 +1209,8 @@ async def delete_video(video_id: str):
     result = await db.service_videos.delete_one({"id": video_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Video not found")
+    # Broadcast update to all connected clients
+    await manager.broadcast({"type": "update", "entity": "videos", "action": "delete"})
     return {"message": "Video deleted successfully"}
 
 # ============ SEED DATA ============
@@ -1196,6 +1259,24 @@ async def delete_enquiry(enquiry_id: str):
         raise HTTPException(status_code=404, detail="Enquiry not found")
     return {"message": "Enquiry deleted"}
 
+# ============ WEBSOCKET ENDPOINT ============
+
+@app.websocket("/api/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            # Keep connection alive, listen for any client messages
+            data = await websocket.receive_text()
+            # Echo back or handle ping/pong
+            if data == "ping":
+                await websocket.send_text("pong")
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+    except Exception as e:
+        logger.error(f"WebSocket error: {e}")
+        manager.disconnect(websocket)
+
 # Include router
 app.include_router(api_router)
 
@@ -1206,12 +1287,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

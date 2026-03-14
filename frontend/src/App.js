@@ -26,6 +26,9 @@ import BottomNav from './components/BottomNav';
 import InstallPWA from './components/InstallPWA';
 import ScrollToTop from './components/ScrollToTop';
 
+// Context
+import { WebSocketProvider } from './contexts/WebSocketContext';
+
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -59,19 +62,20 @@ function App() {
   return (
     <div className="App">
       <BrowserRouter>
-        <ScrollToTop />
-        <Toaster position="top-right" richColors />
-        <Routes>
-          {/* Admin Routes */}
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route
-            path="/admin/*"
-            element={
-              <ProtectedRoute adminOnly>
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
+        <WebSocketProvider>
+          <ScrollToTop />
+          <Toaster position="top-right" richColors />
+          <Routes>
+            {/* Admin Routes */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route
+              path="/admin/*"
+              element={
+                <ProtectedRoute adminOnly>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
 
           {/* Customer Routes with Navbar and Footer */}
           <Route
@@ -109,6 +113,7 @@ function App() {
             }
           />
         </Routes>
+        </WebSocketProvider>
       </BrowserRouter>
     </div>
   );

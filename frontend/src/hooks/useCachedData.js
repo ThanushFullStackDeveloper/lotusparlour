@@ -1,9 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
-import { getCachedData, refreshCache } from '../utils/cacheManager';
+import { useState, useEffect, useCallback, useContext } from 'react';
+import { getCachedData, refreshCache, clearCache } from '../utils/cacheManager';
+import WebSocketContext from '../contexts/WebSocketContext';
 
 /**
  * Custom hook for cached data fetching
  * Implements cache-first strategy with background updates
+ * Automatically refreshes when WebSocket update is received
  */
 export const useCachedData = (cacheType, fetchFn, dependencies = []) => {
   const [data, setData] = useState(null);
@@ -12,9 +14,37 @@ export const useCachedData = (cacheType, fetchFn, dependencies = []) => {
   const [fromCache, setFromCache] = useState(false);
   const [isStale, setIsStale] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  
+  // Get WebSocket context - always call useContext unconditionally
+  const wsContext = useContext(WebSocketContext);
+  const lastUpdate = wsContext?.lastUpdate;
 
   // Stable fetch function reference
   const stableFetchFn = useCallback(fetchFn, dependencies);
+
+  // Manual refresh function (moved up for use in effects)
+  const refresh = useCallback(async () => {
+    try {
+      setLoading(true);
+      await clearCache(cacheType);
+      const freshData = await refreshCache(cacheType, stableFetchFn);
+      setData(freshData);
+      setFromCache(false);
+      setIsStale(false);
+      setLoading(false);
+    } catch (err) {
+      setError(err);
+      setLoading(false);
+    }
+  }, [cacheType, stableFetchFn]);
+
+  // Listen for WebSocket updates
+  useEffect(() => {
+    if (lastUpdate && lastUpdate.entity === cacheType) {
+      console.log(`WebSocket update received for ${cacheType}, refreshing...`);
+      refresh();
+    }
+  }, [lastUpdate, cacheType, refresh]);
 
   useEffect(() => {
     let isMounted = true;
@@ -66,21 +96,6 @@ export const useCachedData = (cacheType, fetchFn, dependencies = []) => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [cacheType, stableFetchFn]);
-
-  // Manual refresh function
-  const refresh = useCallback(async () => {
-    try {
-      setLoading(true);
-      const freshData = await refreshCache(cacheType, stableFetchFn);
-      setData(freshData);
-      setFromCache(false);
-      setIsStale(false);
-      setLoading(false);
-    } catch (err) {
-      setError(err);
-      setLoading(false);
-    }
   }, [cacheType, stableFetchFn]);
 
   return {
