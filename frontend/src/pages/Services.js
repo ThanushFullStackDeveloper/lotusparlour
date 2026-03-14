@@ -70,13 +70,13 @@ const Services = () => {
 
       {/* Services Grid - Card Layout */}
       <section className="py-6 md:py-12" data-testid="services-grid">
-        <div className="container-custom">
+        <div className="container-custom max-w-5xl mx-auto">
           {services.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>No services available.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
               {services.map((service, index) => (
                 <motion.div
                   key={service.id}
@@ -87,7 +87,7 @@ const Services = () => {
                   className="service-card-mobile group"
                   data-testid={`service-card-${index}`}
                 >
-                  <div className="relative aspect-square overflow-hidden rounded-xl mb-3">
+                  <div className="relative aspect-square overflow-hidden rounded-xl mb-3 max-h-[180px] lg:max-h-[200px]">
                     <img
                       src={service.image || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400'}
                       alt={service.name}
@@ -110,7 +110,7 @@ const Services = () => {
                       <span className="text-sm font-bold text-[var(--secondary)]">₹{service.price}</span>
                     </div>
                   </div>
-                  <h3 className="text-sm md:text-lg font-semibold mb-1 line-clamp-1">{service.name}</h3>
+                  <h3 className="text-sm md:text-base font-semibold mb-1 line-clamp-1">{service.name}</h3>
                   <div className="flex items-center text-xs text-gray-500 mb-2">
                     <Clock size={12} className="mr-1" />
                     <span>{service.duration} mins</span>

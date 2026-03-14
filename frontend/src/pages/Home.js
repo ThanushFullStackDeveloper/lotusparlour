@@ -162,13 +162,13 @@ const Home = () => {
       {/* Hero Section */}
       <section className="hero-section" data-testid="hero-section">
         <div className="w-full px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 items-center">
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <h1 className="text-5xl md:text-6xl font-bold font-heading mb-6" style={{ color: 'var(--text-primary)' }}>
+              <h1 className="text-4xl md:text-5xl lg:text-5xl font-bold font-heading mb-6" style={{ color: 'var(--text-primary)' }}>
                 {settings.welcome_text} <span style={{ color: 'var(--secondary)' }}>{settings.parlour_name.split(' ').pop()}</span>
               </h1>
               <p className="text-base md:text-lg mb-8" style={{ color: 'var(--text-secondary)' }}>
@@ -203,12 +203,12 @@ const Home = () => {
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
-              className="relative"
+              className="relative flex justify-center"
             >
               <img
                 src={settings.hero_image || "https://images.unsplash.com/photo-1645856049138-bcb23afaeefb?crop=entropy&cs=srgb&fm=jpg&q=85"}
                 alt="Elegant Bridal Makeup"
-                className="rounded-2xl shadow-2xl w-full"
+                className="rounded-2xl shadow-2xl w-full max-w-[400px] lg:max-w-[450px]"
               />
               <div className="absolute -bottom-6 -left-6 bg-white p-4 rounded-xl shadow-lg">
                 <p className="text-3xl font-bold" style={{ color: 'var(--secondary)' }}>{settings.years_experience}</p>
@@ -221,14 +221,14 @@ const Home = () => {
 
       {/* Featured Services */}
       <section className="section-spacing" data-testid="featured-services-section">
-        <div className="container-custom">
+        <div className="container-custom max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold font-heading mb-4">Our Premium Services</h2>
+            <h2 className="text-3xl md:text-4xl font-bold font-heading mb-4">Our Premium Services</h2>
             <p className="text-base md:text-lg" style={{ color: 'var(--text-secondary)' }}>
               Discover our range of beauty and wellness treatments
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {services.map((service, index) => (
               <motion.div
                 key={service.id}
@@ -241,12 +241,12 @@ const Home = () => {
                 <img
                   src={service.image || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400'}
                   alt={service.name}
-                  className="w-full h-48 object-cover rounded-lg mb-4"
+                  className="w-full h-40 lg:h-44 object-cover rounded-lg mb-4"
                 />
-                <h3 className="text-xl font-semibold mb-2">{service.name}</h3>
-                <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>{service.description}</p>
+                <h3 className="text-lg font-semibold mb-2">{service.name}</h3>
+                <p className="text-sm mb-4 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{service.description}</p>
                 <div className="flex justify-between items-center">
-                  <p className="text-2xl font-bold" style={{ color: 'var(--secondary)' }}>₹{service.price}</p>
+                  <p className="text-xl font-bold" style={{ color: 'var(--secondary)' }}>₹{service.price}</p>
                   <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{service.duration} mins</p>
                 </div>
               </motion.div>
