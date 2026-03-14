@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, User, CheckCircle, XCircle, Loader, Filter } from 'lucide-react';
-import { getAppointments, getCurrentUser } from '../utils/api';
+import { Calendar, Clock, User, CheckCircle, XCircle, Loader, CalendarPlus } from 'lucide-react';
+import { getAppointments, getCurrentUser, getAppointmentICS } from '../utils/api';
 import { toast } from 'sonner';
 
 const CustomerDashboard = () => {
@@ -73,6 +73,48 @@ const CustomerDashboard = () => {
       default:
         return 'bg-yellow-100 text-yellow-800';
     }
+  };
+
+  const handleAddToCalendar = (appointmentId) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      toast.error('Please login to add to calendar');
+      return;
+    }
+    
+    // Create a link to download the ICS file
+    const icsUrl = `${getAppointmentICS(appointmentId)}`;
+    
+    // Create a temporary anchor element to trigger download
+    const link = document.createElement('a');
+    link.href = icsUrl;
+    link.setAttribute('download', `appointment.ics`);
+    
+    // Add authorization header via fetch and blob
+    fetch(icsUrl, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('Failed to download calendar file');
+      return response.blob();
+    })
+    .then(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `lotus_appointment.ics`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      toast.success('Calendar file downloaded! Open it to add to your calendar.');
+    })
+    .catch(error => {
+      console.error('Calendar download error:', error);
+      toast.error('Failed to download calendar file');
+    });
   };
 
   const filterTabs = [
@@ -182,7 +224,7 @@ const CustomerDashboard = () => {
                   </div>
 
                   {/* Date, Time, Staff */}
-                  <div className="flex flex-wrap gap-3 text-sm text-gray-600">
+                  <div className="flex flex-wrap gap-3 text-sm text-gray-600 mb-3">
                     <div className="flex items-center gap-1.5">
                       <Calendar size={14} />
                       <span>{appointment.appointment_date}</span>
@@ -198,6 +240,18 @@ const CustomerDashboard = () => {
                       </div>
                     )}
                   </div>
+
+                  {/* Add to Calendar Button */}
+                  {(appointment.status === 'pending' || appointment.status === 'confirmed') && (
+                    <button
+                      onClick={() => handleAddToCalendar(appointment.id)}
+                      className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-[var(--secondary)]/10 text-[var(--secondary)] rounded-lg hover:bg-[var(--secondary)]/20 transition-colors text-sm font-medium"
+                      data-testid={`add-to-calendar-${index}`}
+                    >
+                      <CalendarPlus size={16} />
+                      Add to Calendar
+                    </button>
+                  )}
                 </motion.div>
               ))}
             </div>

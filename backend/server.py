@@ -571,9 +571,17 @@ async def get_appointment_ics(appointment_id: str, payload: dict = Depends(verif
     service_name = service['name'] if service else 'Beauty Service'
     service_duration = service['duration'] if service else 60
     
-    # Get settings for parlour name
-    settings = await db.settings.find_one({"id": "site_settings"}, {"_id": 0})
-    parlour_name = settings.get('parlour_name', 'Lotus Beauty Parlour') if settings else 'Lotus Beauty Parlour'
+    # Get staff details if assigned
+    staff_name = "Any Available"
+    if appointment.get('staff_id'):
+        staff = await db.staff.find_one({"id": appointment['staff_id']}, {"_id": 0})
+        if staff:
+            staff_name = staff.get('name', 'Any Available')
+    
+    # Parlour details - fixed values as per requirement
+    parlour_name = "Lotus Beauty Parlour"
+    parlour_address = "3/41, East Street, Main Road, Puthumanai, Tirunelveli, Tamil Nadu 627120"
+    parlour_phone = "09500673208"
     
     # Parse appointment date and time
     date_str = appointment['appointment_date']
@@ -590,7 +598,10 @@ async def get_appointment_ics(appointment_id: str, payload: dict = Depends(verif
     end_ics = end_dt.strftime("%Y%m%dT%H%M%S")
     created_ics = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     
-    # Build ICS content
+    # Build ICS content with proper escaping for description
+    # Note: DO NOT include customer phone, only parlour phone
+    description = f"Service: {service_name}\\nStaff: {staff_name}\\n\\nContact Parlour: {parlour_phone}"
+    
     ics_content = f"""BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Lotus Beauty Parlour//Appointment Booking//EN
@@ -601,9 +612,9 @@ UID:{appointment_id}@lotusbeauty.com
 DTSTAMP:{created_ics}
 DTSTART:{start_ics}
 DTEND:{end_ics}
-SUMMARY:{service_name} at {parlour_name}
-DESCRIPTION:Your beauty appointment at {parlour_name}\\n\\nService: {service_name}\\nDuration: {service_duration} minutes\\nCustomer: {appointment['customer_name']}\\nPhone: {appointment['customer_phone']}
-LOCATION:{parlour_name}
+SUMMARY:Lotus Beauty Parlour Appointment
+DESCRIPTION:{description}
+LOCATION:{parlour_address}
 STATUS:CONFIRMED
 BEGIN:VALARM
 TRIGGER:-PT1H
@@ -1043,6 +1054,61 @@ async def login_with_phone(phone: str, password: str):
     
     token = create_token(user['id'], user['email'], 'user')
     return {"token": token, "user": UserResponse(**{k: v for k, v in user.items() if k != 'password_hash'})}
+
+# ============ UNIFIED LOGIN (Customer + Admin from same page) ============
+
+class UnifiedLogin(BaseModel):
+    identifier: str  # Can be email or phone
+    password: str
+
+@api_router.post("/auth/unified-login")
+async def unified_login(login_data: UnifiedLogin):
+    """
+    Unified login endpoint that checks both customer and admin accounts.
+    First checks customer, then admin if customer not found.
+    """
+    identifier = login_data.identifier.strip()
+    password = login_data.password
+    
+    # Step 1: Try to find customer by email or phone
+    user = await db.users.find_one(
+        {"$or": [{"email": identifier}, {"phone": identifier}]}, 
+        {"_id": 0}
+    )
+    
+    if user and verify_password(password, user['password_hash']):
+        # Customer login successful
+        # Check if forced password reset
+        if user.get('force_password_reset'):
+            token = create_token(user['id'], user['email'], 'user')
+            return {
+                "token": token,
+                "role": "customer",
+                "force_password_reset": True,
+                "user": UserResponse(**{k: v for k, v in user.items() if k != 'password_hash'})
+            }
+        
+        token = create_token(user['id'], user['email'], 'user')
+        return {
+            "token": token,
+            "role": "customer",
+            "user": UserResponse(**{k: v for k, v in user.items() if k != 'password_hash'})
+        }
+    
+    # Step 2: Try to find admin by email
+    admin = await db.admins.find_one({"email": identifier}, {"_id": 0})
+    
+    if admin and verify_password(password, admin['password_hash']):
+        # Admin login successful
+        token = create_token(admin['id'], admin['email'], 'admin')
+        return {
+            "token": token,
+            "role": "admin",
+            "user": {"id": admin['id'], "email": admin['email'], "name": "Admin"}
+        }
+    
+    # Neither customer nor admin credentials matched
+    raise HTTPException(status_code=401, detail="Invalid credentials")
 
 # ============ USER PASSWORD RESET ============
 
