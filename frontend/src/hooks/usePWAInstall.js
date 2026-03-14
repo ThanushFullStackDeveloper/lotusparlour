@@ -18,13 +18,18 @@ export const usePWAInstall = () => {
     const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     setIsIOS(isIOSDevice);
     
-    // Mobile devices can always show install option
+    // Check if Chrome browser (supports PWA install)
+    const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+    const isEdge = /Edg/.test(navigator.userAgent);
+    const isSamsung = /SamsungBrowser/.test(navigator.userAgent);
+    
+    // Mobile devices and Chrome/Edge browsers can show install option
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    if (isMobile || isIOSDevice) {
+    if (isMobile || isIOSDevice || isChrome || isEdge || isSamsung) {
       setCanInstall(true);
     }
 
-    // Listen for install prompt on Android/Desktop
+    // Listen for install prompt on Android/Desktop Chrome
     const handleBeforeInstall = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);

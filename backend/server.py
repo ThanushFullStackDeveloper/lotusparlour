@@ -11,6 +11,9 @@ from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone, timedelta
+
+# IST Timezone (UTC+5:30)
+IST = timezone(timedelta(hours=5, minutes=30))
 import jwt
 import bcrypt
 from twilio.rest import Client
@@ -511,8 +514,8 @@ async def get_available_slots(date: str, service_id: str):
         all_slots.append(f"{hour:02d}:00")
         all_slots.append(f"{hour:02d}:30")
     
-    # Check if today and filter out past slots
-    now = datetime.now()
+    # Check if today and filter out past slots (using IST timezone)
+    now = datetime.now(IST)
     today_str = now.strftime("%Y-%m-%d")
     
     if date == today_str:
