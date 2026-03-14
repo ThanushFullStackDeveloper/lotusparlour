@@ -1,35 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronLeft, ChevronRight, Maximize2, RefreshCw } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
 import { getGallery } from '../utils/api';
-import { useCachedData } from '../hooks/useCachedData';
-import OfflineBanner from '../components/OfflineBanner';
 import PageHeader from '../components/PageHeader';
 import { toast } from 'sonner';
 
 const Gallery = () => {
+  const [images, setImages] = useState([]);
   const [filteredImages, setFilteredImages] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   const categories = ['All', 'Bridal Makeup', 'Hair Styling', 'Facial', 'Salon Interior'];
 
-  // Use cached data hook for gallery
-  const { 
-    data: images, 
-    loading, 
-    fromCache, 
-    isStale, 
-    isOffline,
-    refresh 
-  } = useCachedData(
-    'gallery',
-    async () => {
+  useEffect(() => {
+    fetchGallery();
+  }, []);
+
+  const fetchGallery = async () => {
+    try {
+      setLoading(true);
       const response = await getGallery();
-      return response.data;
+      setImages(response.data);
+      setFilteredImages(response.data);
+    } catch (error) {
+      console.error('Error fetching gallery:', error);
+      toast.error('Failed to load gallery');
+    } finally {
+      setLoading(false);
     }
-  );
+  };
 
   useEffect(() => {
     if (!images) return;
@@ -54,7 +56,7 @@ const Gallery = () => {
     setLightboxIndex((prev) => (prev - 1 + filteredImages.length) % filteredImages.length);
   };
 
-  if (loading && !images) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
@@ -67,26 +69,11 @@ const Gallery = () => {
 
   return (
     <div className="gallery-page" data-testid="gallery-page">
-      {/* Offline/Stale Banner */}
-      <OfflineBanner isOffline={isOffline} isStale={isStale} onRefresh={refresh} />
-      
       {/* Page Header with Back Button */}
       <PageHeader 
         title="Our Gallery" 
         subtitle="Explore our beautiful transformations"
       />
-      
-      {fromCache && !isOffline && (
-        <div className="container-custom text-center -mt-4 mb-4">
-          <button 
-            onClick={refresh}
-            className="text-xs text-gray-500 flex items-center gap-1 mx-auto hover:text-[var(--secondary)]"
-          >
-            <RefreshCw size={12} />
-            Refresh
-          </button>
-        </div>
-      )}
 
       {/* Category Filter - Scrollable on mobile, centered on desktop */}
       <section className="py-4 bg-white sticky top-[72px] z-40 shadow-sm" data-testid="gallery-filter">

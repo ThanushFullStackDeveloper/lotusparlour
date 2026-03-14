@@ -1,34 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, X, RefreshCw } from 'lucide-react';
+import { Play, X } from 'lucide-react';
 import { getVideos } from '../utils/api';
-import { useCachedData } from '../hooks/useCachedData';
-import OfflineBanner from '../components/OfflineBanner';
 import PageHeader from '../components/PageHeader';
 import { toast } from 'sonner';
 
 const Videos = () => {
+  const [videos, setVideos] = useState([]);
   const [filteredVideos, setFilteredVideos] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedVideo, setSelectedVideo] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const categories = ['All', 'Bridal', 'Hair', 'Facial', 'Makeup'];
 
-  // Use cached data hook for videos
-  const { 
-    data: videos, 
-    loading, 
-    fromCache, 
-    isStale, 
-    isOffline,
-    refresh 
-  } = useCachedData(
-    'videos',
-    async () => {
+  useEffect(() => {
+    fetchVideos();
+  }, []);
+
+  const fetchVideos = async () => {
+    try {
+      setLoading(true);
       const response = await getVideos();
-      return response.data;
+      setVideos(response.data);
+      setFilteredVideos(response.data);
+    } catch (error) {
+      console.error('Error fetching videos:', error);
+      toast.error('Failed to load videos');
+    } finally {
+      setLoading(false);
     }
-  );
+  };
 
   useEffect(() => {
     if (!videos) return;
@@ -59,7 +61,7 @@ const Videos = () => {
     setSelectedVideo(null);
   };
 
-  if (loading && !videos) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
@@ -72,26 +74,11 @@ const Videos = () => {
 
   return (
     <div className="videos-page" data-testid="videos-page">
-      {/* Offline/Stale Banner */}
-      <OfflineBanner isOffline={isOffline} isStale={isStale} onRefresh={refresh} />
-      
       {/* Page Header with Back Button */}
       <PageHeader 
         title="Service Videos" 
         subtitle="Watch our beauty tutorials"
       />
-      
-      {fromCache && !isOffline && (
-        <div className="container-custom text-center -mt-4 mb-4">
-          <button 
-            onClick={refresh}
-            className="text-xs text-gray-500 flex items-center gap-1 mx-auto hover:text-[var(--secondary)]"
-          >
-            <RefreshCw size={12} />
-            Refresh
-          </button>
-        </div>
-      )}
 
       {/* Category Filter - Scrollable on mobile, centered on desktop */}
       <section className="py-4 bg-white sticky top-[72px] z-40 shadow-sm" data-testid="videos-filter">

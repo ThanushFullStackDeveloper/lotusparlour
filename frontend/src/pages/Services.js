@@ -1,40 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Clock, IndianRupee, Eye, RefreshCw } from 'lucide-react';
+import { Clock, IndianRupee, Eye } from 'lucide-react';
 import { getServices } from '../utils/api';
-import { useCachedData } from '../hooks/useCachedData';
-import OfflineBanner from '../components/OfflineBanner';
 import PageHeader from '../components/PageHeader';
 import { toast } from 'sonner';
 
 const Services = () => {
   const [selectedService, setSelectedService] = useState(null);
-  
-  // Use cached data hook for services
-  const { 
-    data: services, 
-    loading, 
-    fromCache, 
-    isStale, 
-    isOffline,
-    refresh 
-  } = useCachedData(
-    'services',
-    async () => {
-      const response = await getServices();
-      return response.data;
-    }
-  );
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Show toast when data is refreshed
   useEffect(() => {
-    if (services && !loading && !fromCache) {
-      // Data was freshly fetched
-    }
-  }, [services, loading, fromCache]);
+    fetchServices();
+  }, []);
 
-  if (loading && !services) {
+  const fetchServices = async () => {
+    try {
+      setLoading(true);
+      const response = await getServices();
+      setServices(response.data);
+    } catch (error) {
+      console.error('Error fetching services:', error);
+      toast.error('Failed to load services');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
@@ -47,7 +41,6 @@ const Services = () => {
 
   return (
     <div className="services-page" data-testid="services-page">
-      {/* Offline/Stale Banner */}
       <OfflineBanner isOffline={isOffline} isStale={isStale} onRefresh={refresh} />
       
       {/* Page Header with Back Button */}
