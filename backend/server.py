@@ -521,13 +521,25 @@ async def get_appointments(payload: dict = Depends(verify_token)):
     else:
         appointments = await db.appointments.find({"user_id": payload['user_id']}, {"_id": 0}).to_list(1000)
     
-    # Populate service and staff details
+    if not appointments:
+        return appointments
+    
+    # Batch fetch all services and staff at once (much faster than individual queries)
+    service_ids = list(set(apt.get('service_id') for apt in appointments if apt.get('service_id')))
+    staff_ids = list(set(apt.get('staff_id') for apt in appointments if apt.get('staff_id')))
+    
+    # Fetch all services and staff in parallel
+    services_list = await db.services.find({"id": {"$in": service_ids}}, {"_id": 0}).to_list(100)
+    staff_list = await db.staff.find({"id": {"$in": staff_ids}}, {"_id": 0}).to_list(100)
+    
+    # Create lookup dictionaries
+    services_map = {s['id']: s for s in services_list}
+    staff_map = {s['id']: s for s in staff_list}
+    
+    # Populate service and staff details from cache
     for apt in appointments:
-        service = await db.services.find_one({"id": apt['service_id']}, {"_id": 0})
-        apt['service'] = service
-        if apt.get('staff_id'):
-            staff = await db.staff.find_one({"id": apt['staff_id']}, {"_id": 0})
-            apt['staff'] = staff
+        apt['service'] = services_map.get(apt.get('service_id'))
+        apt['staff'] = staff_map.get(apt.get('staff_id'))
     
     return appointments
 

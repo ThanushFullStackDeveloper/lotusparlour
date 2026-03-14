@@ -8,7 +8,11 @@ const CustomerDashboard = () => {
   const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
   const [filteredAppointments, setFilteredAppointments] = useState([]);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    // Try to get cached user data immediately
+    const cachedUser = localStorage.getItem('user');
+    return cachedUser ? JSON.parse(cachedUser) : null;
+  });
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('all');
 
@@ -22,21 +26,34 @@ const CustomerDashboard = () => {
 
   const fetchData = async () => {
     try {
+      // Fetch appointments and user in parallel
       const [appointmentsRes, userRes] = await Promise.all([
         getAppointments(),
         getCurrentUser(),
       ]);
-      // Sort by date descending (newest first)
-      const sortedAppointments = appointmentsRes.data.sort((a, b) => {
+      
+      // Update user and cache it
+      const userData = userRes.data.user;
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      // Sort appointments by date descending (newest first)
+      const sortedAppointments = (appointmentsRes.data || []).sort((a, b) => {
         const dateA = new Date(`${a.appointment_date} ${a.appointment_time}`);
         const dateB = new Date(`${b.appointment_date} ${b.appointment_time}`);
         return dateB - dateA;
       });
       setAppointments(sortedAppointments);
-      setUser(userRes.data.user);
+      setFilteredAppointments(sortedAppointments);
     } catch (error) {
       console.error('Error fetching data:', error);
-      toast.error('Failed to load dashboard data');
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        navigate('/login');
+      } else {
+        toast.error('Failed to load dashboard data');
+      }
     } finally {
       setLoading(false);
     }
