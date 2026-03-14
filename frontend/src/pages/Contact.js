@@ -51,7 +51,7 @@ const Contact = () => {
     <div className="contact-page" data-testid="contact-page">
       {/* Sticky Back Button - Mobile Only */}
       <div className="md:hidden sticky top-[60px] z-30 bg-white/95 backdrop-blur-sm border-b border-gray-100/50">
-        <div className="container-custom py-2">
+        <div className="w-full px-4 py-2">
           <button
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-gray-600 hover:text-[var(--secondary)] transition-colors touch-manipulation"
@@ -65,7 +65,7 @@ const Contact = () => {
       
       {/* Hero */}
       <section className="section-spacing bg-[var(--background-alt)]" data-testid="contact-hero">
-        <div className="container-custom">
+        <div className="w-full px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto">
           {/* Desktop Back Button */}
           <button
             onClick={() => navigate(-1)}
@@ -87,7 +87,7 @@ const Contact = () => {
 
       {/* Contact Info & Form */}
       <section className="section-spacing" data-testid="contact-content">
-        <div className="container-custom">
+        <div className="w-full px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             {/* Contact Information */}
             <motion.div
