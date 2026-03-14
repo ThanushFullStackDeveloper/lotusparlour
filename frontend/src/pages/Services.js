@@ -132,37 +132,46 @@ const Services = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/60 flex items-end md:items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/60 flex items-end md:items-center justify-center z-50"
           onClick={() => setSelectedService(null)}
         >
           <motion.div
             initial={{ y: 100 }}
             animate={{ y: 0 }}
-            className="bg-white rounded-t-3xl md:rounded-2xl w-full max-w-lg p-6 max-h-[80vh] overflow-y-auto"
+            className="bg-white rounded-t-3xl md:rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto mx-0 md:mx-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="aspect-video rounded-xl overflow-hidden mb-4">
+            <div className="relative aspect-[4/3] md:aspect-video overflow-hidden">
               <img
                 src={selectedService.image || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400'}
                 alt={selectedService.name}
                 className="w-full h-full object-cover"
               />
+              {/* Close button */}
+              <button 
+                onClick={() => setSelectedService(null)}
+                className="absolute top-3 right-3 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center shadow-md"
+              >
+                <span className="text-gray-600 text-lg font-bold">×</span>
+              </button>
             </div>
-            <h2 className="text-2xl font-bold mb-2">{selectedService.name}</h2>
-            <p className="text-gray-600 mb-4">{selectedService.description}</p>
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center text-2xl font-bold text-[var(--secondary)]">
-                <IndianRupee size={24} />
-                <span>{selectedService.price}</span>
+            <div className="p-4 md:p-6">
+              <h2 className="text-xl md:text-2xl font-bold mb-2">{selectedService.name}</h2>
+              <p className="text-sm md:text-base text-gray-600 mb-4">{selectedService.description}</p>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center text-xl md:text-2xl font-bold text-[var(--secondary)]">
+                  <IndianRupee size={20} />
+                  <span>{selectedService.price}</span>
+                </div>
+                <div className="flex items-center text-gray-500 text-sm">
+                  <Clock size={16} className="mr-1" />
+                  <span>{selectedService.duration} mins</span>
+                </div>
               </div>
-              <div className="flex items-center text-gray-500">
-                <Clock size={18} className="mr-1" />
-                <span>{selectedService.duration} mins</span>
-              </div>
+              <Link to="/booking" state={{ selectedService }} className="block">
+                <button className="btn-primary w-full py-3 text-base">Book This Service</button>
+              </Link>
             </div>
-            <Link to="/booking" state={{ selectedService }} className="block">
-              <button className="btn-primary w-full py-4 text-lg">Book This Service</button>
-            </Link>
           </motion.div>
         </motion.div>
       )}

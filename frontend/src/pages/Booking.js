@@ -61,7 +61,11 @@ const Booking = () => {
       return;
     }
 
-    setIsLoading(true);
+    // Only show loading if no service is pre-selected
+    if (!preSelectedService) {
+      setIsLoading(true);
+    }
+    
     try {
       // Fetch all data in parallel for faster loading
       const [servicesRes, staffRes, holidaysRes, userRes] = await Promise.all([
