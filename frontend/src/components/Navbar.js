@@ -77,7 +77,7 @@ const Navbar = () => {
               <img
                 src={settings.logo_image || DEFAULT_LOGO}
                 alt={parlourName}
-                className="h-8 w-8 md:h-12 md:w-12 object-contain"
+                className="h-10 w-10 md:h-14 md:w-14 object-contain"
               />
               <div>
                 <h1 className="text-base md:text-xl font-heading font-bold" style={{ color: 'var(--secondary)' }}>
