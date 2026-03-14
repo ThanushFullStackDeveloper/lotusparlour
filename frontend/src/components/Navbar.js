@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, User, Calendar, LogOut, ChevronDown } from 'lucide-react';
+import { Menu, X, User, Calendar, LogOut, ChevronDown, Instagram } from 'lucide-react';
 import { getSettings } from '../utils/api';
 
 const DEFAULT_LOGO = 'https://customer-assets.emergentagent.com/job_241db126-351c-4832-a8fb-845982688c90/artifacts/41r87k77_4B7AC146-0B06-4B1E-A8D9-0A69F86F7A02.jpeg';
@@ -72,21 +72,33 @@ const Navbar = () => {
       <div className="container-custom">
         <div className="flex justify-between items-center py-2 md:py-4">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 md:space-x-3" data-testid="nav-logo">
-            <img
-              src={settings.logo_image || DEFAULT_LOGO}
-              alt={parlourName}
-              className="h-8 w-8 md:h-12 md:w-12 object-contain"
-            />
-            <div>
-              <h1 className="text-base md:text-xl font-heading font-bold" style={{ color: 'var(--secondary)' }}>
-                {mainTitle}
-              </h1>
-              <p className="text-[10px] md:text-xs" style={{ color: 'var(--text-muted)' }}>
-                {subTitle}
-              </p>
-            </div>
-          </Link>
+          <div className="flex items-center">
+            <Link to="/" className="flex items-center space-x-2 md:space-x-3" data-testid="nav-logo">
+              <img
+                src={settings.logo_image || DEFAULT_LOGO}
+                alt={parlourName}
+                className="h-8 w-8 md:h-12 md:w-12 object-contain"
+              />
+              <div>
+                <h1 className="text-base md:text-xl font-heading font-bold" style={{ color: 'var(--secondary)' }}>
+                  {mainTitle}
+                </h1>
+                <p className="text-[10px] md:text-xs" style={{ color: 'var(--text-muted)' }}>
+                  {subTitle}
+                </p>
+              </div>
+            </Link>
+            {/* Instagram Icon */}
+            <a 
+              href="https://www.instagram.com/lotus_makeupartistry/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="ml-3 p-1.5 rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 text-white hover:scale-110 transition-transform"
+              data-testid="nav-instagram"
+            >
+              <Instagram size={16} className="md:w-5 md:h-5" />
+            </a>
+          </div>
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">

@@ -10,7 +10,11 @@ const API_BASE_URL = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const Booking = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [step, setStep] = useState(1);
+  
+  // Check if service was pre-selected from Services page or from login redirect
+  const preSelectedService = location.state?.selectedService || location.state?.bookingData?.selectedService;
+  
+  const [step, setStep] = useState(preSelectedService ? 2 : 1);
   const [services, setServices] = useState([]);
   const [staff, setStaff] = useState([]);
   const [availableSlots, setAvailableSlots] = useState([]);
@@ -23,7 +27,7 @@ const Booking = () => {
   const [bookedAppointment, setBookedAppointment] = useState(null);
 
   const [formData, setFormData] = useState({
-    service_id: location.state?.selectedService?.id || '',
+    service_id: preSelectedService?.id || '',
     staff_id: '',
     appointment_date: '',
     appointment_time: '',
@@ -46,7 +50,13 @@ const Booking = () => {
     const token = localStorage.getItem('token');
     if (!token) {
       toast.error('Please login to book an appointment');
-      navigate('/login', { state: { from: '/booking' } });
+      // Preserve selected service when redirecting to login
+      navigate('/login', { 
+        state: { 
+          from: '/booking',
+          bookingData: { selectedService: preSelectedService }
+        } 
+      });
       return;
     }
 
