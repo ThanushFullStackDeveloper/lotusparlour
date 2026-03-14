@@ -114,17 +114,6 @@ const Gallery = () => {
     setLightboxIndex((prev) => (prev - 1 + filteredImages.length) % filteredImages.length);
   };
 
-  if (loading && images.length === 0) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse flex flex-col items-center">
-          <div className="w-12 h-12 rounded-full bg-[var(--secondary)]/30"></div>
-          <p className="mt-4 text-gray-500">Loading gallery...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="gallery-page" data-testid="gallery-page">
       <PageHeader 
@@ -155,9 +144,17 @@ const Gallery = () => {
 
       <section className="py-4 md:py-8" data-testid="gallery-grid">
         <div className="w-full px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto">
-          {filteredImages.length === 0 ? (
+          {filteredImages.length === 0 && !loading ? (
             <div className="text-center py-12">
               <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>No images in this category.</p>
+            </div>
+          ) : filteredImages.length === 0 && loading ? (
+            /* Show skeleton grid while loading */
+            <div className="grid grid-cols-3 md:grid-cols-4 gap-0.5 md:gap-2">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="aspect-square max-h-[150px] md:max-h-[180px] bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]" 
+                  style={{ animation: 'shimmer 1.5s infinite' }} />
+              ))}
             </div>
           ) : (
             <div className="grid grid-cols-3 md:grid-cols-4 gap-0.5 md:gap-2">

@@ -103,17 +103,6 @@ const Services = () => {
     }
   };
 
-  if (loading && services.length === 0) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse flex flex-col items-center">
-          <div className="w-12 h-12 rounded-full bg-[var(--secondary)]/30"></div>
-          <p className="mt-4 text-gray-500">Loading services...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="services-page" data-testid="services-page">
       <PageHeader 
@@ -123,9 +112,22 @@ const Services = () => {
 
       <section className="py-6 md:py-12" data-testid="services-grid">
         <div className="w-full px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto">
-          {services.length === 0 ? (
+          {services.length === 0 && !loading ? (
             <div className="text-center py-12">
               <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>No services available.</p>
+            </div>
+          ) : services.length === 0 && loading ? (
+            /* Show skeleton cards while loading */
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="service-card-mobile">
+                  <div className="aspect-square rounded-xl mb-3 max-h-[180px] lg:max-h-[200px] bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]" 
+                    style={{ animation: 'shimmer 1.5s infinite' }} />
+                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" style={{ animation: 'shimmer 1.5s infinite' }} />
+                  <div className="h-3 bg-gray-200 rounded w-1/2 mb-2" style={{ animation: 'shimmer 1.5s infinite' }} />
+                  <div className="h-9 bg-gray-200 rounded w-full" style={{ animation: 'shimmer 1.5s infinite' }} />
+                </div>
+              ))}
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
