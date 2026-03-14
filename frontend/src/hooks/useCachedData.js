@@ -38,13 +38,24 @@ export const useCachedData = (cacheType, fetchFn, dependencies = []) => {
     }
   }, [cacheType, stableFetchFn]);
 
-  // Listen for WebSocket updates
+  // Listen for WebSocket updates - use timestamp to detect changes
   useEffect(() => {
-    if (lastUpdate && lastUpdate.entity === cacheType) {
-      console.log(`WebSocket update received for ${cacheType}, refreshing...`);
-      refresh();
+    if (lastUpdate && lastUpdate.entity === cacheType && lastUpdate.timestamp) {
+      console.log(`WebSocket update received for ${cacheType}, refreshing... (timestamp: ${lastUpdate.timestamp})`);
+      // Force immediate refresh without waiting for cache
+      (async () => {
+        try {
+          await clearCache(cacheType);
+          const response = await stableFetchFn();
+          setData(response);
+          setFromCache(false);
+          setIsStale(false);
+        } catch (err) {
+          console.error('Error refreshing data:', err);
+        }
+      })();
     }
-  }, [lastUpdate, cacheType, refresh]);
+  }, [lastUpdate?.timestamp, cacheType, stableFetchFn]);
 
   useEffect(() => {
     let isMounted = true;

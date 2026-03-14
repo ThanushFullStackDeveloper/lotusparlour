@@ -200,9 +200,16 @@ export const clearCache = async (cacheType) => {
 
   try {
     const db = await openDB();
-    const transaction = db.transaction(STORE_NAME, 'readwrite');
-    const store = transaction.objectStore(STORE_NAME);
-    store.delete(config.key);
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.delete(config.key);
+      request.onsuccess = () => {
+        console.log(`Cache cleared for ${cacheType}`);
+        resolve();
+      };
+      request.onerror = () => reject(request.error);
+    });
   } catch (error) {
     console.warn('Cache clear error:', error);
   }
