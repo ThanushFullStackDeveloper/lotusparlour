@@ -152,19 +152,14 @@ const CustomerDashboard = () => {
           </button>
           
           {/* Welcome Section - Compact for mobile */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="mb-6"
-          >
+          <div className="mb-6">
             <h1 className="text-2xl md:text-4xl font-bold font-heading mb-1">
               Hi, {user?.name?.split(' ')[0]}!
             </h1>
             <p className="text-sm md:text-base" style={{ color: 'var(--text-secondary)' }}>
               Manage your beauty appointments
             </p>
-          </motion.div>
+          </div>
 
           {/* Stats Cards - Horizontal scroll on mobile */}
           <div className="flex gap-3 overflow-x-auto pb-2 mb-6 scrollbar-hide" data-testid="stats-section">

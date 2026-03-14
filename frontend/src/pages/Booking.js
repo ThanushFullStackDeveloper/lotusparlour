@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, User, Tag, CheckCircle, CalendarPlus, ArrowLeft } from 'lucide-react';
+import { Calendar, Clock, User, Tag, CheckCircle, CalendarPlus, ArrowLeft, Loader } from 'lucide-react';
 import { getServices, getStaff, createAppointment, getAvailableSlots, getHolidays, getCurrentUser, validateCoupon } from '../utils/api';
 import { toast } from 'sonner';
 
@@ -25,6 +25,7 @@ const Booking = () => {
   const [couponLoading, setCouponLoading] = useState(false);
   const [bookingComplete, setBookingComplete] = useState(false);
   const [bookedAppointment, setBookedAppointment] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [formData, setFormData] = useState({
     service_id: preSelectedService?.id || '',
@@ -60,13 +61,17 @@ const Booking = () => {
       return;
     }
 
+    setIsLoading(true);
     try {
+      // Fetch all data in parallel for faster loading
       const [servicesRes, staffRes, holidaysRes, userRes] = await Promise.all([
         getServices(),
         getStaff(),
         getHolidays(),
         getCurrentUser(),
       ]);
+      
+      // Set all data at once to minimize re-renders
       setServices(servicesRes.data);
       setStaff(staffRes.data);
       setHolidays(holidaysRes.data);
@@ -82,6 +87,8 @@ const Booking = () => {
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load booking data');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -342,30 +349,37 @@ const Booking = () => {
           </p>
         </div>
 
-        {/* Progress Steps */}
-        <div className="flex justify-center mb-12" data-testid="booking-steps">
-          {[1, 2].map((num) => (
-            <div key={num} className="flex items-center">
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
-                  step >= num ? 'bg-[var(--secondary)] text-white' : 'bg-gray-200 text-gray-500'
-                }`}
-                data-testid={`step-indicator-${num}`}
-              >
-                {num}
-              </div>
-              {num < 2 && <div className={`w-16 h-1 ${step > num ? 'bg-[var(--secondary)]' : 'bg-gray-200'}`}></div>}
+        {/* Loading State */}
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <Loader className="w-10 h-10 animate-spin text-[var(--secondary)]" />
+            <p className="mt-4 text-gray-500">Loading services...</p>
+          </div>
+        ) : (
+          <>
+            {/* Progress Steps */}
+            <div className="flex justify-center mb-12" data-testid="booking-steps">
+              {[1, 2].map((num) => (
+                <div key={num} className="flex items-center">
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
+                      step >= num ? 'bg-[var(--secondary)] text-white' : 'bg-gray-200 text-gray-500'
+                    }`}
+                    data-testid={`step-indicator-${num}`}
+                  >
+                    {num}
+                  </div>
+                  {num < 2 && <div className={`w-16 h-1 ${step > num ? 'bg-[var(--secondary)]' : 'bg-gray-200'}`}></div>}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        <motion.div
-          key={step}
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3 }}
-          className="bg-white p-8 rounded-2xl shadow-lg"
-        >
+            <motion.div
+              key={step}
+              initial={{ opacity: 1 }}
+              animate={{ opacity: 1 }}
+              className="bg-white p-8 rounded-2xl shadow-lg"
+            >
           {/* Step 1: Select Service */}
           {step === 1 && (
             <div data-testid="step-1-service">
@@ -580,6 +594,8 @@ const Booking = () => {
             </div>
           )}
         </motion.div>
+          </>
+        )}
       </div>
     </div>
   );
