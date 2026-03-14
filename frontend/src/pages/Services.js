@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Clock, IndianRupee, Eye } from 'lucide-react';
@@ -9,100 +9,93 @@ import useWebSocket from '../hooks/useWebSocket';
 
 const CACHE_KEY = 'service_images_cache';
 
+// Load cache once at module level to persist across re-renders
+const getInitialCache = () => {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    return cached ? JSON.parse(cached) : {};
+  } catch {
+    return {};
+  }
+};
+
 const Services = () => {
   const [selectedService, setSelectedService] = useState(null);
   const [services, setServices] = useState([]);
-  const [imageData, setImageData] = useState({});
+  const [imageData, setImageData] = useState(getInitialCache);
   const [loading, setLoading] = useState(true);
+  const loadedIds = useRef(new Set(Object.keys(getInitialCache())));
 
-  const handleWebSocketUpdate = useCallback((data) => {
-    if (data.entity === 'services') {
-      // Clear cache and refetch when services are updated
-      localStorage.removeItem(CACHE_KEY);
-      setImageData({});
-      fetchServices();
-    }
-  }, []);
-
-  useWebSocket(handleWebSocketUpdate);
-
-  useEffect(() => {
-    // Load cached images immediately
-    try {
-      const cached = localStorage.getItem(CACHE_KEY);
-      if (cached) {
-        setImageData(JSON.parse(cached));
-      }
-    } catch (e) {
-      console.error('Error loading cached images:', e);
-    }
-    fetchServices();
-  }, []);
-
-  const fetchServices = async () => {
+  const fetchServices = useCallback(async (forceRefresh = false) => {
     try {
       setLoading(true);
       const response = await getServices();
       setServices(response.data);
-      // Load only images that aren't cached
-      loadImages(response.data);
+      
+      // Load images that aren't cached
+      for (const service of response.data) {
+        // Skip if already loaded this session (unless force refresh)
+        if (!forceRefresh && loadedIds.current.has(service.id)) continue;
+        
+        try {
+          const imgResponse = await getServiceImage(service.id);
+          const imageUrl = imgResponse.data.image;
+          
+          if (imageUrl) {
+            loadedIds.current.add(service.id);
+            setImageData(prev => {
+              const updated = { ...prev, [service.id]: imageUrl };
+              try {
+                localStorage.setItem(CACHE_KEY, JSON.stringify(updated));
+              } catch {}
+              return updated;
+            });
+          }
+        } catch (error) {
+          console.error('Error loading image:', service.id);
+        }
+      }
     } catch (error) {
       console.error('Error fetching services:', error);
       toast.error('Failed to load services');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const loadImages = async (serviceList) => {
-    // Get cached images
-    let cached = {};
-    try {
-      const cachedStr = localStorage.getItem(CACHE_KEY);
-      if (cachedStr) cached = JSON.parse(cachedStr);
-    } catch (e) {}
-
-    // Only load images that aren't already cached
-    for (const service of serviceList) {
-      if (cached[service.id]) continue; // Skip if already cached
-      
-      try {
-        const response = await getServiceImage(service.id);
-        const imageUrl = response.data.image;
-        
-        setImageData(prev => {
-          const updated = { ...prev, [service.id]: imageUrl };
-          // Save to localStorage
-          try {
-            localStorage.setItem(CACHE_KEY, JSON.stringify(updated));
-          } catch (e) {}
-          return updated;
-        });
-      } catch (error) {
-        console.error('Error loading image:', service.id);
-      }
+  const handleWebSocketUpdate = useCallback((data) => {
+    if (data.entity === 'services') {
+      // Clear cache and refetch when services are updated by admin
+      localStorage.removeItem(CACHE_KEY);
+      loadedIds.current.clear();
+      setImageData({});
+      fetchServices(true);
     }
-  };
+  }, [fetchServices]);
+
+  useWebSocket(handleWebSocketUpdate);
+
+  useEffect(() => {
+    fetchServices();
+  }, [fetchServices]);
 
   // Handle opening service detail with full image
   const handleOpenServiceDetail = async (service) => {
-    // If we already have the image, use it
     if (imageData[service.id]) {
       setSelectedService({ ...service, image: imageData[service.id] });
     } else {
-      // Otherwise fetch it first
       try {
         const response = await getServiceImage(service.id);
         const fullImage = response.data.image;
         setImageData(prev => ({ ...prev, [service.id]: fullImage }));
         setSelectedService({ ...service, image: fullImage });
-      } catch (error) {
+      } catch {
         setSelectedService(service);
       }
     }
   };
 
-  if (loading) {
+  if (loading && services.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
@@ -115,13 +108,11 @@ const Services = () => {
 
   return (
     <div className="services-page" data-testid="services-page">
-      {/* Page Header with Back Button */}
       <PageHeader 
         title="Our Services" 
         subtitle="Premium beauty & wellness treatments"
       />
 
-      {/* Services Grid - Card Layout */}
       <section className="py-6 md:py-12" data-testid="services-grid">
         <div className="w-full px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto">
           {services.length === 0 ? (
@@ -145,14 +136,12 @@ const Services = () => {
                         src={imageData[service.id]}
                         alt={service.name}
                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                        loading="lazy"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <div className="w-6 h-6 border-2 border-[var(--secondary)] border-t-transparent rounded-full animate-spin"></div>
                       </div>
                     )}
-                    {/* Quick View Button */}
                     <button
                       onClick={(e) => {
                         e.preventDefault();
@@ -164,7 +153,6 @@ const Services = () => {
                         <Eye size={18} className="text-[var(--secondary)]" />
                       </div>
                     </button>
-                    {/* Price Badge */}
                     <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full">
                       <span className="text-sm font-bold text-[var(--secondary)]">₹{service.price}</span>
                     </div>
@@ -186,7 +174,6 @@ const Services = () => {
         </div>
       </section>
 
-      {/* Quick View Modal */}
       {selectedService && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -213,7 +200,6 @@ const Services = () => {
                   <div className="w-8 h-8 border-2 border-[var(--secondary)] border-t-transparent rounded-full animate-spin"></div>
                 </div>
               )}
-              {/* Close button */}
               <button 
                 onClick={() => setSelectedService(null)}
                 className="absolute top-3 right-3 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center shadow-md"
@@ -242,7 +228,6 @@ const Services = () => {
         </motion.div>
       )}
 
-      {/* CTA */}
       <section className="py-8 md:py-12 bg-[var(--background-alt)]" data-testid="services-cta">
         <div className="container-custom text-center">
           <h2 className="text-xl md:text-3xl font-bold font-heading mb-3">Need Help Choosing?</h2>

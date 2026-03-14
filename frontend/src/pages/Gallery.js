@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
 import { getGallery, getGalleryImage } from '../utils/api';
@@ -8,86 +8,79 @@ import useWebSocket from '../hooks/useWebSocket';
 
 const CACHE_KEY = 'gallery_images_cache';
 
+// Load cache once at module level
+const getInitialCache = () => {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    return cached ? JSON.parse(cached) : {};
+  } catch {
+    return {};
+  }
+};
+
 const Gallery = () => {
   const [images, setImages] = useState([]);
-  const [imageData, setImageData] = useState({});
+  const [imageData, setImageData] = useState(getInitialCache);
   const [filteredImages, setFilteredImages] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const loadedIds = useRef(new Set(Object.keys(getInitialCache())));
 
   const categories = ['All', 'Bridal Makeup', 'Hair Styling', 'Facial', 'Salon Interior'];
 
-  const handleWebSocketUpdate = useCallback((data) => {
-    if (data.entity === 'gallery') {
-      // Clear cache and refetch when gallery is updated
-      localStorage.removeItem(CACHE_KEY);
-      setImageData({});
-      fetchGallery();
-    }
-  }, []);
-
-  useWebSocket(handleWebSocketUpdate);
-
-  useEffect(() => {
-    // Load cached images immediately
-    try {
-      const cached = localStorage.getItem(CACHE_KEY);
-      if (cached) {
-        setImageData(JSON.parse(cached));
-      }
-    } catch (e) {
-      console.error('Error loading cached images:', e);
-    }
-    fetchGallery();
-  }, []);
-
-  const fetchGallery = async () => {
+  const fetchGallery = useCallback(async (forceRefresh = false) => {
     try {
       setLoading(true);
       const response = await getGallery();
       setImages(response.data);
       setFilteredImages(response.data);
-      // Load only images that aren't cached
-      loadImages(response.data);
+      
+      // Load images that aren't cached
+      for (const img of response.data) {
+        if (!forceRefresh && loadedIds.current.has(img.id)) continue;
+        
+        try {
+          const imgResponse = await getGalleryImage(img.id);
+          const imageUrl = imgResponse.data.image;
+          
+          if (imageUrl) {
+            loadedIds.current.add(img.id);
+            setImageData(prev => {
+              const updated = { ...prev, [img.id]: imageUrl };
+              try {
+                localStorage.setItem(CACHE_KEY, JSON.stringify(updated));
+              } catch {}
+              return updated;
+            });
+          }
+        } catch (error) {
+          console.error('Error loading image:', img.id);
+        }
+      }
     } catch (error) {
       console.error('Error fetching gallery:', error);
       toast.error('Failed to load gallery');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const loadImages = async (imageList) => {
-    // Get cached images
-    let cached = {};
-    try {
-      const cachedStr = localStorage.getItem(CACHE_KEY);
-      if (cachedStr) cached = JSON.parse(cachedStr);
-    } catch (e) {}
-
-    // Only load images that aren't already cached
-    for (const img of imageList) {
-      if (cached[img.id]) continue; // Skip if already cached
-      
-      try {
-        const response = await getGalleryImage(img.id);
-        const imageUrl = response.data.image;
-        
-        setImageData(prev => {
-          const updated = { ...prev, [img.id]: imageUrl };
-          // Save to localStorage
-          try {
-            localStorage.setItem(CACHE_KEY, JSON.stringify(updated));
-          } catch (e) {}
-          return updated;
-        });
-      } catch (error) {
-        console.error('Error loading image:', img.id);
-      }
+  const handleWebSocketUpdate = useCallback((data) => {
+    if (data.entity === 'gallery') {
+      localStorage.removeItem(CACHE_KEY);
+      loadedIds.current.clear();
+      setImageData({});
+      fetchGallery(true);
     }
-  };
+  }, [fetchGallery]);
+
+  useWebSocket(handleWebSocketUpdate);
+
+  useEffect(() => {
+    fetchGallery();
+  }, [fetchGallery]);
 
   useEffect(() => {
     if (!images) return;
@@ -112,7 +105,7 @@ const Gallery = () => {
     setLightboxIndex((prev) => (prev - 1 + filteredImages.length) % filteredImages.length);
   };
 
-  if (loading) {
+  if (loading && images.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
@@ -125,13 +118,11 @@ const Gallery = () => {
 
   return (
     <div className="gallery-page" data-testid="gallery-page">
-      {/* Page Header with Back Button */}
       <PageHeader 
         title="Our Gallery" 
         subtitle="Explore our beautiful transformations"
       />
 
-      {/* Category Filter - Scrollable on mobile, centered on desktop */}
       <section className="py-4 bg-white sticky top-[72px] z-40 shadow-sm" data-testid="gallery-filter">
         <div className="w-full px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto">
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide md:justify-center">
@@ -153,7 +144,6 @@ const Gallery = () => {
         </div>
       </section>
 
-      {/* Instagram-Style Gallery Grid */}
       <section className="py-4 md:py-8" data-testid="gallery-grid">
         <div className="w-full px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto">
           {filteredImages.length === 0 ? (
@@ -177,14 +167,12 @@ const Gallery = () => {
                       src={imageData[img.id]}
                       alt={`Gallery ${index + 1}`}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      loading="lazy"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <div className="w-6 h-6 border-2 border-[var(--secondary)] border-t-transparent rounded-full animate-spin"></div>
                     </div>
                   )}
-                  {/* Hover overlay - desktop only */}
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all hidden md:flex items-center justify-center opacity-0 group-hover:opacity-100">
                     <Maximize2 size={24} className="text-white" />
                   </div>
@@ -195,7 +183,6 @@ const Gallery = () => {
         </div>
       </section>
 
-      {/* Custom Lightbox */}
       <AnimatePresence>
         {lightboxOpen && filteredImages[lightboxIndex] && (
           <motion.div
@@ -205,7 +192,6 @@ const Gallery = () => {
             className="fixed inset-0 bg-black z-50 flex flex-col"
             data-testid="gallery-lightbox"
           >
-            {/* Header */}
             <div className="flex items-center justify-between p-4 text-white">
               <span className="text-sm">{lightboxIndex + 1} / {filteredImages.length}</span>
               <button 
@@ -216,18 +202,16 @@ const Gallery = () => {
               </button>
             </div>
 
-            {/* Image Container */}
             <div className="flex-1 flex items-center justify-center px-4 relative">
               <motion.img
                 key={lightboxIndex}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                src={imageData[filteredImages[lightboxIndex].id] || filteredImages[lightboxIndex].image}
+                src={imageData[filteredImages[lightboxIndex].id] || ''}
                 alt={`Gallery ${lightboxIndex + 1}`}
                 className="max-w-full max-h-full object-contain"
               />
               
-              {/* Navigation Buttons - Desktop */}
               <button
                 onClick={prevImage}
                 className="hidden md:flex absolute left-4 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
@@ -242,12 +226,10 @@ const Gallery = () => {
               </button>
             </div>
 
-            {/* Mobile Swipe Instructions */}
             <div className="md:hidden text-center text-white/50 text-sm pb-8">
               Swipe or tap edges to navigate
             </div>
 
-            {/* Mobile Navigation */}
             <div className="md:hidden flex justify-around pb-8">
               <button
                 onClick={prevImage}
