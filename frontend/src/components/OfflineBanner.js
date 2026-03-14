@@ -12,6 +12,7 @@ const OfflineBanner = ({ isOffline, isStale, onRefresh }) => {
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: -50, opacity: 0 }}
         className="fixed top-0 left-0 right-0 z-[100] safe-area-top"
+        data-testid="offline-banner"
       >
         <div className={`px-4 py-2 flex items-center justify-center gap-2 text-sm font-medium ${
           isOffline 
