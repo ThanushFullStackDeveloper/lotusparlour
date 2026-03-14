@@ -1,6 +1,6 @@
 // Service Worker for Lotus Beauty Parlour PWA
-// Version 3 - Optimized caching strategies
-const CACHE_VERSION = 'v3';
+// Version 4 - Fixed for real-time updates
+const CACHE_VERSION = 'v4';
 const STATIC_CACHE = `lotus-static-${CACHE_VERSION}`;
 const API_CACHE = `lotus-api-${CACHE_VERSION}`;
 const IMAGE_CACHE = `lotus-images-${CACHE_VERSION}`;
@@ -22,18 +22,14 @@ const PRECACHE_ASSETS = [
   '/icons/apple-touch-icon.png'
 ];
 
-// API endpoints for cache-first strategy (static data)
-const CACHE_FIRST_API = [
+// API endpoints - NOW using network-first for real-time updates
+const NETWORK_FIRST_API = [
   '/api/services',
   '/api/gallery',
   '/api/videos',
   '/api/staff',
   '/api/settings',
-  '/api/reviews'
-];
-
-// API endpoints for network-first strategy (dynamic data)
-const NETWORK_FIRST_API = [
+  '/api/reviews',
   '/api/appointments',
   '/api/auth',
   '/api/admin',
@@ -42,16 +38,6 @@ const NETWORK_FIRST_API = [
   '/api/support',
   '/api/enquiries'
 ];
-
-// Cache TTL for API responses (in milliseconds)
-const API_CACHE_TTL = {
-  '/api/services': 24 * 60 * 60 * 1000,   // 24 hours
-  '/api/gallery': 12 * 60 * 60 * 1000,    // 12 hours
-  '/api/videos': 24 * 60 * 60 * 1000,     // 24 hours
-  '/api/staff': 24 * 60 * 60 * 1000,      // 24 hours
-  '/api/settings': 1 * 60 * 60 * 1000,    // 1 hour
-  '/api/reviews': 6 * 60 * 60 * 1000      // 6 hours
-};
 
 // Install event - precache static assets
 self.addEventListener('install', (event) => {
@@ -106,16 +92,9 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Handle API requests
+  // Handle API requests - ALWAYS use network-first for real-time updates
   if (url.pathname.startsWith('/api/')) {
-    // Check if this is a cache-first API
-    const isCacheFirstAPI = CACHE_FIRST_API.some(path => url.pathname.startsWith(path));
-    
-    if (isCacheFirstAPI) {
-      event.respondWith(cacheFirstWithBackgroundUpdate(request, url.pathname));
-    } else {
-      event.respondWith(networkFirst(request));
-    }
+    event.respondWith(networkFirst(request));
     return;
   }
 
@@ -182,47 +161,7 @@ async function cacheFirstForImages(request) {
   }
 }
 
-// Cache-first with background update for API requests
-async function cacheFirstWithBackgroundUpdate(request, pathname) {
-  const cache = await caches.open(API_CACHE);
-  const cachedResponse = await cache.match(request);
-
-  // Check if cached response is still valid
-  if (cachedResponse) {
-    const cachedTime = cachedResponse.headers.get('sw-cached-time');
-    const ttl = API_CACHE_TTL[pathname] || 24 * 60 * 60 * 1000;
-    
-    if (cachedTime && (Date.now() - parseInt(cachedTime)) < ttl) {
-      // Cache is valid - trigger background update if > 50% through TTL
-      const age = Date.now() - parseInt(cachedTime);
-      if (age > ttl * 0.5) {
-        updateInBackground(request, cache);
-      }
-      return cachedResponse;
-    }
-  }
-
-  // Cache miss or expired - fetch from network
-  try {
-    const networkResponse = await fetch(request);
-    if (networkResponse.ok) {
-      // Clone response and add timestamp header
-      const responseToCache = await addTimestampHeader(networkResponse);
-      cache.put(request, responseToCache);
-      return networkResponse;
-    }
-    return networkResponse;
-  } catch (error) {
-    // Network failed - return stale cache if available
-    if (cachedResponse) {
-      console.log('[SW] Returning stale cache for:', pathname);
-      return cachedResponse;
-    }
-    throw error;
-  }
-}
-
-// Network-first strategy for dynamic data
+// Network-first strategy for API data (supports real-time updates)
 async function networkFirst(request) {
   const cache = await caches.open(API_CACHE);
   
