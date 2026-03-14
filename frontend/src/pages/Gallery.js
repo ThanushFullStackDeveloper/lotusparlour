@@ -7,43 +7,69 @@ import PageHeader from '../components/PageHeader';
 import { toast } from 'sonner';
 import useWebSocket from '../hooks/useWebSocket';
 
-const CACHE_KEY = 'gallery_images_cache';
+const CACHE_KEY = 'gallery_cache';
 
-// Load cache once at module level
-const getInitialCache = () => {
+// Load everything from cache immediately
+const getCache = () => {
   try {
     const cached = localStorage.getItem(CACHE_KEY);
-    return cached ? JSON.parse(cached) : {};
-  } catch {
-    return {};
-  }
+    if (cached) {
+      const data = JSON.parse(cached);
+      return {
+        images: data.images || [],
+        imageData: data.imageData || {}
+      };
+    }
+  } catch {}
+  return { images: [], imageData: {} };
 };
 
+const initialCache = getCache();
+
 const Gallery = () => {
-  const [images, setImages] = useState([]);
-  const [imageData, setImageData] = useState(getInitialCache);
-  const [filteredImages, setFilteredImages] = useState([]);
+  const [images, setImages] = useState(initialCache.images);
+  const [imageData, setImageData] = useState(initialCache.imageData);
+  const [filteredImages, setFilteredImages] = useState(initialCache.images);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const loadedIds = useRef(new Set(Object.keys(getInitialCache())));
+  const loadedIds = useRef(new Set(Object.keys(initialCache.imageData)));
+  const hasFetched = useRef(false);
 
   const categories = ['All', 'Bridal Makeup', 'Hair Styling', 'Facial', 'Salon Interior'];
 
-  const fetchGallery = useCallback(async (forceRefresh = false) => {
+  const saveCache = useCallback((imagesData, imageDataMap) => {
     try {
-      setLoading(true);
+      localStorage.setItem(CACHE_KEY, JSON.stringify({
+        images: imagesData,
+        imageData: imageDataMap,
+        timestamp: Date.now()
+      }));
+    } catch {}
+  }, []);
+
+  const fetchGallery = useCallback(async (forceRefresh = false) => {
+    if (hasFetched.current && !forceRefresh) return;
+    hasFetched.current = true;
+
+    try {
       const response = await getGallery();
-      setImages(response.data);
-      setFilteredImages(response.data);
+      const newImages = response.data;
+      setImages(newImages);
+      setFilteredImages(newImages);
       
-      // Filter images that need loading
-      const toLoad = response.data.filter(
+      // Load only new images
+      const toLoad = newImages.filter(
         img => forceRefresh || !loadedIds.current.has(img.id)
       );
       
-      // Load ALL images in parallel for maximum speed
+      if (toLoad.length === 0) {
+        saveCache(newImages, imageData);
+        return;
+      }
+
+      // Load all images in parallel
+      const newImageData = { ...imageData };
       await Promise.all(
         toLoad.map(async (img) => {
           try {
@@ -51,36 +77,32 @@ const Gallery = () => {
             let imageUrl = imgResponse.data.image;
             
             if (imageUrl) {
-              // Compress large images for faster display
               imageUrl = await compressImage(imageUrl, 600, 0.7);
-              
               loadedIds.current.add(img.id);
-              setImageData(prev => {
-                const updated = { ...prev, [img.id]: imageUrl };
-                try {
-                  localStorage.setItem(CACHE_KEY, JSON.stringify(updated));
-                } catch {}
-                return updated;
-              });
+              newImageData[img.id] = imageUrl;
             }
-          } catch (error) {
-            console.error('Error loading image:', img.id);
-          }
+          } catch {}
         })
       );
+
+      setImageData(newImageData);
+      saveCache(newImages, newImageData);
     } catch (error) {
       console.error('Error fetching gallery:', error);
-      toast.error('Failed to load gallery');
-    } finally {
-      setLoading(false);
+      if (images.length === 0) {
+        toast.error('Failed to load gallery');
+      }
     }
-  }, []);
+  }, [imageData, saveCache, images.length]);
 
   const handleWebSocketUpdate = useCallback((data) => {
     if (data.entity === 'gallery') {
       localStorage.removeItem(CACHE_KEY);
       loadedIds.current.clear();
+      hasFetched.current = false;
       setImageData({});
+      setImages([]);
+      setFilteredImages([]);
       fetchGallery(true);
     }
   }, [fetchGallery]);
@@ -144,12 +166,7 @@ const Gallery = () => {
 
       <section className="py-4 md:py-8" data-testid="gallery-grid">
         <div className="w-full px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto">
-          {filteredImages.length === 0 && !loading ? (
-            <div className="text-center py-12">
-              <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>No images in this category.</p>
-            </div>
-          ) : filteredImages.length === 0 && loading ? (
-            /* Show skeleton grid while loading */
+          {filteredImages.length === 0 ? (
             <div className="grid grid-cols-3 md:grid-cols-4 gap-0.5 md:gap-2">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div key={i} className="aspect-square max-h-[150px] md:max-h-[180px] bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]" 
@@ -175,9 +192,8 @@ const Gallery = () => {
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   ) : (
-                    <div className="w-full h-full animate-pulse bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]" 
-                      style={{ animation: 'shimmer 1.5s infinite' }}>
-                    </div>
+                    <div className="w-full h-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]" 
+                      style={{ animation: 'shimmer 1.5s infinite' }} />
                   )}
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all hidden md:flex items-center justify-center opacity-0 group-hover:opacity-100">
                     <Maximize2 size={24} className="text-white" />

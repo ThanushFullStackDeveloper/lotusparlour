@@ -8,37 +8,63 @@ import PageHeader from '../components/PageHeader';
 import { toast } from 'sonner';
 import useWebSocket from '../hooks/useWebSocket';
 
-const CACHE_KEY = 'service_images_cache';
+const CACHE_KEY = 'services_cache';
 
-// Load cache once at module level to persist across re-renders
-const getInitialCache = () => {
+// Load everything from cache immediately
+const getCache = () => {
   try {
     const cached = localStorage.getItem(CACHE_KEY);
-    return cached ? JSON.parse(cached) : {};
-  } catch {
-    return {};
-  }
+    if (cached) {
+      const data = JSON.parse(cached);
+      return {
+        services: data.services || [],
+        images: data.images || {}
+      };
+    }
+  } catch {}
+  return { services: [], images: {} };
 };
+
+const initialCache = getCache();
 
 const Services = () => {
   const [selectedService, setSelectedService] = useState(null);
-  const [services, setServices] = useState([]);
-  const [imageData, setImageData] = useState(getInitialCache);
-  const [loading, setLoading] = useState(true);
-  const loadedIds = useRef(new Set(Object.keys(getInitialCache())));
+  const [services, setServices] = useState(initialCache.services);
+  const [imageData, setImageData] = useState(initialCache.images);
+  const loadedIds = useRef(new Set(Object.keys(initialCache.images)));
+  const hasFetched = useRef(false);
+
+  const saveCache = useCallback((servicesData, imagesData) => {
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({
+        services: servicesData,
+        images: imagesData,
+        timestamp: Date.now()
+      }));
+    } catch {}
+  }, []);
 
   const fetchServices = useCallback(async (forceRefresh = false) => {
+    if (hasFetched.current && !forceRefresh) return;
+    hasFetched.current = true;
+
     try {
-      setLoading(true);
       const response = await getServices();
-      setServices(response.data);
+      const newServices = response.data;
+      setServices(newServices);
       
-      // Filter services that need image loading
-      const toLoad = response.data.filter(
+      // Load only new images
+      const toLoad = newServices.filter(
         service => forceRefresh || !loadedIds.current.has(service.id)
       );
       
-      // Load ALL images in parallel for maximum speed
+      if (toLoad.length === 0) {
+        saveCache(newServices, imageData);
+        return;
+      }
+
+      // Load all images in parallel
+      const newImages = { ...imageData };
       await Promise.all(
         toLoad.map(async (service) => {
           try {
@@ -46,37 +72,31 @@ const Services = () => {
             let imageUrl = imgResponse.data.image;
             
             if (imageUrl) {
-              // Compress large images for faster display
               imageUrl = await compressImage(imageUrl, 600, 0.7);
-              
               loadedIds.current.add(service.id);
-              setImageData(prev => {
-                const updated = { ...prev, [service.id]: imageUrl };
-                try {
-                  localStorage.setItem(CACHE_KEY, JSON.stringify(updated));
-                } catch {}
-                return updated;
-              });
+              newImages[service.id] = imageUrl;
             }
-          } catch (error) {
-            console.error('Error loading image:', service.id);
-          }
+          } catch {}
         })
       );
+
+      setImageData(newImages);
+      saveCache(newServices, newImages);
     } catch (error) {
       console.error('Error fetching services:', error);
-      toast.error('Failed to load services');
-    } finally {
-      setLoading(false);
+      if (services.length === 0) {
+        toast.error('Failed to load services');
+      }
     }
-  }, []);
+  }, [imageData, saveCache, services.length]);
 
   const handleWebSocketUpdate = useCallback((data) => {
     if (data.entity === 'services') {
-      // Clear cache and refetch when services are updated by admin
       localStorage.removeItem(CACHE_KEY);
       loadedIds.current.clear();
+      hasFetched.current = false;
       setImageData({});
+      setServices([]);
       fetchServices(true);
     }
   }, [fetchServices]);
@@ -87,7 +107,6 @@ const Services = () => {
     fetchServices();
   }, [fetchServices]);
 
-  // Handle opening service detail with full image
   const handleOpenServiceDetail = async (service) => {
     if (imageData[service.id]) {
       setSelectedService({ ...service, image: imageData[service.id] });
@@ -95,7 +114,9 @@ const Services = () => {
       try {
         const response = await getServiceImage(service.id);
         const fullImage = response.data.image;
-        setImageData(prev => ({ ...prev, [service.id]: fullImage }));
+        const newImages = { ...imageData, [service.id]: fullImage };
+        setImageData(newImages);
+        saveCache(services, newImages);
         setSelectedService({ ...service, image: fullImage });
       } catch {
         setSelectedService(service);
@@ -112,20 +133,15 @@ const Services = () => {
 
       <section className="py-6 md:py-12" data-testid="services-grid">
         <div className="w-full px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto">
-          {services.length === 0 && !loading ? (
-            <div className="text-center py-12">
-              <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>No services available.</p>
-            </div>
-          ) : services.length === 0 && loading ? (
-            /* Show skeleton cards while loading */
+          {services.length === 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="service-card-mobile">
                   <div className="aspect-square rounded-xl mb-3 max-h-[180px] lg:max-h-[200px] bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]" 
                     style={{ animation: 'shimmer 1.5s infinite' }} />
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" style={{ animation: 'shimmer 1.5s infinite' }} />
-                  <div className="h-3 bg-gray-200 rounded w-1/2 mb-2" style={{ animation: 'shimmer 1.5s infinite' }} />
-                  <div className="h-9 bg-gray-200 rounded w-full" style={{ animation: 'shimmer 1.5s infinite' }} />
+                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
+                  <div className="h-3 bg-gray-200 rounded w-1/2 mb-2" />
+                  <div className="h-9 bg-gray-200 rounded w-full" />
                 </div>
               ))}
             </div>
@@ -148,9 +164,8 @@ const Services = () => {
                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                       />
                     ) : (
-                      <div className="w-full h-full animate-pulse bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]" 
-                        style={{ animation: 'shimmer 1.5s infinite' }}>
-                      </div>
+                      <div className="w-full h-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]" 
+                        style={{ animation: 'shimmer 1.5s infinite' }} />
                     )}
                     <button
                       onClick={(e) => {
@@ -206,9 +221,7 @@ const Services = () => {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                  <div className="w-8 h-8 border-2 border-[var(--secondary)] border-t-transparent rounded-full animate-spin"></div>
-                </div>
+                <div className="w-full h-full bg-gray-100" />
               )}
               <button 
                 onClick={() => setSelectedService(null)}
