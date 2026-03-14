@@ -89,6 +89,8 @@ const SettingsManagement = () => {
       await updateSettings(settings);
       toast.success('Settings updated successfully!');
       fetchSettings();
+      // Dispatch event to notify Navbar to refresh settings (for logo update)
+      window.dispatchEvent(new CustomEvent('settings-updated'));
     } catch (error) {
       toast.error('Failed to update settings');
     } finally {

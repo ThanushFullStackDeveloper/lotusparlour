@@ -143,3 +143,15 @@ input:focus, textarea:focus, select:focus {
   align-items: center;
   background: linear-gradient(180deg, rgba(212, 165, 165, 0.1) 0%, rgba(253, 251, 247, 0) 100%);
 }
+
+/* PWA Safe Area Support */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* Hide bottom nav on larger screens */
+@media (min-width: 768px) {
+  .md\:pb-0 {
+    padding-bottom: 0 !important;
+  }
+}

@@ -1,5 +1,6 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, UploadFile, File, Form
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.responses import Response
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -550,6 +551,79 @@ async def update_appointment_status(appointment_id: str, status: str):
         await send_sms_reminder(appointment['customer_phone'], message)
     
     return {"message": "Appointment status updated"}
+
+@api_router.get("/appointments/{appointment_id}/ics")
+async def get_appointment_ics(appointment_id: str, payload: dict = Depends(verify_token)):
+    """Generate ICS calendar file for an appointment"""
+    appointment = await db.appointments.find_one({"id": appointment_id}, {"_id": 0})
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    
+    # Verify ownership (user can only download their own appointments)
+    if payload['role'] != 'admin' and appointment.get('user_id') != payload['user_id']:
+        raise HTTPException(status_code=403, detail="Not authorized to access this appointment")
+    
+    # Get service details
+    service = await db.services.find_one({"id": appointment['service_id']}, {"_id": 0})
+    service_name = service['name'] if service else 'Beauty Service'
+    service_duration = service['duration'] if service else 60
+    
+    # Get settings for parlour name
+    settings = await db.settings.find_one({"id": "site_settings"}, {"_id": 0})
+    parlour_name = settings.get('parlour_name', 'Lotus Beauty Parlour') if settings else 'Lotus Beauty Parlour'
+    
+    # Parse appointment date and time
+    date_str = appointment['appointment_date']
+    time_str = appointment['appointment_time']
+    
+    try:
+        start_dt = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
+        end_dt = start_dt + timedelta(minutes=service_duration)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid appointment date/time format")
+    
+    # Format datetime for ICS (YYYYMMDDTHHMMSS)
+    start_ics = start_dt.strftime("%Y%m%dT%H%M%S")
+    end_ics = end_dt.strftime("%Y%m%dT%H%M%S")
+    created_ics = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    
+    # Build ICS content
+    ics_content = f"""BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Lotus Beauty Parlour//Appointment Booking//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:{appointment_id}@lotusbeauty.com
+DTSTAMP:{created_ics}
+DTSTART:{start_ics}
+DTEND:{end_ics}
+SUMMARY:{service_name} at {parlour_name}
+DESCRIPTION:Your beauty appointment at {parlour_name}\\n\\nService: {service_name}\\nDuration: {service_duration} minutes\\nCustomer: {appointment['customer_name']}\\nPhone: {appointment['customer_phone']}
+LOCATION:{parlour_name}
+STATUS:CONFIRMED
+BEGIN:VALARM
+TRIGGER:-PT1H
+ACTION:DISPLAY
+DESCRIPTION:Appointment reminder: {service_name} in 1 hour
+END:VALARM
+BEGIN:VALARM
+TRIGGER:-P1D
+ACTION:DISPLAY
+DESCRIPTION:Appointment reminder: {service_name} tomorrow
+END:VALARM
+END:VEVENT
+END:VCALENDAR"""
+
+    # Return as downloadable ICS file
+    filename = f"appointment_{appointment_id[:8]}.ics"
+    return Response(
+        content=ics_content,
+        media_type="text/calendar",
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}"
+        }
+    )
 
 # ============ REVIEW ROUTES ============
 

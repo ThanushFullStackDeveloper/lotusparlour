@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, User, Calendar, LogOut, ChevronDown } from 'lucide-react';
 import { getSettings } from '../utils/api';
@@ -14,17 +14,29 @@ const Navbar = () => {
   const role = localStorage.getItem('role');
   const userName = localStorage.getItem('userName') || 'User';
 
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const response = await getSettings();
-        setSettings(response.data);
-      } catch (error) {
-        console.log('Failed to load settings');
-      }
-    };
-    fetchSettings();
+  const fetchSettings = useCallback(async () => {
+    try {
+      const response = await getSettings();
+      setSettings(response.data);
+    } catch (error) {
+      console.log('Failed to load settings');
+    }
   }, []);
+
+  useEffect(() => {
+    fetchSettings();
+    
+    // Listen for settings update events
+    const handleSettingsUpdate = () => {
+      fetchSettings();
+    };
+    
+    window.addEventListener('settings-updated', handleSettingsUpdate);
+    
+    return () => {
+      window.removeEventListener('settings-updated', handleSettingsUpdate);
+    };
+  }, [fetchSettings]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, User, Tag } from 'lucide-react';
+import { Calendar, Clock, User, Tag, CheckCircle, CalendarPlus } from 'lucide-react';
 import { getServices, getStaff, createAppointment, getAvailableSlots, getHolidays, getCurrentUser, validateCoupon } from '../utils/api';
 import { toast } from 'sonner';
+
+const API_BASE_URL = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const Booking = () => {
   const navigate = useNavigate();
@@ -17,6 +19,8 @@ const Booking = () => {
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponLoading, setCouponLoading] = useState(false);
+  const [bookingComplete, setBookingComplete] = useState(false);
+  const [bookedAppointment, setBookedAppointment] = useState(null);
 
   const [formData, setFormData] = useState({
     service_id: location.state?.selectedService?.id || '',
@@ -155,9 +159,10 @@ const Booking = () => {
     }
 
     try {
-      await createAppointment(formData);
+      const response = await createAppointment(formData);
       toast.success('Appointment booked successfully!');
-      navigate('/dashboard');
+      setBookedAppointment(response.data);
+      setBookingComplete(true);
     } catch (error) {
       console.error('Error booking appointment:', error);
       // Handle different error formats - ensure we only show string messages
@@ -179,11 +184,133 @@ const Booking = () => {
     }
   };
 
+  const handleAddToCalendar = () => {
+    if (!bookedAppointment?.id) return;
+    
+    const token = localStorage.getItem('token');
+    // Create the ICS download URL with auth token
+    const icsUrl = `${API_BASE_URL}/appointments/${bookedAppointment.id}/ics`;
+    
+    // Create a temporary anchor to download with auth header
+    const downloadICS = async () => {
+      try {
+        const response = await fetch(icsUrl, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `appointment_${bookedAppointment.id.slice(0, 8)}.ics`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        toast.success('Calendar file downloaded! Open it to add to your calendar.');
+      } catch (error) {
+        toast.error('Failed to download calendar file');
+      }
+    };
+    
+    downloadICS();
+  };
+
   const selectedService = services.find(s => s.id === formData.service_id);
   const selectedStaff = staff.find(s => s.id === formData.staff_id);
 
   // Get today's date in YYYY-MM-DD format
   const today = new Date().toISOString().split('T')[0];
+
+  // Booking Complete View
+  if (bookingComplete && bookedAppointment) {
+    return (
+      <div className="booking-page section-spacing" data-testid="booking-success">
+        <div className="container-custom max-w-2xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white p-8 rounded-2xl shadow-lg text-center"
+          >
+            <div className="w-20 h-20 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center">
+              <CheckCircle size={48} className="text-green-500" />
+            </div>
+            
+            <h1 className="text-3xl font-bold font-heading mb-4" style={{ color: 'var(--secondary)' }}>
+              Booking Confirmed!
+            </h1>
+            
+            <p className="text-gray-600 mb-8">
+              Your appointment has been successfully booked. We look forward to seeing you!
+            </p>
+            
+            <div className="bg-[var(--background-alt)] p-6 rounded-xl mb-8 text-left">
+              <h3 className="font-semibold text-lg mb-4">Appointment Details</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Service:</span>
+                  <span className="font-medium">{selectedService?.name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Date:</span>
+                  <span className="font-medium">{formData.appointment_date}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Time:</span>
+                  <span className="font-medium">{formData.appointment_time}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Duration:</span>
+                  <span className="font-medium">{selectedService?.duration} mins</span>
+                </div>
+                {appliedCoupon && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Discount:</span>
+                    <span className="font-medium">{appliedCoupon.discount_percent}% off</span>
+                  </div>
+                )}
+                <div className="border-t pt-3 flex justify-between">
+                  <span className="font-semibold">Total:</span>
+                  <span className="font-bold text-[var(--secondary)]">
+                    ₹{calculatePrice().final.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Add to Calendar Section */}
+            <div className="mb-8">
+              <button
+                onClick={handleAddToCalendar}
+                className="btn-primary w-full flex items-center justify-center space-x-2"
+                data-testid="add-to-calendar-btn"
+              >
+                <CalendarPlus size={20} />
+                <span>Add to Calendar</span>
+              </button>
+              <p className="text-xs text-gray-500 mt-2">
+                Download .ICS file to add this appointment to Google Calendar, Apple Calendar, or Outlook
+              </p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link to="/dashboard" className="flex-1">
+                <button className="btn-secondary w-full" data-testid="view-appointments-btn">
+                  View My Appointments
+                </button>
+              </Link>
+              <Link to="/" className="flex-1">
+                <button className="btn-gold w-full" data-testid="back-to-home-btn">
+                  Back to Home
+                </button>
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="booking-page section-spacing" data-testid="booking-page">

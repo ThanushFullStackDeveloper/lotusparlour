@@ -46,6 +46,7 @@ export const createAppointment = (data) => api.post('/appointments', data);
 export const getAppointments = () => api.get('/appointments');
 export const getAvailableSlots = (date, serviceId) => api.get(`/appointments/available-slots?date=${date}&service_id=${serviceId}`);
 export const updateAppointmentStatus = (id, status) => api.put(`/appointments/${id}/status?status=${status}`);
+export const getAppointmentICS = (id) => `${API_BASE_URL}/appointments/${id}/ics`;
 
 // Reviews
 export const getReviews = () => api.get('/reviews');
