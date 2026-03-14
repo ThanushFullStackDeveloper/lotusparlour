@@ -1,7 +1,7 @@
 // Service Worker for Lotus Beauty Parlour PWA
-const CACHE_NAME = 'lotus-beauty-v1';
-const STATIC_CACHE = 'lotus-static-v1';
-const API_CACHE = 'lotus-api-v1';
+const CACHE_NAME = 'lotus-beauty-v2';
+const STATIC_CACHE = 'lotus-static-v2';
+const API_CACHE = 'lotus-api-v2';
 
 // Static assets to cache
 const STATIC_ASSETS = [
@@ -9,8 +9,16 @@ const STATIC_ASSETS = [
   '/index.html',
   '/offline.html',
   '/manifest.json',
+  '/icons/icon-72x72.png',
+  '/icons/icon-96x96.png',
+  '/icons/icon-128x128.png',
+  '/icons/icon-144x144.png',
+  '/icons/icon-152x152.png',
   '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png'
+  '/icons/icon-384x384.png',
+  '/icons/icon-512x512.png',
+  '/icons/apple-touch-icon.png',
+  '/icons/splash-1170x2532.png'
 ];
 
 // API routes to cache (network-first)

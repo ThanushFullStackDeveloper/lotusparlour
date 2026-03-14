@@ -1,173 +1,187 @@
 import React, { useState, useEffect } from 'react';
-import { Download, X, Smartphone } from 'lucide-react';
+import { Download, X, Share } from 'lucide-react';
+import usePWAInstall from '../hooks/usePWAInstall';
 
 const InstallPWA = () => {
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const { isInstalled, isIOS, canInstall, promptInstall } = usePWAInstall();
   const [showPrompt, setShowPrompt] = useState(false);
-  const [isInstalled, setIsInstalled] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
   const [showIOSInstructions, setShowIOSInstructions] = useState(false);
 
   useEffect(() => {
-    // Check if already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setIsInstalled(true);
-      return;
+    if (isInstalled) return;
+    
+    // Show prompt after delay if can install and hasn't been dismissed this session
+    const hasSeenThisSession = sessionStorage.getItem('pwaInstallPromptSeen');
+    if (!hasSeenThisSession && canInstall) {
+      const timer = setTimeout(() => setShowPrompt(true), 2500);
+      return () => clearTimeout(timer);
     }
-
-    // Check if iOS
-    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    setIsIOS(isIOSDevice);
-
-    // For non-iOS, listen for install prompt
-    const handleBeforeInstall = (e) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      // Show prompt after a short delay
-      setTimeout(() => setShowPrompt(true), 2000);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
-
-    // Check if iOS and show prompt after delay
-    if (isIOSDevice) {
-      const hasSeenIOSPrompt = localStorage.getItem('iosInstallPromptSeen');
-      if (!hasSeenIOSPrompt) {
-        setTimeout(() => setShowPrompt(true), 2000);
-      }
-    }
-
-    // Listen for app installed
-    window.addEventListener('appinstalled', () => {
-      setIsInstalled(true);
-      setShowPrompt(false);
-    });
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
-    };
-  }, []);
+  }, [isInstalled, canInstall]);
 
   const handleInstall = async () => {
     if (isIOS) {
       setShowIOSInstructions(true);
       return;
     }
-
-    if (!deferredPrompt) return;
-
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
     
-    if (outcome === 'accepted') {
-      setIsInstalled(true);
+    const result = await promptInstall();
+    if (result.success) {
+      setShowPrompt(false);
     }
-    setDeferredPrompt(null);
-    setShowPrompt(false);
   };
 
   const handleDismiss = () => {
     setShowPrompt(false);
-    if (isIOS) {
-      localStorage.setItem('iosInstallPromptSeen', 'true');
-    }
+    sessionStorage.setItem('pwaInstallPromptSeen', 'true');
   };
 
   const handleCloseIOSInstructions = () => {
     setShowIOSInstructions(false);
     setShowPrompt(false);
-    localStorage.setItem('iosInstallPromptSeen', 'true');
+    sessionStorage.setItem('pwaInstallPromptSeen', 'true');
   };
 
-  if (isInstalled || !showPrompt) return null;
+  // Don't show anything if installed
+  if (isInstalled) return null;
+  if (!showPrompt && !showIOSInstructions) return null;
 
   // iOS Instructions Modal
   if (showIOSInstructions) {
     return (
       <div 
-        className="fixed inset-0 bg-black/60 flex items-end justify-center z-[9999] p-4"
+        className="fixed inset-0 bg-black/70 flex items-end justify-center z-[9999]"
         onClick={handleCloseIOSInstructions}
       >
         <div 
-          className="bg-white rounded-t-3xl w-full max-w-md p-6 animate-slide-up"
+          className="bg-white rounded-t-3xl w-full max-w-md animate-slide-up"
           onClick={(e) => e.stopPropagation()}
+          style={{ paddingBottom: 'env(safe-area-inset-bottom, 20px)' }}
         >
-          <div className="flex justify-between items-start mb-4">
-            <h3 className="text-xl font-bold">Install on iPhone/iPad</h3>
-            <button onClick={handleCloseIOSInstructions} className="p-1">
-              <X size={24} className="text-gray-500" />
+          <div className="p-6">
+            <div className="flex justify-between items-start mb-6">
+              <div className="flex items-center gap-3">
+                <img 
+                  src="/icons/icon-72x72.png" 
+                  alt="Lotus Beauty" 
+                  className="w-12 h-12 rounded-xl shadow-sm"
+                />
+                <div>
+                  <h3 className="text-xl font-bold">Install App</h3>
+                  <p className="text-sm text-gray-500">Add to Home Screen</p>
+                </div>
+              </div>
+              <button onClick={handleCloseIOSInstructions} className="p-2 hover:bg-gray-100 rounded-full">
+                <X size={24} className="text-gray-400" />
+              </button>
+            </div>
+            
+            <div className="space-y-5">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold shrink-0">
+                  1
+                </div>
+                <div className="pt-1.5">
+                  <p className="font-semibold">Tap the Share button</p>
+                  <div className="flex items-center gap-2 mt-1 text-gray-500 text-sm">
+                    <Share size={16} />
+                    <span>at the bottom of Safari</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold shrink-0">
+                  2
+                </div>
+                <div className="pt-1.5">
+                  <p className="font-semibold">Scroll down and tap</p>
+                  <p className="text-sm text-gray-500 mt-1">"Add to Home Screen"</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold shrink-0">
+                  3
+                </div>
+                <div className="pt-1.5">
+                  <p className="font-semibold">Tap "Add" to install</p>
+                  <p className="text-sm text-gray-500 mt-1">The app icon will appear on your home screen</p>
+                </div>
+              </div>
+            </div>
+            
+            <button
+              onClick={handleCloseIOSInstructions}
+              className="w-full mt-8 btn-primary py-4 text-lg"
+            >
+              Got it!
             </button>
           </div>
-          
-          <div className="space-y-4">
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold shrink-0">1</div>
-              <div>
-                <p className="font-medium">Tap the Share button</p>
-                <p className="text-sm text-gray-500">Look for the square with arrow at the bottom of Safari</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold shrink-0">2</div>
-              <div>
-                <p className="font-medium">Scroll and tap "Add to Home Screen"</p>
-                <p className="text-sm text-gray-500">You may need to scroll down in the share menu</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold shrink-0">3</div>
-              <div>
-                <p className="font-medium">Tap "Add"</p>
-                <p className="text-sm text-gray-500">The app will appear on your home screen</p>
-              </div>
-            </div>
-          </div>
-          
-          <button
-            onClick={handleCloseIOSInstructions}
-            className="w-full mt-6 btn-primary"
-          >
-            Got it!
-          </button>
         </div>
       </div>
     );
   }
 
+  // Install Banner
   return (
     <div 
-      className="fixed bottom-20 md:bottom-6 left-4 right-4 md:left-auto md:right-6 md:max-w-sm bg-white rounded-2xl shadow-2xl p-4 z-[9999] animate-slide-up border border-gray-100"
+      className="fixed bottom-20 md:bottom-6 left-3 right-3 md:left-auto md:right-6 md:max-w-sm z-[9999] animate-slide-up"
       data-testid="install-pwa-prompt"
     >
-      <button 
-        onClick={handleDismiss}
-        className="absolute top-2 right-2 p-1 text-gray-400 hover:text-gray-600"
-        data-testid="dismiss-install-prompt"
-      >
-        <X size={20} />
-      </button>
-      
-      <div className="flex items-start gap-4">
-        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center shrink-0">
-          <Smartphone size={28} className="text-white" />
+      <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+        {/* Header with gradient */}
+        <div className="bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] p-4 relative">
+          <button 
+            onClick={handleDismiss}
+            className="absolute top-2 right-2 p-1.5 bg-white/20 hover:bg-white/30 rounded-full transition-colors"
+            data-testid="dismiss-install-prompt"
+          >
+            <X size={18} className="text-white" />
+          </button>
+          
+          <div className="flex items-center gap-4">
+            <img 
+              src="/icons/icon-72x72.png" 
+              alt="Lotus Beauty" 
+              className="w-16 h-16 rounded-2xl bg-white shadow-lg"
+            />
+            <div className="text-white">
+              <h3 className="font-bold text-lg">Lotus Beauty</h3>
+              <p className="text-white/80 text-sm">Install the app</p>
+            </div>
+          </div>
         </div>
         
-        <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-lg mb-1">Install Lotus Beauty App</h3>
-          <p className="text-sm text-gray-500 mb-3">
-            Get faster booking & offline access
+        {/* Content */}
+        <div className="p-4">
+          <p className="text-gray-600 text-sm mb-4">
+            {isIOS 
+              ? "Add Lotus Beauty to your home screen for quick access and a better experience!"
+              : "Install Lotus Beauty for faster booking, offline access, and a native app experience!"
+            }
           </p>
           
           <button
             onClick={handleInstall}
-            className="w-full btn-primary flex items-center justify-center gap-2 py-3"
+            className="w-full bg-[var(--secondary)] hover:bg-[var(--secondary-hover)] text-white font-semibold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-colors touch-manipulation active:scale-[0.98]"
             data-testid="install-app-btn"
           >
-            <Download size={18} />
-            <span>Add to Home Screen</span>
+            {isIOS ? (
+              <>
+                <Share size={20} />
+                <span>Add to Home Screen</span>
+              </>
+            ) : (
+              <>
+                <Download size={20} />
+                <span>Install App</span>
+              </>
+            )}
           </button>
+          
+          <p className="text-center text-xs text-gray-400 mt-3">
+            Free • No app store needed
+          </p>
         </div>
       </div>
     </div>
