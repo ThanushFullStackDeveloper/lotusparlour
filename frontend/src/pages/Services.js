@@ -41,25 +41,11 @@ const Services = () => {
 
   return (
     <div className="services-page" data-testid="services-page">
-      <OfflineBanner isOffline={isOffline} isStale={isStale} onRefresh={refresh} />
-      
       {/* Page Header with Back Button */}
       <PageHeader 
         title="Our Services" 
         subtitle="Premium beauty & wellness treatments"
       />
-      
-      {fromCache && !isOffline && (
-        <div className="container-custom text-center -mt-4 mb-4">
-          <button 
-            onClick={refresh}
-            className="text-xs text-gray-500 flex items-center gap-1 mx-auto hover:text-[var(--secondary)]"
-          >
-            <RefreshCw size={12} />
-            Refresh
-          </button>
-        </div>
-      )}
 
       {/* Services Grid - Card Layout */}
       <section className="py-6 md:py-12" data-testid="services-grid">
