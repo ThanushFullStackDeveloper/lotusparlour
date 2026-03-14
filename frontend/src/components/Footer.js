@@ -16,7 +16,7 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-[var(--background-dark)] text-white mt-16 pb-20 md:pb-0" data-testid="footer">
+    <footer className="bg-[var(--background-dark)] text-white mt-16 pb-20 md:pb-0 hidden md:block" data-testid="footer">
       {/* iOS Install Modal */}
       {showIOSModal && (
         <div className="fixed inset-0 bg-black/70 flex items-end justify-center z-[9999]" onClick={() => setShowIOSModal(false)}>
