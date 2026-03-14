@@ -123,8 +123,8 @@ const Gallery = () => {
                 <motion.div
                   key={img.id}
                   initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ delay: index * 0.02 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: Math.min(index * 0.02, 0.3), duration: 0.3 }}
                   whileTap={{ scale: 0.98 }}
                   className="relative aspect-square overflow-hidden cursor-pointer group"
                   onClick={() => openLightbox(index)}

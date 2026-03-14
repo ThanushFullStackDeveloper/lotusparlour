@@ -59,8 +59,8 @@ const About = () => {
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1, duration: 0.4 }}
                 className="text-center bg-white p-8 rounded-xl shadow-sm"
                 data-testid={`value-card-${index}`}
               >
@@ -102,8 +102,8 @@ const About = () => {
               <motion.div
                 key={index}
                 initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.1 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.1, duration: 0.4 }}
                 className="bg-white rounded-xl overflow-hidden shadow-sm"
                 data-testid={`expertise-card-${index}`}
               >

@@ -233,8 +233,8 @@ const Home = () => {
               <motion.div
                 key={service.id}
                 initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1, duration: 0.4 }}
                 className="service-card"
                 data-testid={`service-card-${index}`}
               >
@@ -274,8 +274,8 @@ const Home = () => {
               <motion.div
                 key={member.id}
                 initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.1 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.1, duration: 0.4 }}
                 className="staff-card"
                 data-testid={`staff-card-${index}`}
               >
@@ -315,8 +315,8 @@ const Home = () => {
               <motion.div
                 key={review.id}
                 initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1, duration: 0.4 }}
                 className="testimonial-card"
                 data-testid={`review-card-${index}`}
               >
@@ -404,7 +404,8 @@ const ReviewSubmission = () => {
           
           <motion.form
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
             onSubmit={handleReviewSubmit}
             className="bg-white p-8 rounded-2xl shadow-lg space-y-6"
             data-testid="review-form"
