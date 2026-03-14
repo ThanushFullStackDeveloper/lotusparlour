@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Star, Calendar, Users, Award, Send, RefreshCw } from 'lucide-react';
-import { getServices, getStaff, getReviews, getSettings, createReview } from '../utils/api';
+import { getServicesFull, getStaff, getReviews, getSettings, createReview } from '../utils/api';
 import { getCachedData, clearCache } from '../utils/cacheManager';
 import OfflineBanner from '../components/OfflineBanner';
 import { toast } from 'sonner';
@@ -55,7 +55,7 @@ const Home = () => {
     try {
       // Fetch all data with caching
       const [servicesResult, staffResult, reviewsResult, settingsResult] = await Promise.all([
-        getCachedData('services', async () => (await getServices()).data),
+        getCachedData('services', async () => (await getServicesFull()).data),
         getCachedData('staff', async () => (await getStaff()).data),
         getCachedData('reviews', async () => (await getReviews()).data),
         getCachedData('settings', async () => (await getSettings()).data),
