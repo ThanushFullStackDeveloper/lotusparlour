@@ -150,12 +150,6 @@ const CustomerDashboard = () => {
             <ArrowLeft size={20} />
             <span className="text-sm font-medium">Back to Home</span>
           </button>
-            className="hidden md:flex items-center gap-2 mb-4 text-gray-600 hover:text-[var(--secondary)] transition-colors"
-            data-testid="dashboard-back-btn"
-          >
-            <ArrowLeft size={20} />
-            <span className="text-sm font-medium">Back to Home</span>
-          </button>
           
           {/* Welcome Section - Compact for mobile */}
           <motion.div
