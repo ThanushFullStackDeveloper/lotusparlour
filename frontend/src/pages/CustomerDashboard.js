@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { Calendar, Clock, User, CheckCircle, XCircle, Loader, CalendarPlus, ArrowLeft } from 'lucide-react';
 import { getAppointments, getCurrentUser, getAppointmentICS } from '../utils/api';
 import { toast } from 'sonner';
@@ -164,11 +163,8 @@ const CustomerDashboard = () => {
           {/* Stats Cards - Horizontal scroll on mobile */}
           <div className="flex gap-3 overflow-x-auto pb-2 mb-6 scrollbar-hide" data-testid="stats-section">
           {filterTabs.map((tab, index) => (
-            <motion.button
+            <button
               key={tab.key}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.1 }}
               onClick={() => setActiveFilter(tab.key)}
               className={`flex-shrink-0 px-4 py-3 rounded-xl transition-all touch-manipulation ${
                 activeFilter === tab.key
@@ -179,7 +175,7 @@ const CustomerDashboard = () => {
             >
               <p className="text-2xl font-bold">{tab.count}</p>
               <p className="text-xs font-medium whitespace-nowrap">{tab.label}</p>
-            </motion.button>
+            </button>
           ))}
         </div>
 
@@ -207,11 +203,8 @@ const CustomerDashboard = () => {
           ) : (
             <div className="space-y-3">
               {filteredAppointments.map((appointment, index) => (
-                <motion.div
+                <div
                   key={appointment.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.03, duration: 0.3 }}
                   className="bg-white p-4 rounded-xl shadow-sm"
                   data-testid={`appointment-card-${index}`}
                 >
@@ -260,7 +253,7 @@ const CustomerDashboard = () => {
                       Add to Calendar
                     </button>
                   )}
-                </motion.div>
+                </div>
               ))}
             </div>
           )}
