@@ -123,32 +123,31 @@ const ServicesManagement = () => {
         </button>
       </div>
 
-      {/* Services Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Services Grid - Medium size cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {services.map((service, index) => (
           <motion.div
             key={service.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all"
+            className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-all"
             data-testid={`service-card-${index}`}
           >
-            <img src={service.image || 'https://via.placeholder.com/400x200'} alt={service.name} className="w-full h-48 object-cover" />
-            <div className="p-4">
-              <h3 className="text-xl font-semibold mb-2">{service.name}</h3>
-              <p className="text-sm text-gray-600 mb-3 line-clamp-2">{service.description}</p>
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-2xl font-bold" style={{ color: 'var(--secondary)' }}>₹{service.price}</span>
-                <span className="text-sm text-gray-500">{service.duration} mins</span>
+            <img src={service.image || 'https://via.placeholder.com/400x200'} alt={service.name} className="w-full h-32 object-cover" />
+            <div className="p-3">
+              <h3 className="text-sm font-semibold mb-1 truncate">{service.name}</h3>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-base font-bold" style={{ color: 'var(--secondary)' }}>₹{service.price}</span>
+                <span className="text-xs text-gray-500">{service.duration}m</span>
               </div>
-              <div className="flex space-x-2">
-                <button onClick={() => handleEdit(service)} className="flex-1 py-2 px-3 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors flex items-center justify-center space-x-1" data-testid={`edit-service-${index}`}>
-                  <Edit2 size={16} />
+              <div className="flex space-x-1">
+                <button onClick={() => handleEdit(service)} className="flex-1 py-1.5 px-2 bg-blue-50 text-blue-600 rounded text-xs hover:bg-blue-100 transition-colors flex items-center justify-center space-x-1" data-testid={`edit-service-${index}`}>
+                  <Edit2 size={12} />
                   <span>Edit</span>
                 </button>
-                <button onClick={() => handleDelete(service.id)} className="flex-1 py-2 px-3 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors flex items-center justify-center space-x-1" data-testid={`delete-service-${index}`}>
-                  <Trash2 size={16} />
+                <button onClick={() => handleDelete(service.id)} className="flex-1 py-1.5 px-2 bg-red-50 text-red-600 rounded text-xs hover:bg-red-100 transition-colors flex items-center justify-center space-x-1" data-testid={`delete-service-${index}`}>
+                  <Trash2 size={12} />
                   <span>Delete</span>
                 </button>
               </div>

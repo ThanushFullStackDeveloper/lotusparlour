@@ -82,16 +82,17 @@ const GalleryManagement = () => {
         </form>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Medium size gallery grid */}
+      <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-3">
         {images.map((img, index) => (
           <motion.div key={img.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative group" data-testid={`gallery-item-${index}`}>
-            <img src={img.image} alt={img.category} className="w-full h-48 object-cover rounded-lg" />
-            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center">
-              <button onClick={() => handleDelete(img.id)} className="opacity-0 group-hover:opacity-100 p-2 bg-red-500 text-white rounded-lg" data-testid={`delete-image-${index}`}>
-                <Trash2 size={20} />
+            <img src={img.image} alt={img.category} className="w-full h-28 object-cover rounded-lg" />
+            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center rounded-lg">
+              <button onClick={() => handleDelete(img.id)} className="opacity-0 group-hover:opacity-100 p-1.5 bg-red-500 text-white rounded-lg" data-testid={`delete-image-${index}`}>
+                <Trash2 size={16} />
               </button>
             </div>
-            <p className="text-xs mt-2 text-center">{img.category}</p>
+            <p className="text-xs mt-1 text-center truncate">{img.category}</p>
           </motion.div>
         ))}
       </div>
