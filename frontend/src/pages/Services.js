@@ -1,32 +1,39 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Clock, IndianRupee, Eye } from 'lucide-react';
+import { Clock, IndianRupee, Eye, RefreshCw } from 'lucide-react';
 import { getServices } from '../utils/api';
+import { useCachedData } from '../hooks/useCachedData';
+import OfflineBanner from '../components/OfflineBanner';
 import { toast } from 'sonner';
 
 const Services = () => {
-  const [services, setServices] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [selectedService, setSelectedService] = useState(null);
-
-  useEffect(() => {
-    fetchServices();
-  }, []);
-
-  const fetchServices = async () => {
-    try {
+  
+  // Use cached data hook for services
+  const { 
+    data: services, 
+    loading, 
+    fromCache, 
+    isStale, 
+    isOffline,
+    refresh 
+  } = useCachedData(
+    'services',
+    async () => {
       const response = await getServices();
-      setServices(response.data);
-    } catch (error) {
-      console.error('Error fetching services:', error);
-      toast.error('Failed to load services');
-    } finally {
-      setLoading(false);
+      return response.data;
     }
-  };
+  );
 
-  if (loading) {
+  // Show toast when data is refreshed
+  useEffect(() => {
+    if (services && !loading && !fromCache) {
+      // Data was freshly fetched
+    }
+  }, [services, loading, fromCache]);
+
+  if (loading && !services) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
@@ -39,6 +46,9 @@ const Services = () => {
 
   return (
     <div className="services-page" data-testid="services-page">
+      {/* Offline/Stale Banner */}
+      <OfflineBanner isOffline={isOffline} isStale={isStale} onRefresh={refresh} />
+      
       {/* Compact Hero for Mobile */}
       <section className="py-6 md:py-12 bg-[var(--background-alt)]" data-testid="services-hero">
         <div className="container-custom text-center">
@@ -46,6 +56,15 @@ const Services = () => {
           <p className="text-sm md:text-base max-w-3xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
             Premium beauty & wellness treatments
           </p>
+          {fromCache && !isOffline && (
+            <button 
+              onClick={refresh}
+              className="mt-2 text-xs text-gray-500 flex items-center gap-1 mx-auto hover:text-[var(--secondary)]"
+            >
+              <RefreshCw size={12} />
+              Refresh
+            </button>
+          )}
         </div>
       </section>
 

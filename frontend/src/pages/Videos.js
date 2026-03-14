@@ -1,42 +1,43 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, X } from 'lucide-react';
+import { Play, X, RefreshCw } from 'lucide-react';
 import { getVideos } from '../utils/api';
+import { useCachedData } from '../hooks/useCachedData';
+import OfflineBanner from '../components/OfflineBanner';
 import { toast } from 'sonner';
 
 const Videos = () => {
-  const [videos, setVideos] = useState([]);
   const [filteredVideos, setFilteredVideos] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedVideo, setSelectedVideo] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   const categories = ['All', 'Bridal', 'Hair', 'Facial', 'Makeup'];
 
-  useEffect(() => {
-    fetchVideos();
-  }, []);
+  // Use cached data hook for videos
+  const { 
+    data: videos, 
+    loading, 
+    fromCache, 
+    isStale, 
+    isOffline,
+    refresh 
+  } = useCachedData(
+    'videos',
+    async () => {
+      const response = await getVideos();
+      return response.data;
+    }
+  );
 
   useEffect(() => {
+    if (!videos) return;
+    
     if (selectedCategory === 'All') {
       setFilteredVideos(videos);
     } else {
       setFilteredVideos(videos.filter(video => video.category === selectedCategory));
     }
   }, [selectedCategory, videos]);
-
-  const fetchVideos = async () => {
-    try {
-      const response = await getVideos();
-      setVideos(response.data);
-      setFilteredVideos(response.data);
-    } catch (error) {
-      console.error('Error fetching videos:', error);
-      toast.error('Failed to load videos');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getYouTubeId = (url) => {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -57,7 +58,7 @@ const Videos = () => {
     setSelectedVideo(null);
   };
 
-  if (loading) {
+  if (loading && !videos) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
@@ -70,6 +71,9 @@ const Videos = () => {
 
   return (
     <div className="videos-page" data-testid="videos-page">
+      {/* Offline/Stale Banner */}
+      <OfflineBanner isOffline={isOffline} isStale={isStale} onRefresh={refresh} />
+      
       {/* Compact Hero */}
       <section className="py-6 md:py-12 bg-[var(--background-alt)]" data-testid="videos-hero">
         <div className="container-custom text-center">
@@ -77,6 +81,15 @@ const Videos = () => {
           <p className="text-sm md:text-base" style={{ color: 'var(--text-secondary)' }}>
             Watch our beauty tutorials
           </p>
+          {fromCache && !isOffline && (
+            <button 
+              onClick={refresh}
+              className="mt-2 text-xs text-gray-500 flex items-center gap-1 mx-auto hover:text-[var(--secondary)]"
+            >
+              <RefreshCw size={12} />
+              Refresh
+            </button>
+          )}
         </div>
       </section>
 

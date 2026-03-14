@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Star, Calendar, Users, Award, Send } from 'lucide-react';
+import { Star, Calendar, Users, Award, Send, RefreshCw } from 'lucide-react';
 import { getServices, getStaff, getReviews, getSettings, createReview } from '../utils/api';
+import { getCachedData } from '../utils/cacheManager';
+import OfflineBanner from '../components/OfflineBanner';
 import { toast } from 'sonner';
 
 const Home = () => {
@@ -17,27 +19,56 @@ const Home = () => {
     closing_time: '22:00',
     logo_image: null
   });
+  const [fromCache, setFromCache] = useState(false);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [isStale, setIsStale] = useState(false);
 
   useEffect(() => {
     fetchData();
+    
+    // Listen for online/offline
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, []);
 
   const fetchData = async () => {
     try {
-      const [servicesRes, staffRes, reviewsRes, settingsRes] = await Promise.all([
-        getServices(),
-        getStaff(),
-        getReviews(),
-        getSettings(),
+      // Fetch all data with caching
+      const [servicesResult, staffResult, reviewsResult, settingsResult] = await Promise.all([
+        getCachedData('services', async () => (await getServices()).data),
+        getCachedData('staff', async () => (await getStaff()).data),
+        getCachedData('reviews', async () => (await getReviews()).data),
+        getCachedData('settings', async () => (await getSettings()).data),
       ]);
-      setServices(servicesRes.data.slice(0, 3));
-      setStaff(staffRes.data.slice(0, 3));
-      setReviews(reviewsRes.data.slice(0, 3));
-      setSettings(settingsRes.data);
+      
+      setServices((servicesResult.data || []).slice(0, 3));
+      setStaff((staffResult.data || []).slice(0, 3));
+      setReviews((reviewsResult.data || []).slice(0, 3));
+      setSettings(settingsResult.data || settings);
+      
+      // Check if any data is from cache
+      const anyFromCache = servicesResult.fromCache || staffResult.fromCache || reviewsResult.fromCache || settingsResult.fromCache;
+      const anyStale = servicesResult.stale || staffResult.stale || reviewsResult.stale || settingsResult.stale;
+      setFromCache(anyFromCache);
+      setIsStale(anyStale);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
+
+  const handleRefresh = useCallback(async () => {
+    setFromCache(false);
+    setIsStale(false);
+    await fetchData();
+    toast.success('Content refreshed');
+  }, []);
 
   const getTodayConfig = () => {
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -125,6 +156,9 @@ const Home = () => {
 
   return (
     <div className="home-page" data-testid="home-page">
+      {/* Offline/Stale Banner */}
+      <OfflineBanner isOffline={isOffline} isStale={isStale} onRefresh={handleRefresh} />
+      
       {/* Hero Section */}
       <section className="hero-section" data-testid="hero-section">
         <div className="container-custom">

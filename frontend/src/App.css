@@ -149,6 +149,10 @@ input:focus, textarea:focus, select:focus {
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0);
+}
+
 /* Hide bottom nav on larger screens */
 @media (min-width: 768px) {
   .md\:pb-0 {
