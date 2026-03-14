@@ -241,7 +241,7 @@ const Home = () => {
                 <img
                   src={service.image || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400'}
                   alt={service.name}
-                  className="w-full h-40 lg:h-44 object-cover rounded-lg mb-4"
+                  className="w-full h-40 lg:h-44 object-contain rounded-lg mb-4 bg-gray-50"
                 />
                 <h3 className="text-lg font-semibold mb-2">{service.name}</h3>
                 <p className="text-sm mb-4 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{service.description}</p>
@@ -282,7 +282,7 @@ const Home = () => {
                 <img
                   src={member.photo || 'https://images.unsplash.com/photo-1616723355486-eac8780bfcb9?w=400'}
                   alt={member.name}
-                  className="w-full h-64 object-cover"
+                  className="w-full h-64 object-contain bg-gray-50"
                 />
                 <div className="p-6 text-center">
                   <h3 className="text-xl font-semibold mb-1">{member.name}</h3>
