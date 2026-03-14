@@ -122,9 +122,8 @@ const Gallery = () => {
               {filteredImages.map((img, index) => (
                 <motion.div
                   key={img.id}
-                  initial={{ opacity: 0 }}
+                  initial={{ opacity: 1 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: Math.min(index * 0.02, 0.3), duration: 0.3 }}
                   whileTap={{ scale: 0.98 }}
                   className="relative aspect-square overflow-hidden cursor-pointer group max-h-[150px] md:max-h-[180px]"
                   onClick={() => openLightbox(index)}

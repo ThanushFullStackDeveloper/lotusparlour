@@ -80,9 +80,8 @@ const Services = () => {
               {services.map((service, index) => (
                 <motion.div
                   key={service.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05, duration: 0.3 }}
+                  initial={{ opacity: 1 }}
+                  animate={{ opacity: 1 }}
                   whileTap={{ scale: 0.98 }}
                   className="service-card-mobile group"
                   data-testid={`service-card-${index}`}
