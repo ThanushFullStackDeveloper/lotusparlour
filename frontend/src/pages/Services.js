@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Clock, IndianRupee, Eye } from 'lucide-react';
-import { getServices } from '../utils/api';
+import { getServices, getServiceImage } from '../utils/api';
 import PageHeader from '../components/PageHeader';
 import { toast } from 'sonner';
 
 const Services = () => {
   const [selectedService, setSelectedService] = useState(null);
   const [services, setServices] = useState([]);
+  const [imageData, setImageData] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,11 +21,46 @@ const Services = () => {
       setLoading(true);
       const response = await getServices();
       setServices(response.data);
+      // Load images lazily
+      loadImages(response.data);
     } catch (error) {
       console.error('Error fetching services:', error);
       toast.error('Failed to load services');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadImages = async (serviceList) => {
+    // Load images in batches for faster perceived loading
+    for (const service of serviceList) {
+      try {
+        const response = await getServiceImage(service.id);
+        setImageData(prev => ({
+          ...prev,
+          [service.id]: response.data.image
+        }));
+      } catch (error) {
+        console.error('Error loading image:', service.id);
+      }
+    }
+  };
+
+  // Handle opening service detail with full image
+  const handleOpenServiceDetail = async (service) => {
+    // If we already have the image, use it
+    if (imageData[service.id]) {
+      setSelectedService({ ...service, image: imageData[service.id] });
+    } else {
+      // Otherwise fetch it first
+      try {
+        const response = await getServiceImage(service.id);
+        const fullImage = response.data.image;
+        setImageData(prev => ({ ...prev, [service.id]: fullImage }));
+        setSelectedService({ ...service, image: fullImage });
+      } catch (error) {
+        setSelectedService(service);
+      }
     }
   };
 
@@ -65,17 +101,24 @@ const Services = () => {
                   className="service-card-mobile group"
                   data-testid={`service-card-${index}`}
                 >
-                  <div className="relative aspect-square overflow-hidden rounded-xl mb-3 max-h-[180px] lg:max-h-[200px]">
-                    <img
-                      src={service.image || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400'}
-                      alt={service.name}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                    />
+                  <div className="relative aspect-square overflow-hidden rounded-xl mb-3 max-h-[180px] lg:max-h-[200px] bg-gray-100">
+                    {imageData[service.id] ? (
+                      <img
+                        src={imageData[service.id]}
+                        alt={service.name}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div className="w-6 h-6 border-2 border-[var(--secondary)] border-t-transparent rounded-full animate-spin"></div>
+                      </div>
+                    )}
                     {/* Quick View Button */}
                     <button
                       onClick={(e) => {
                         e.preventDefault();
-                        setSelectedService(service);
+                        handleOpenServiceDetail(service);
                       }}
                       className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100"
                     >
@@ -93,7 +136,7 @@ const Services = () => {
                     <Clock size={12} className="mr-1" />
                     <span>{service.duration} mins</span>
                   </div>
-                  <Link to="/booking" state={{ selectedService: service }} className="block">
+                  <Link to="/booking" state={{ selectedService: { ...service, image: imageData[service.id] } }} className="block">
                     <button className="w-full py-2 text-sm font-medium rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--primary-hover)] transition-colors touch-manipulation">
                       Book Now
                     </button>
@@ -121,11 +164,17 @@ const Services = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="relative aspect-[4/3] md:aspect-video overflow-hidden">
-              <img
-                src={selectedService.image || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400'}
-                alt={selectedService.name}
-                className="w-full h-full object-cover"
-              />
+              {selectedService.image ? (
+                <img
+                  src={selectedService.image}
+                  alt={selectedService.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                  <div className="w-8 h-8 border-2 border-[var(--secondary)] border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              )}
               {/* Close button */}
               <button 
                 onClick={() => setSelectedService(null)}

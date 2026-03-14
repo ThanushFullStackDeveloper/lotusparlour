@@ -516,6 +516,15 @@ async def delete_service(service_id: str):
     await manager.broadcast({"type": "update", "entity": "services", "action": "delete"})
     return {"message": "Service deleted successfully"}
 
+@api_router.get("/services/{service_id}/image")
+async def get_service_image(service_id: str):
+    """Get full image data for a specific service"""
+    service = await db.services.find_one({"id": service_id}, {"_id": 0, "image": 1})
+    if not service:
+        raise HTTPException(status_code=404, detail="Service not found")
+    return {"image": service.get("image", "")}
+
+
 # ============ APPOINTMENT ROUTES ============
 
 @api_router.post("/appointments")

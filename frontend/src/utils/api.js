@@ -33,6 +33,7 @@ export const unifiedLogin = (data) => api.post('/auth/unified-login', data);
 // Services
 export const getServices = () => api.get('/services/light');
 export const getServicesFull = () => api.get('/services');
+export const getServiceImage = (id) => api.get(`/services/${id}/image`);
 export const createService = (data) => api.post('/services', data);
 export const updateService = (id, data) => api.put(`/services/${id}`, data);
 export const deleteService = (id) => api.delete(`/services/${id}`);
