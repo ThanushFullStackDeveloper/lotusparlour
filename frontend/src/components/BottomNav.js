@@ -30,7 +30,7 @@ const BottomNav = () => {
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0)' }}
       data-testid="bottom-nav"
     >
-      <div className="flex justify-around items-center py-1.5 px-2">
+      <div className="flex justify-around items-end py-2 px-2 pt-3">
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
@@ -39,13 +39,15 @@ const BottomNav = () => {
             <Link
               key={item.name}
               to={item.path}
-              className="relative flex flex-col items-center justify-center py-1 px-1 min-w-[48px] touch-manipulation"
+              className={`relative flex flex-col items-center justify-end min-w-[48px] touch-manipulation ${
+                item.highlight ? '-mt-4' : ''
+              }`}
               data-testid={`bottom-nav-${item.name.toLowerCase()}`}
             >
               {item.highlight ? (
                 <motion.div
                   whileTap={{ scale: 0.9 }}
-                  className={`w-12 h-12 -mt-6 rounded-full flex items-center justify-center shadow-lg ${
+                  className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg ${
                     active 
                       ? 'bg-[var(--secondary)]' 
                       : 'bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)]'
@@ -67,11 +69,11 @@ const BottomNav = () => {
                   />
                 </motion.div>
               )}
-              <span className={`text-[10px] mt-0.5 ${
+              <span className={`text-[10px] mt-1 ${
                 active 
                   ? 'text-[var(--secondary)] font-semibold' 
                   : 'text-gray-400 font-medium'
-              } ${item.highlight ? 'mt-1' : ''}`}>
+              }`}>
                 {item.name}
               </span>
               {active && !item.highlight && (

@@ -65,19 +65,19 @@ const Navbar = () => {
   return (
     <nav className="bg-white shadow-sm fixed top-0 left-0 right-0 z-50" data-testid="navbar">
       <div className="container-custom">
-        <div className="flex justify-between items-center py-4">
+        <div className="flex justify-between items-center py-2 md:py-4">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3" data-testid="nav-logo">
+          <Link to="/" className="flex items-center space-x-2 md:space-x-3" data-testid="nav-logo">
             <img
               src={settings.logo_image || DEFAULT_LOGO}
               alt={parlourName}
-              className="h-12 w-12 object-contain"
+              className="h-8 w-8 md:h-12 md:w-12 object-contain"
             />
             <div>
-              <h1 className="text-xl font-heading font-bold" style={{ color: 'var(--secondary)' }}>
+              <h1 className="text-base md:text-xl font-heading font-bold" style={{ color: 'var(--secondary)' }}>
                 {mainTitle}
               </h1>
-              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+              <p className="text-[10px] md:text-xs" style={{ color: 'var(--text-muted)' }}>
                 {subTitle}
               </p>
             </div>
@@ -144,11 +144,11 @@ const Navbar = () => {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden"
+            className="md:hidden p-2 -mr-2 flex items-center justify-center"
             onClick={() => setIsOpen(!isOpen)}
             data-testid="nav-mobile-toggle"
           >
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
+            {isOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
 
