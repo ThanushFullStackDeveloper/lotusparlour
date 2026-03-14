@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Clock, IndianRupee, Eye } from 'lucide-react';
 import { getServices, getServiceImage } from '../utils/api';
 import PageHeader from '../components/PageHeader';
 import { toast } from 'sonner';
+import useWebSocket from '../hooks/useWebSocket';
+
+const CACHE_KEY = 'service_images_cache';
 
 const Services = () => {
   const [selectedService, setSelectedService] = useState(null);
@@ -12,7 +15,27 @@ const Services = () => {
   const [imageData, setImageData] = useState({});
   const [loading, setLoading] = useState(true);
 
+  const handleWebSocketUpdate = useCallback((data) => {
+    if (data.entity === 'services') {
+      // Clear cache and refetch when services are updated
+      localStorage.removeItem(CACHE_KEY);
+      setImageData({});
+      fetchServices();
+    }
+  }, []);
+
+  useWebSocket(handleWebSocketUpdate);
+
   useEffect(() => {
+    // Load cached images immediately
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        setImageData(JSON.parse(cached));
+      }
+    } catch (e) {
+      console.error('Error loading cached images:', e);
+    }
     fetchServices();
   }, []);
 
@@ -21,7 +44,7 @@ const Services = () => {
       setLoading(true);
       const response = await getServices();
       setServices(response.data);
-      // Load images lazily
+      // Load only images that aren't cached
       loadImages(response.data);
     } catch (error) {
       console.error('Error fetching services:', error);
@@ -32,14 +55,29 @@ const Services = () => {
   };
 
   const loadImages = async (serviceList) => {
-    // Load images in batches for faster perceived loading
+    // Get cached images
+    let cached = {};
+    try {
+      const cachedStr = localStorage.getItem(CACHE_KEY);
+      if (cachedStr) cached = JSON.parse(cachedStr);
+    } catch (e) {}
+
+    // Only load images that aren't already cached
     for (const service of serviceList) {
+      if (cached[service.id]) continue; // Skip if already cached
+      
       try {
         const response = await getServiceImage(service.id);
-        setImageData(prev => ({
-          ...prev,
-          [service.id]: response.data.image
-        }));
+        const imageUrl = response.data.image;
+        
+        setImageData(prev => {
+          const updated = { ...prev, [service.id]: imageUrl };
+          // Save to localStorage
+          try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify(updated));
+          } catch (e) {}
+          return updated;
+        });
       } catch (error) {
         console.error('Error loading image:', service.id);
       }

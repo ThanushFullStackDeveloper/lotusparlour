@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
 import { getGallery, getGalleryImage } from '../utils/api';
 import PageHeader from '../components/PageHeader';
 import { toast } from 'sonner';
+import useWebSocket from '../hooks/useWebSocket';
+
+const CACHE_KEY = 'gallery_images_cache';
 
 const Gallery = () => {
   const [images, setImages] = useState([]);
@@ -16,7 +19,27 @@ const Gallery = () => {
 
   const categories = ['All', 'Bridal Makeup', 'Hair Styling', 'Facial', 'Salon Interior'];
 
+  const handleWebSocketUpdate = useCallback((data) => {
+    if (data.entity === 'gallery') {
+      // Clear cache and refetch when gallery is updated
+      localStorage.removeItem(CACHE_KEY);
+      setImageData({});
+      fetchGallery();
+    }
+  }, []);
+
+  useWebSocket(handleWebSocketUpdate);
+
   useEffect(() => {
+    // Load cached images immediately
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        setImageData(JSON.parse(cached));
+      }
+    } catch (e) {
+      console.error('Error loading cached images:', e);
+    }
     fetchGallery();
   }, []);
 
@@ -26,7 +49,7 @@ const Gallery = () => {
       const response = await getGallery();
       setImages(response.data);
       setFilteredImages(response.data);
-      // Load images lazily
+      // Load only images that aren't cached
       loadImages(response.data);
     } catch (error) {
       console.error('Error fetching gallery:', error);
@@ -37,14 +60,29 @@ const Gallery = () => {
   };
 
   const loadImages = async (imageList) => {
-    // Load images in batches for faster perceived loading
+    // Get cached images
+    let cached = {};
+    try {
+      const cachedStr = localStorage.getItem(CACHE_KEY);
+      if (cachedStr) cached = JSON.parse(cachedStr);
+    } catch (e) {}
+
+    // Only load images that aren't already cached
     for (const img of imageList) {
+      if (cached[img.id]) continue; // Skip if already cached
+      
       try {
         const response = await getGalleryImage(img.id);
-        setImageData(prev => ({
-          ...prev,
-          [img.id]: response.data.image
-        }));
+        const imageUrl = response.data.image;
+        
+        setImageData(prev => {
+          const updated = { ...prev, [img.id]: imageUrl };
+          // Save to localStorage
+          try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify(updated));
+          } catch (e) {}
+          return updated;
+        });
       } catch (error) {
         console.error('Error loading image:', img.id);
       }
@@ -184,7 +222,7 @@ const Gallery = () => {
                 key={lightboxIndex}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                src={filteredImages[lightboxIndex].image}
+                src={imageData[filteredImages[lightboxIndex].id] || filteredImages[lightboxIndex].image}
                 alt={`Gallery ${lightboxIndex + 1}`}
                 className="max-w-full max-h-full object-contain"
               />
