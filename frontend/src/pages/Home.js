@@ -185,7 +185,7 @@ const Home = () => {
                 {settings.welcome_text} <span style={{ color: 'var(--secondary)' }}>{settings.parlour_name.split(' ').pop()}</span>
               </h1>
               <p className="text-base md:text-lg mb-8" style={{ color: 'var(--text-secondary)' }}>
-                Transform your beauty journey with our premium makeup artistry and salon services in the heart of Tirunelveli.
+                {settings.tagline || "Transform your beauty journey with our premium makeup artistry and salon services in the heart of Tirunelveli."}
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link to="/booking" data-testid="hero-book-btn">
@@ -199,7 +199,7 @@ const Home = () => {
                 <div className="flex items-center space-x-2">
                   <Star size={24} fill="var(--secondary)" color="var(--secondary)" />
                   <div>
-                    <p className="text-2xl font-bold" style={{ color: 'var(--secondary)' }}>5.0</p>
+                    <p className="text-2xl font-bold" style={{ color: 'var(--secondary)' }}>{settings.google_rating || "5.0"}</p>
                     <p className="text-xs text-gray-600">Google Rating</p>
                   </div>
                 </div>
@@ -262,7 +262,14 @@ const Home = () => {
                   <h3 className="text-sm md:text-lg font-semibold mb-1 md:mb-2 truncate">{service.name}</h3>
                   <p className="text-xs md:text-sm mb-2 md:mb-4 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{service.description}</p>
                   <div className="flex justify-between items-center">
-                    <p className="text-base md:text-xl font-bold" style={{ color: 'var(--secondary)' }}>₹{service.price}</p>
+                    {service.discount_price ? (
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm text-gray-400 line-through">₹{service.price}</p>
+                        <p className="text-base md:text-xl font-bold text-green-600">₹{service.discount_price}</p>
+                      </div>
+                    ) : (
+                      <p className="text-base md:text-xl font-bold" style={{ color: 'var(--secondary)' }}>₹{service.price}</p>
+                    )}
                     <p className="text-xs md:text-sm" style={{ color: 'var(--text-muted)' }}>{service.duration} mins</p>
                   </div>
                 </div>

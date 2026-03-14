@@ -22,6 +22,18 @@ Build a full-stack Beauty Parlour Appointment Booking Web Application for LOTUS 
 - [x] Review submission form
 - [x] WhatsApp button with touch-expand behavior
 
+### Discount Price Feature (Added March 15, 2026)
+- [x] **Service Discount Price** - Optional discount price field for services
+- [x] **Admin Form** - Price and Discount Price fields side by side
+- [x] **Validation** - Discount must be less than original price, cannot be negative
+- [x] **Display Format** - Original price strikethrough + green discount price
+- [x] **Pages Updated** - Services page, Home page (Premium Services), Service detail modal
+- [x] **Database** - `discount_price` field (nullable) in services collection
+
+### Admin Settings (Added March 15, 2026)
+- [x] **Editable Tagline** - Customize hero section tagline
+- [x] **Editable Google Rating** - Set displayed Google rating value
+
 ### Navigation & UI (Updated March 14, 2026)
 - [x] **Back Arrow Navigation** on all internal pages:
   - Services, Gallery, Videos, Staff, About, Contact, Booking

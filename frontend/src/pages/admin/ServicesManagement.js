@@ -12,12 +12,14 @@ const ServicesManagement = () => {
   const [formData, setFormData] = useState({
     name: '',
     price: '',
+    discount_price: '',
     duration: '',
     description: '',
     image: '',
   });
   const [imageFile, setImageFile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [priceError, setPriceError] = useState('');
 
   useEffect(() => {
     fetchServices();
@@ -36,7 +38,22 @@ const ServicesManagement = () => {
   };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    
+    // Validate discount price
+    if (name === 'discount_price' || name === 'price') {
+      const price = name === 'price' ? parseFloat(value) : parseFloat(formData.price);
+      const discountPrice = name === 'discount_price' ? parseFloat(value) : parseFloat(formData.discount_price);
+      
+      if (discountPrice && discountPrice >= price) {
+        setPriceError('Discount price must be less than original price');
+      } else if (discountPrice && discountPrice < 0) {
+        setPriceError('Discount price cannot be negative');
+      } else {
+        setPriceError('');
+      }
+    }
   };
 
   const handleImageChange = (e) => {
@@ -45,6 +62,17 @@ const ServicesManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate discount price before submit
+    if (formData.discount_price && parseFloat(formData.discount_price) >= parseFloat(formData.price)) {
+      toast.error('Discount price must be less than original price');
+      return;
+    }
+    if (formData.discount_price && parseFloat(formData.discount_price) < 0) {
+      toast.error('Discount price cannot be negative');
+      return;
+    }
+    
     try {
       let imageUrl = formData.image;
       if (imageFile) {
@@ -52,7 +80,13 @@ const ServicesManagement = () => {
         imageUrl = uploadRes.data.url;
       }
 
-      const serviceData = { ...formData, price: parseFloat(formData.price), duration: parseInt(formData.duration), image: imageUrl };
+      const serviceData = { 
+        ...formData, 
+        price: parseFloat(formData.price), 
+        discount_price: formData.discount_price ? parseFloat(formData.discount_price) : null,
+        duration: parseInt(formData.duration), 
+        image: imageUrl 
+      };
 
       if (editingService) {
         await updateService(editingService.id, serviceData);
@@ -78,10 +112,12 @@ const ServicesManagement = () => {
     setFormData({
       name: service.name,
       price: service.price,
+      discount_price: service.discount_price || '',
       duration: service.duration,
       description: service.description,
       image: service.image || '',
     });
+    setPriceError('');
     setShowModal(true);
   };
 
@@ -100,10 +136,11 @@ const ServicesManagement = () => {
   };
 
   const resetForm = () => {
-    setFormData({ name: '', price: '', duration: '', description: '', image: '' });
+    setFormData({ name: '', price: '', discount_price: '', duration: '', description: '', image: '' });
     setImageFile(null);
     setEditingService(null);
     setShowModal(false);
+    setPriceError('');
   };
 
   if (loading) {
@@ -144,7 +181,16 @@ const ServicesManagement = () => {
             <div className="p-4">
               <h3 className="text-base font-semibold mb-2 truncate">{service.name}</h3>
               <div className="flex justify-between items-center mb-3">
-                <span className="text-lg font-bold" style={{ color: 'var(--secondary)' }}>₹{service.price}</span>
+                <div className="flex items-center gap-2">
+                  {service.discount_price ? (
+                    <>
+                      <span className="text-sm text-gray-400 line-through">₹{service.price}</span>
+                      <span className="text-lg font-bold text-green-600">₹{service.discount_price}</span>
+                    </>
+                  ) : (
+                    <span className="text-lg font-bold" style={{ color: 'var(--secondary)' }}>₹{service.price}</span>
+                  )}
+                </div>
                 <span className="text-sm text-gray-500">{service.duration} mins</span>
               </div>
               <div className="flex space-x-2">
@@ -181,10 +227,28 @@ const ServicesManagement = () => {
                 <label className="block text-sm font-medium mb-2">Service Name *</label>
                 <input type="text" name="name" value={formData.name} onChange={handleChange} required className="w-full px-4 py-2 border rounded-lg" data-testid="service-name-input" />
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Price (₹) *</label>
-                <input type="number" name="price" value={formData.price} onChange={handleChange} required className="w-full px-4 py-2 border rounded-lg" data-testid="service-price-input" />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Price (₹) *</label>
+                  <input type="number" name="price" value={formData.price} onChange={handleChange} required min="1" className="w-full px-4 py-2 border rounded-lg" data-testid="service-price-input" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Discount Price (₹)</label>
+                  <input 
+                    type="number" 
+                    name="discount_price" 
+                    value={formData.discount_price} 
+                    onChange={handleChange} 
+                    min="0"
+                    placeholder="Optional"
+                    className={`w-full px-4 py-2 border rounded-lg ${priceError ? 'border-red-500' : ''}`} 
+                    data-testid="service-discount-price-input" 
+                  />
+                </div>
               </div>
+              {priceError && (
+                <p className="text-red-500 text-sm">{priceError}</p>
+              )}
               <div>
                 <label className="block text-sm font-medium mb-2">Duration (minutes) *</label>
                 <input type="number" name="duration" value={formData.duration} onChange={handleChange} required className="w-full px-4 py-2 border rounded-lg" data-testid="service-duration-input" />
@@ -204,7 +268,7 @@ const ServicesManagement = () => {
                 <button type="button" onClick={resetForm} className="flex-1 py-2 px-4 border border-gray-300 rounded-lg hover:bg-gray-50" data-testid="cancel-service-btn">
                   Cancel
                 </button>
-                <button type="submit" className="flex-1 btn-primary" data-testid="save-service-btn">
+                <button type="submit" disabled={!!priceError} className={`flex-1 btn-primary ${priceError ? 'opacity-50 cursor-not-allowed' : ''}`} data-testid="save-service-btn">
                   {editingService ? 'Update' : 'Create'}
                 </button>
               </div>

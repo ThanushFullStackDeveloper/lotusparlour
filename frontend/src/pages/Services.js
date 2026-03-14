@@ -154,7 +154,14 @@ const Services = () => {
                       </div>
                     </button>
                     <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full">
-                      <span className="text-sm font-bold text-[var(--secondary)]">₹{service.price}</span>
+                      {service.discount_price ? (
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs text-gray-400 line-through">₹{service.price}</span>
+                          <span className="text-sm font-bold text-green-600">₹{service.discount_price}</span>
+                        </div>
+                      ) : (
+                        <span className="text-sm font-bold text-[var(--secondary)]">₹{service.price}</span>
+                      )}
                     </div>
                   </div>
                   <div className="p-3">
@@ -211,9 +218,18 @@ const Services = () => {
               <h2 className="text-xl md:text-2xl font-bold mb-2">{selectedService.name}</h2>
               <p className="text-sm md:text-base text-gray-600 mb-4">{selectedService.description}</p>
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center text-xl md:text-2xl font-bold text-[var(--secondary)]">
-                  <IndianRupee size={20} />
-                  <span>{selectedService.price}</span>
+                <div className="flex items-center gap-2">
+                  {selectedService.discount_price ? (
+                    <>
+                      <span className="text-lg text-gray-400 line-through">₹{selectedService.price}</span>
+                      <span className="text-xl md:text-2xl font-bold text-green-600">₹{selectedService.discount_price}</span>
+                    </>
+                  ) : (
+                    <div className="flex items-center text-xl md:text-2xl font-bold text-[var(--secondary)]">
+                      <IndianRupee size={20} />
+                      <span>{selectedService.price}</span>
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center text-gray-500 text-sm">
                   <Clock size={16} className="mr-1" />

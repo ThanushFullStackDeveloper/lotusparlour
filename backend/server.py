@@ -7,7 +7,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict, EmailStr
+from pydantic import BaseModel, Field, ConfigDict, EmailStr, validator
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone, timedelta
@@ -144,6 +144,7 @@ class Service(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
     price: float
+    discount_price: Optional[float] = None
     duration: int
     description: str
     image: Optional[str] = None
@@ -152,9 +153,19 @@ class Service(BaseModel):
 class ServiceCreate(BaseModel):
     name: str
     price: float
+    discount_price: Optional[float] = None
     duration: int
     description: str
     image: Optional[str] = None
+    
+    @validator('discount_price')
+    def validate_discount_price(cls, v, values):
+        if v is not None:
+            if v < 0:
+                raise ValueError('Discount price cannot be negative')
+            if 'price' in values and v >= values['price']:
+                raise ValueError('Discount price must be less than original price')
+        return v
 
 class Appointment(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -260,6 +271,8 @@ class Settings(BaseModel):
     id: str = "site_settings"
     parlour_name: str = "Lotus Beauty Parlour"
     welcome_text: str = "Welcome to Lotus Beauty Parlour"
+    tagline: str = "Transform your beauty journey with our premium makeup artistry and salon services in the heart of Tirunelveli."
+    google_rating: str = "5.0"
     hero_image: Optional[str] = None
     logo_image: Optional[str] = None
     years_experience: str = "5+"
@@ -271,6 +284,8 @@ class Settings(BaseModel):
 class SettingsUpdate(BaseModel):
     parlour_name: Optional[str] = None
     welcome_text: Optional[str] = None
+    tagline: Optional[str] = None
+    google_rating: Optional[str] = None
     hero_image: Optional[str] = None
     logo_image: Optional[str] = None
     years_experience: Optional[str] = None
@@ -479,7 +494,8 @@ async def get_services_light():
         "_id": 0, 
         "id": 1, 
         "name": 1, 
-        "price": 1, 
+        "price": 1,
+        "discount_price": 1,
         "duration": 1, 
         "category": 1,
         "description": 1

@@ -18,6 +18,8 @@ const SettingsManagement = () => {
   const [settings, setSettings] = useState({
     parlour_name: '',
     welcome_text: '',
+    tagline: '',
+    google_rating: '',
     hero_image: '',
     logo_image: '',
     years_experience: '',
@@ -179,6 +181,34 @@ const SettingsManagement = () => {
               className="w-full px-4 py-2 border rounded-lg"
               data-testid="welcome-text-input"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Tagline</label>
+            <textarea
+              name="tagline"
+              value={settings.tagline || ''}
+              onChange={handleChange}
+              rows="2"
+              className="w-full px-4 py-2 border rounded-lg"
+              placeholder="Transform your beauty journey with our premium makeup artistry..."
+              data-testid="tagline-input"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium mb-2">Google Rating</label>
+              <input
+                type="text"
+                name="google_rating"
+                value={settings.google_rating || ''}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border rounded-lg"
+                placeholder="e.g., 5.0"
+                data-testid="google-rating-input"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
