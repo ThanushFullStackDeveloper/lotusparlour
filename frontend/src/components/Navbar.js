@@ -88,15 +88,18 @@ const Navbar = () => {
                 </p>
               </div>
             </Link>
-            {/* Instagram Icon */}
+            {/* Instagram Icon with Follow Us text */}
             <a 
               href="https://www.instagram.com/lotus_makeupartistry/" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="ml-3 p-1.5 rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 text-white hover:scale-110 transition-transform"
+              className="ml-4 flex flex-col items-center group"
               data-testid="nav-instagram"
             >
-              <Instagram size={16} className="md:w-5 md:h-5" />
+              <div className="p-2 rounded-full bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 text-white shadow-md group-hover:scale-110 transition-transform">
+                <Instagram size={18} />
+              </div>
+              <span className="text-[8px] md:text-[10px] text-gray-400 mt-0.5 font-medium">Follow us</span>
             </a>
           </div>
 

@@ -132,13 +132,13 @@ h1, h2, h3, h4, h5, h6 {
 
 .whatsapp-float-container {
   position: fixed;
-  bottom: 90px;
+  bottom: 85px;
   right: 16px;
   display: flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  z-index: 45;
+  z-index: 9998;
   transition: all 0.3s ease;
 }
 
