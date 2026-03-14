@@ -60,35 +60,13 @@ const Booking = () => {
       return;
     }
 
-    // Try to show cached data immediately
-    const cachedServices = localStorage.getItem('cachedServices');
-    const cachedStaff = localStorage.getItem('cachedStaff');
-    const cachedUser = localStorage.getItem('user');
-    
-    if (cachedServices) {
-      setServices(JSON.parse(cachedServices));
-    }
-    if (cachedStaff) {
-      setStaff(JSON.parse(cachedStaff));
-    }
-    if (cachedUser) {
-      const user = JSON.parse(cachedUser);
-      setCurrentUser(user);
-      setFormData(prev => ({
-        ...prev,
-        customer_name: user.name || '',
-        customer_phone: user.phone || '',
-        customer_email: user.email || '',
-      }));
-    }
-
-    // Only show loading if we have no cached data
-    if (!cachedServices && !preSelectedService) {
+    // Only show loading if no service is pre-selected
+    if (!preSelectedService) {
       setIsLoading(true);
     }
     
     try {
-      // Fetch fresh data in parallel
+      // Fetch all data in parallel for faster loading
       const [servicesRes, staffRes, holidaysRes, userRes] = await Promise.all([
         getServices(),
         getStaff(),
@@ -96,16 +74,11 @@ const Booking = () => {
         getCurrentUser(),
       ]);
       
-      // Update state and cache
+      // Set all data at once
       setServices(servicesRes.data);
       setStaff(staffRes.data);
       setHolidays(holidaysRes.data);
       setCurrentUser(userRes.data.user);
-      
-      // Cache for next time
-      localStorage.setItem('cachedServices', JSON.stringify(servicesRes.data));
-      localStorage.setItem('cachedStaff', JSON.stringify(staffRes.data));
-      localStorage.setItem('user', JSON.stringify(userRes.data.user));
       
       // Pre-fill customer details
       setFormData(prev => ({
@@ -116,9 +89,7 @@ const Booking = () => {
       }));
     } catch (error) {
       console.error('Error fetching data:', error);
-      if (!cachedServices) {
-        toast.error('Failed to load booking data');
-      }
+      toast.error('Failed to load booking data');
     } finally {
       setIsLoading(false);
     }

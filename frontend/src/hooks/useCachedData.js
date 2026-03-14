@@ -4,23 +4,13 @@ import WebSocketContext from '../contexts/WebSocketContext';
 
 /**
  * Custom hook for cached data fetching
- * Shows cached data immediately, then fetches fresh data
+ * Network-first strategy - always fetches fresh data
  */
 export const useCachedData = (cacheType, fetchFn, dependencies = []) => {
-  // Try to get localStorage cache immediately
-  const getLocalCache = () => {
-    try {
-      const cached = localStorage.getItem(`cached_${cacheType}`);
-      return cached ? JSON.parse(cached) : null;
-    } catch {
-      return null;
-    }
-  };
-
-  const [data, setData] = useState(getLocalCache);
-  const [loading, setLoading] = useState(!getLocalCache());
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [fromCache, setFromCache] = useState(!!getLocalCache());
+  const [fromCache, setFromCache] = useState(false);
   const [isStale, setIsStale] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   
@@ -36,14 +26,12 @@ export const useCachedData = (cacheType, fetchFn, dependencies = []) => {
       setData(freshData);
       setFromCache(false);
       setIsStale(false);
-      // Save to localStorage
-      localStorage.setItem(`cached_${cacheType}`, JSON.stringify(freshData));
     } catch (err) {
       setError(err);
     } finally {
       setLoading(false);
     }
-  }, [cacheType, stableFetchFn]);
+  }, [stableFetchFn]);
 
   // Listen for WebSocket updates
   useEffect(() => {
@@ -57,11 +45,7 @@ export const useCachedData = (cacheType, fetchFn, dependencies = []) => {
 
     const loadData = async () => {
       try {
-        // If we have cached data, don't show loading
-        if (!data) {
-          setLoading(true);
-        }
-        
+        setLoading(true);
         const freshData = await stableFetchFn();
         
         if (isMounted) {
@@ -69,8 +53,6 @@ export const useCachedData = (cacheType, fetchFn, dependencies = []) => {
           setFromCache(false);
           setIsStale(false);
           setLoading(false);
-          // Save to localStorage
-          localStorage.setItem(`cached_${cacheType}`, JSON.stringify(freshData));
         }
       } catch (err) {
         if (isMounted) {
