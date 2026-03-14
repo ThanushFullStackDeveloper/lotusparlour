@@ -4,74 +4,73 @@ import WebSocketContext from '../contexts/WebSocketContext';
 
 /**
  * Custom hook for cached data fetching
- * Implements cache-first strategy with background updates
- * Automatically refreshes when WebSocket update is received
+ * Shows cached data immediately, then fetches fresh data
  */
 export const useCachedData = (cacheType, fetchFn, dependencies = []) => {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Try to get localStorage cache immediately
+  const getLocalCache = () => {
+    try {
+      const cached = localStorage.getItem(`cached_${cacheType}`);
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const [data, setData] = useState(getLocalCache);
+  const [loading, setLoading] = useState(!getLocalCache());
   const [error, setError] = useState(null);
-  const [fromCache, setFromCache] = useState(false);
+  const [fromCache, setFromCache] = useState(!!getLocalCache());
   const [isStale, setIsStale] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   
-  // Get WebSocket context - always call useContext unconditionally
   const wsContext = useContext(WebSocketContext);
   const lastUpdate = wsContext?.lastUpdate;
 
-  // Stable fetch function reference
   const stableFetchFn = useCallback(fetchFn, dependencies);
 
-  // Manual refresh function (moved up for use in effects)
   const refresh = useCallback(async () => {
     try {
       setLoading(true);
-      await clearCache(cacheType);
-      const freshData = await refreshCache(cacheType, stableFetchFn);
+      const freshData = await stableFetchFn();
       setData(freshData);
       setFromCache(false);
       setIsStale(false);
-      setLoading(false);
+      // Save to localStorage
+      localStorage.setItem(`cached_${cacheType}`, JSON.stringify(freshData));
     } catch (err) {
       setError(err);
+    } finally {
       setLoading(false);
     }
   }, [cacheType, stableFetchFn]);
 
-  // Listen for WebSocket updates - use timestamp to detect changes
+  // Listen for WebSocket updates
   useEffect(() => {
     if (lastUpdate && lastUpdate.entity === cacheType && lastUpdate.timestamp) {
-      console.log(`WebSocket update received for ${cacheType}, refreshing... (timestamp: ${lastUpdate.timestamp})`);
-      // Force immediate refresh without waiting for cache
-      (async () => {
-        try {
-          await clearCache(cacheType);
-          const response = await stableFetchFn();
-          setData(response);
-          setFromCache(false);
-          setIsStale(false);
-        } catch (err) {
-          console.error('Error refreshing data:', err);
-        }
-      })();
+      refresh();
     }
-  }, [lastUpdate?.timestamp, cacheType, stableFetchFn]);
+  }, [lastUpdate?.timestamp, cacheType, refresh]);
 
   useEffect(() => {
     let isMounted = true;
 
     const loadData = async () => {
       try {
-        setLoading(true);
-        setError(null);
-
-        const result = await getCachedData(cacheType, stableFetchFn);
+        // If we have cached data, don't show loading
+        if (!data) {
+          setLoading(true);
+        }
+        
+        const freshData = await stableFetchFn();
         
         if (isMounted) {
-          setData(result.data);
-          setFromCache(result.fromCache);
-          setIsStale(result.stale || false);
+          setData(freshData);
+          setFromCache(false);
+          setIsStale(false);
           setLoading(false);
+          // Save to localStorage
+          localStorage.setItem(`cached_${cacheType}`, JSON.stringify(freshData));
         }
       } catch (err) {
         if (isMounted) {
@@ -83,18 +82,6 @@ export const useCachedData = (cacheType, fetchFn, dependencies = []) => {
 
     loadData();
 
-    // Listen for cache updates from background refresh
-    const handleCacheUpdate = (event) => {
-      if (event.detail.type === cacheType && isMounted) {
-        setData(event.detail.data);
-        setFromCache(false);
-        setIsStale(false);
-      }
-    };
-
-    window.addEventListener('cache-updated', handleCacheUpdate);
-
-    // Listen for online/offline status
     const handleOnline = () => setIsOffline(false);
     const handleOffline = () => setIsOffline(true);
     
@@ -103,7 +90,6 @@ export const useCachedData = (cacheType, fetchFn, dependencies = []) => {
 
     return () => {
       isMounted = false;
-      window.removeEventListener('cache-updated', handleCacheUpdate);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };

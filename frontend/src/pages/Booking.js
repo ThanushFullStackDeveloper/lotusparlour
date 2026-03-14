@@ -51,7 +51,6 @@ const Booking = () => {
     const token = localStorage.getItem('token');
     if (!token) {
       toast.error('Please login to book an appointment');
-      // Preserve selected service when redirecting to login
       navigate('/login', { 
         state: { 
           from: '/booking',
@@ -61,13 +60,35 @@ const Booking = () => {
       return;
     }
 
-    // Only show loading if no service is pre-selected
-    if (!preSelectedService) {
+    // Try to show cached data immediately
+    const cachedServices = localStorage.getItem('cachedServices');
+    const cachedStaff = localStorage.getItem('cachedStaff');
+    const cachedUser = localStorage.getItem('user');
+    
+    if (cachedServices) {
+      setServices(JSON.parse(cachedServices));
+    }
+    if (cachedStaff) {
+      setStaff(JSON.parse(cachedStaff));
+    }
+    if (cachedUser) {
+      const user = JSON.parse(cachedUser);
+      setCurrentUser(user);
+      setFormData(prev => ({
+        ...prev,
+        customer_name: user.name || '',
+        customer_phone: user.phone || '',
+        customer_email: user.email || '',
+      }));
+    }
+
+    // Only show loading if we have no cached data
+    if (!cachedServices && !preSelectedService) {
       setIsLoading(true);
     }
     
     try {
-      // Fetch all data in parallel for faster loading
+      // Fetch fresh data in parallel
       const [servicesRes, staffRes, holidaysRes, userRes] = await Promise.all([
         getServices(),
         getStaff(),
@@ -75,13 +96,18 @@ const Booking = () => {
         getCurrentUser(),
       ]);
       
-      // Set all data at once to minimize re-renders
+      // Update state and cache
       setServices(servicesRes.data);
       setStaff(staffRes.data);
       setHolidays(holidaysRes.data);
       setCurrentUser(userRes.data.user);
       
-      // Pre-fill customer details from logged-in user
+      // Cache for next time
+      localStorage.setItem('cachedServices', JSON.stringify(servicesRes.data));
+      localStorage.setItem('cachedStaff', JSON.stringify(staffRes.data));
+      localStorage.setItem('user', JSON.stringify(userRes.data.user));
+      
+      // Pre-fill customer details
       setFormData(prev => ({
         ...prev,
         customer_name: userRes.data.user.name,
@@ -90,7 +116,9 @@ const Booking = () => {
       }));
     } catch (error) {
       console.error('Error fetching data:', error);
-      toast.error('Failed to load booking data');
+      if (!cachedServices) {
+        toast.error('Failed to load booking data');
+      }
     } finally {
       setIsLoading(false);
     }
