@@ -95,18 +95,18 @@ const Navbar = () => {
               </div>
             </Link>
             
-            {/* Social Media Icons - Rounded Square Style */}
+            {/* Social Media Icons - Minimal Style (No Background) */}
             {(settings.instagram_url || settings.facebook_url || settings.youtube_url) && (
-              <div className="ml-3 md:ml-4 flex items-center gap-1.5">
+              <div className="ml-3 md:ml-4 flex items-center gap-2">
                 {settings.instagram_url && (
                   <a 
                     href={settings.instagram_url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 text-white hover:opacity-90 transition-opacity"
+                    className="text-pink-500 hover:text-pink-600 transition-colors"
                     data-testid="nav-instagram"
                   >
-                    <Instagram size={18} strokeWidth={1.5} />
+                    <Instagram size={20} strokeWidth={1.5} />
                   </a>
                 )}
                 {settings.facebook_url && (
@@ -114,10 +114,10 @@ const Navbar = () => {
                     href={settings.facebook_url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-600 text-white hover:opacity-90 transition-opacity"
+                    className="text-blue-600 hover:text-blue-700 transition-colors"
                     data-testid="nav-facebook"
                   >
-                    <Facebook size={18} strokeWidth={1.5} />
+                    <Facebook size={20} strokeWidth={1.5} />
                   </a>
                 )}
                 {settings.youtube_url && (
@@ -125,10 +125,10 @@ const Navbar = () => {
                     href={settings.youtube_url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-600 text-white hover:opacity-90 transition-opacity"
+                    className="text-red-600 hover:text-red-700 transition-colors"
                     data-testid="nav-youtube"
                   >
-                    <Youtube size={18} strokeWidth={1.5} />
+                    <Youtube size={20} strokeWidth={1.5} />
                   </a>
                 )}
               </div>
