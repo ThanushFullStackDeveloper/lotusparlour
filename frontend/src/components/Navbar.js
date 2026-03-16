@@ -83,10 +83,10 @@ const Navbar = () => {
               <img
                 src={settings.logo_image || DEFAULT_LOGO}
                 alt={parlourName}
-                className="h-10 w-10 md:h-14 md:w-14 object-contain"
+                className="h-12 w-12 md:h-16 md:w-16 object-contain"
               />
               <div>
-                <h1 className="text-base md:text-xl font-heading font-bold" style={{ color: 'var(--secondary)' }}>
+                <h1 className="text-lg md:text-2xl font-heading font-bold" style={{ color: 'var(--secondary)' }}>
                   {mainTitle}
                 </h1>
                 <p className="text-[10px] md:text-xs" style={{ color: 'var(--text-muted)' }}>
@@ -95,19 +95,19 @@ const Navbar = () => {
               </div>
             </Link>
             
-            {/* Social Media Icons */}
-            <div className="ml-3 md:ml-4 flex items-center">
-              <span className="text-[8px] md:text-[10px] text-gray-400 mr-1.5 hidden sm:block">Follow us</span>
-              <div className="flex items-center gap-1.5">
+            {/* Social Media Icons - Compact & Aligned */}
+            {(settings.instagram_url || settings.facebook_url || settings.youtube_url) && (
+              <div className="ml-3 md:ml-5 flex items-center gap-1">
+                <span className="text-[7px] md:text-[9px] text-gray-400 mr-1 hidden sm:block whitespace-nowrap">Follow us</span>
                 {settings.instagram_url && (
                   <a 
                     href={settings.instagram_url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="p-1.5 rounded-full bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 text-white hover:scale-110 transition-transform"
+                    className="w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 text-white hover:scale-110 transition-transform"
                     data-testid="nav-instagram"
                   >
-                    <Instagram size={14} />
+                    <Instagram size={10} className="md:w-3 md:h-3" />
                   </a>
                 )}
                 {settings.facebook_url && (
@@ -115,10 +115,10 @@ const Navbar = () => {
                     href={settings.facebook_url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="p-1.5 rounded-full bg-blue-600 text-white hover:scale-110 transition-transform"
+                    className="w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full bg-blue-600 text-white hover:scale-110 transition-transform"
                     data-testid="nav-facebook"
                   >
-                    <Facebook size={14} />
+                    <Facebook size={10} className="md:w-3 md:h-3" />
                   </a>
                 )}
                 {settings.youtube_url && (
@@ -126,14 +126,14 @@ const Navbar = () => {
                     href={settings.youtube_url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="p-1.5 rounded-full bg-red-600 text-white hover:scale-110 transition-transform"
+                    className="w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full bg-red-600 text-white hover:scale-110 transition-transform"
                     data-testid="nav-youtube"
                   >
-                    <Youtube size={14} />
+                    <Youtube size={10} className="md:w-3 md:h-3" />
                   </a>
                 )}
               </div>
-            </div>
+            )}
           </div>
 
           {/* Desktop Menu */}
