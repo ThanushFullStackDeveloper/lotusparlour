@@ -97,60 +97,62 @@ const Navbar = () => {
             
             {/* Social Media Icons - Filled Brand Colors */}
             {(settings.instagram_url || settings.facebook_url || settings.youtube_url) && (
-              <div className="ml-3 md:ml-4 flex items-center gap-2">
-                <span className="text-[10px] md:text-xs text-gray-500 whitespace-nowrap">Follow us on</span>
-                {settings.instagram_url && (
-                  <a 
-                    href={settings.instagram_url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="hover:opacity-80 transition-opacity"
-                    data-testid="nav-instagram"
-                  >
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <defs>
-                        <linearGradient id="instagram-gradient" x1="0%" y1="100%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor="#FEDA75"/>
-                          <stop offset="25%" stopColor="#FA7E1E"/>
-                          <stop offset="50%" stopColor="#D62976"/>
-                          <stop offset="75%" stopColor="#962FBF"/>
-                          <stop offset="100%" stopColor="#4F5BD5"/>
-                        </linearGradient>
-                      </defs>
-                      <rect x="2" y="2" width="20" height="20" rx="5" fill="url(#instagram-gradient)"/>
-                      <circle cx="12" cy="12" r="4" stroke="white" strokeWidth="2" fill="none"/>
-                      <circle cx="17.5" cy="6.5" r="1.5" fill="white"/>
-                    </svg>
-                  </a>
-                )}
-                {settings.facebook_url && (
-                  <a 
-                    href={settings.facebook_url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="hover:opacity-80 transition-opacity"
-                    data-testid="nav-facebook"
-                  >
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect x="2" y="2" width="20" height="20" rx="5" fill="#1877F2"/>
-                      <path d="M16.5 12.5H14V18H11V12.5H9V10H11V8.5C11 6.5 12.2 5 14.5 5H16.5V7.5H15C14.2 7.5 14 7.8 14 8.5V10H16.5L16.5 12.5Z" fill="white"/>
-                    </svg>
-                  </a>
-                )}
-                {settings.youtube_url && (
-                  <a 
-                    href={settings.youtube_url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="hover:opacity-80 transition-opacity"
-                    data-testid="nav-youtube"
-                  >
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect x="2" y="4" width="20" height="16" rx="4" fill="#FF0000"/>
-                      <path d="M10 8.5V15.5L16 12L10 8.5Z" fill="white"/>
-                    </svg>
-                  </a>
-                )}
+              <div className="ml-3 md:ml-4 flex flex-col items-center">
+                <div className="flex items-center gap-2">
+                  {settings.instagram_url && (
+                    <a 
+                      href={settings.instagram_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="hover:opacity-80 transition-opacity"
+                      data-testid="nav-instagram"
+                    >
+                      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                          <linearGradient id="instagram-gradient" x1="0%" y1="100%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="#FEDA75"/>
+                            <stop offset="25%" stopColor="#FA7E1E"/>
+                            <stop offset="50%" stopColor="#D62976"/>
+                            <stop offset="75%" stopColor="#962FBF"/>
+                            <stop offset="100%" stopColor="#4F5BD5"/>
+                          </linearGradient>
+                        </defs>
+                        <rect x="2" y="2" width="20" height="20" rx="5" fill="url(#instagram-gradient)"/>
+                        <circle cx="12" cy="12" r="4" stroke="white" strokeWidth="2" fill="none"/>
+                        <circle cx="17.5" cy="6.5" r="1.5" fill="white"/>
+                      </svg>
+                    </a>
+                  )}
+                  {settings.facebook_url && (
+                    <a 
+                      href={settings.facebook_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="hover:opacity-80 transition-opacity"
+                      data-testid="nav-facebook"
+                    >
+                      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="2" y="2" width="20" height="20" rx="5" fill="#1877F2"/>
+                        <path d="M16.5 12.5H14V18H11V12.5H9V10H11V8.5C11 6.5 12.2 5 14.5 5H16.5V7.5H15C14.2 7.5 14 7.8 14 8.5V10H16.5L16.5 12.5Z" fill="white"/>
+                      </svg>
+                    </a>
+                  )}
+                  {settings.youtube_url && (
+                    <a 
+                      href={settings.youtube_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="hover:opacity-80 transition-opacity"
+                      data-testid="nav-youtube"
+                    >
+                      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="2" y="4" width="20" height="16" rx="4" fill="#FF0000"/>
+                        <path d="M10 8.5V15.5L16 12L10 8.5Z" fill="white"/>
+                      </svg>
+                    </a>
+                  )}
+                </div>
+                <span className="text-[8px] md:text-[10px] text-gray-500 mt-0.5">Follow us on</span>
               </div>
             )}
           </div>
