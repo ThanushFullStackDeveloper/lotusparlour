@@ -240,8 +240,29 @@ const Booking = () => {
   const selectedService = services.find(s => s.id === formData.service_id);
   const selectedStaff = staff.find(s => s.id === formData.staff_id);
 
-  // Get today's date in YYYY-MM-DD format
-  const today = new Date().toISOString().split('T')[0];
+  // Get today's date in IST (UTC+5:30) in YYYY-MM-DD format
+  const getISTDate = () => {
+    const now = new Date();
+    // Add 5 hours 30 minutes for IST
+    const istOffset = 5.5 * 60 * 60 * 1000;
+    const istDate = new Date(now.getTime() + istOffset);
+    return istDate.toISOString().split('T')[0];
+  };
+  
+  const getISTTime = () => {
+    const now = new Date();
+    const istOffset = 5.5 * 60 * 60 * 1000;
+    const istDate = new Date(now.getTime() + istOffset);
+    return istDate.toISOString().split('T')[1].substring(0, 5); // HH:MM format
+  };
+  
+  const today = getISTDate();
+  const currentTime = getISTTime();
+  
+  // Filter out past time slots for today's date
+  const filteredSlots = formData.appointment_date === today 
+    ? availableSlots.filter(slot => slot > currentTime)
+    : availableSlots;
 
   // Booking Complete View
   if (bookingComplete && bookedAppointment) {
@@ -444,11 +465,11 @@ const Booking = () => {
                   />
                 </div>
 
-                {formData.appointment_date && availableSlots.length > 0 && (
+                {formData.appointment_date && filteredSlots.length > 0 && (
                   <div>
                     <label className="block text-sm font-medium mb-2">Select Time Slot *</label>
                     <div className="grid grid-cols-4 gap-3">
-                      {availableSlots.map((slot) => (
+                      {filteredSlots.map((slot) => (
                         <button
                           key={slot}
                           type="button"
@@ -464,6 +485,12 @@ const Booking = () => {
                         </button>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {formData.appointment_date && availableSlots.length > 0 && filteredSlots.length === 0 && (
+                  <div className="text-center py-4 bg-yellow-50 rounded-lg">
+                    <p className="text-yellow-700">No more time slots available for today. Please select another date.</p>
                   </div>
                 )}
 

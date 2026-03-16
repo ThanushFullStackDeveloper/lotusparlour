@@ -273,6 +273,9 @@ class Settings(BaseModel):
     welcome_text: str = "Welcome to Lotus Beauty Parlour"
     tagline: str = "Transform your beauty journey with our premium makeup artistry and salon services in the heart of Tirunelveli."
     google_rating: str = "5.0"
+    instagram_url: Optional[str] = None
+    facebook_url: Optional[str] = None
+    youtube_url: Optional[str] = None
     hero_image: Optional[str] = None
     logo_image: Optional[str] = None
     years_experience: str = "5+"
@@ -286,6 +289,9 @@ class SettingsUpdate(BaseModel):
     welcome_text: Optional[str] = None
     tagline: Optional[str] = None
     google_rating: Optional[str] = None
+    instagram_url: Optional[str] = None
+    facebook_url: Optional[str] = None
+    youtube_url: Optional[str] = None
     hero_image: Optional[str] = None
     logo_image: Optional[str] = None
     years_experience: Optional[str] = None

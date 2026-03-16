@@ -20,6 +20,9 @@ const SettingsManagement = () => {
     welcome_text: '',
     tagline: '',
     google_rating: '',
+    instagram_url: '',
+    facebook_url: '',
+    youtube_url: '',
     hero_image: '',
     logo_image: '',
     years_experience: '',
@@ -208,6 +211,61 @@ const SettingsManagement = () => {
                 placeholder="e.g., 5.0"
                 data-testid="google-rating-input"
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Years of Experience</label>
+              <input
+                type="text"
+                name="years_experience"
+                value={settings.years_experience || ''}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border rounded-lg"
+                placeholder="e.g., 5+"
+                data-testid="years-experience-input"
+              />
+            </div>
+          </div>
+
+          {/* Social Media URLs */}
+          <div className="border-t pt-6 mt-6">
+            <h3 className="text-lg font-semibold mb-4">Social Media Links</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Instagram URL</label>
+                <input
+                  type="url"
+                  name="instagram_url"
+                  value={settings.instagram_url || ''}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border rounded-lg"
+                  placeholder="https://instagram.com/yourpage"
+                  data-testid="instagram-url-input"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Facebook URL</label>
+                <input
+                  type="url"
+                  name="facebook_url"
+                  value={settings.facebook_url || ''}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border rounded-lg"
+                  placeholder="https://facebook.com/yourpage"
+                  data-testid="facebook-url-input"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">YouTube URL</label>
+                <input
+                  type="url"
+                  name="youtube_url"
+                  value={settings.youtube_url || ''}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border rounded-lg"
+                  placeholder="https://youtube.com/@yourchannel"
+                  data-testid="youtube-url-input"
+                />
+              </div>
             </div>
           </div>
 

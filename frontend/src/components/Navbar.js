@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, User, Calendar, LogOut, ChevronDown, Instagram } from 'lucide-react';
+import { Menu, X, User, Calendar, LogOut, ChevronDown, Instagram, Facebook, Youtube } from 'lucide-react';
 import { getSettings } from '../utils/api';
 
 const DEFAULT_LOGO = 'https://customer-assets.emergentagent.com/job_241db126-351c-4832-a8fb-845982688c90/artifacts/41r87k77_4B7AC146-0B06-4B1E-A8D9-0A69F86F7A02.jpeg';
@@ -8,7 +8,13 @@ const DEFAULT_LOGO = 'https://customer-assets.emergentagent.com/job_241db126-351
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [settings, setSettings] = useState({ parlour_name: 'LOTUS', logo_image: null });
+  const [settings, setSettings] = useState({ 
+    parlour_name: 'LOTUS', 
+    logo_image: null,
+    instagram_url: '',
+    facebook_url: '',
+    youtube_url: ''
+  });
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
   const role = localStorage.getItem('role');
@@ -88,19 +94,46 @@ const Navbar = () => {
                 </p>
               </div>
             </Link>
-            {/* Instagram Icon with Follow Us text */}
-            <a 
-              href="https://www.instagram.com/lotus_makeupartistry/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="ml-4 flex flex-col items-center group"
-              data-testid="nav-instagram"
-            >
-              <div className="p-2 rounded-full bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 text-white shadow-md group-hover:scale-110 transition-transform">
-                <Instagram size={18} />
+            
+            {/* Social Media Icons */}
+            <div className="ml-3 md:ml-4 flex items-center">
+              <span className="text-[8px] md:text-[10px] text-gray-400 mr-1.5 hidden sm:block">Follow us</span>
+              <div className="flex items-center gap-1.5">
+                {settings.instagram_url && (
+                  <a 
+                    href={settings.instagram_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="p-1.5 rounded-full bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 text-white hover:scale-110 transition-transform"
+                    data-testid="nav-instagram"
+                  >
+                    <Instagram size={14} />
+                  </a>
+                )}
+                {settings.facebook_url && (
+                  <a 
+                    href={settings.facebook_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="p-1.5 rounded-full bg-blue-600 text-white hover:scale-110 transition-transform"
+                    data-testid="nav-facebook"
+                  >
+                    <Facebook size={14} />
+                  </a>
+                )}
+                {settings.youtube_url && (
+                  <a 
+                    href={settings.youtube_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="p-1.5 rounded-full bg-red-600 text-white hover:scale-110 transition-transform"
+                    data-testid="nav-youtube"
+                  >
+                    <Youtube size={14} />
+                  </a>
+                )}
               </div>
-              <span className="text-[8px] md:text-[10px] text-gray-400 mt-0.5 font-medium">Follow us</span>
-            </a>
+            </div>
           </div>
 
           {/* Desktop Menu */}
