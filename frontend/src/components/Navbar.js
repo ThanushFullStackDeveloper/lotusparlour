@@ -95,7 +95,7 @@ const Navbar = () => {
               </div>
             </Link>
             
-            {/* Social Media Icons - Small Square Style */}
+            {/* Social Media Icons - Rounded Square Style */}
             {(settings.instagram_url || settings.facebook_url || settings.youtube_url) && (
               <div className="ml-3 md:ml-4 flex items-center gap-1.5">
                 {settings.instagram_url && (
@@ -103,10 +103,10 @@ const Navbar = () => {
                     href={settings.instagram_url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="w-[26px] h-[26px] flex items-center justify-center rounded-[4px] bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 text-white hover:opacity-90 transition-opacity"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 text-white hover:opacity-90 transition-opacity"
                     data-testid="nav-instagram"
                   >
-                    <Instagram size={15} strokeWidth={2} />
+                    <Instagram size={18} strokeWidth={1.5} />
                   </a>
                 )}
                 {settings.facebook_url && (
@@ -114,10 +114,10 @@ const Navbar = () => {
                     href={settings.facebook_url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="w-[26px] h-[26px] flex items-center justify-center rounded-[4px] bg-blue-600 text-white hover:opacity-90 transition-opacity"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-600 text-white hover:opacity-90 transition-opacity"
                     data-testid="nav-facebook"
                   >
-                    <Facebook size={15} strokeWidth={2} />
+                    <Facebook size={18} strokeWidth={1.5} />
                   </a>
                 )}
                 {settings.youtube_url && (
@@ -125,10 +125,10 @@ const Navbar = () => {
                     href={settings.youtube_url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="w-[26px] h-[26px] flex items-center justify-center rounded-[4px] bg-red-600 text-white hover:opacity-90 transition-opacity"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-600 text-white hover:opacity-90 transition-opacity"
                     data-testid="nav-youtube"
                   >
-                    <Youtube size={15} strokeWidth={2} />
+                    <Youtube size={18} strokeWidth={1.5} />
                   </a>
                 )}
               </div>
