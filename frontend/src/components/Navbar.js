@@ -104,10 +104,10 @@ const Navbar = () => {
                     href={settings.instagram_url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="w-5 h-5 flex items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 text-white hover:scale-110 transition-transform"
+                    className="w-[18px] h-[18px] flex items-center justify-center rounded-[3px] bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 text-white hover:scale-110 transition-transform"
                     data-testid="nav-instagram"
                   >
-                    <Instagram size={12} />
+                    <Instagram size={11} />
                   </a>
                 )}
                 {settings.facebook_url && (
@@ -115,10 +115,10 @@ const Navbar = () => {
                     href={settings.facebook_url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="w-5 h-5 flex items-center justify-center rounded-lg bg-blue-600 text-white hover:scale-110 transition-transform"
+                    className="w-[18px] h-[18px] flex items-center justify-center rounded-[3px] bg-blue-600 text-white hover:scale-110 transition-transform"
                     data-testid="nav-facebook"
                   >
-                    <Facebook size={12} />
+                    <Facebook size={11} />
                   </a>
                 )}
                 {settings.youtube_url && (
@@ -126,10 +126,10 @@ const Navbar = () => {
                     href={settings.youtube_url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="w-5 h-5 flex items-center justify-center rounded-lg bg-red-600 text-white hover:scale-110 transition-transform"
+                    className="w-[18px] h-[18px] flex items-center justify-center rounded-[3px] bg-red-600 text-white hover:scale-110 transition-transform"
                     data-testid="nav-youtube"
                   >
-                    <Youtube size={12} />
+                    <Youtube size={11} />
                   </a>
                 )}
               </div>
