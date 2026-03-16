@@ -93,7 +93,7 @@ function App() {
             element={
               <>
                 <Navbar />
-                <main className="min-h-screen pb-20 md:pb-0 pt-20 md:pt-[88px]">
+                <main className="min-h-screen pb-20 md:pb-0 pt-24 md:pt-[88px]">
                   <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/about" element={<About />} />
