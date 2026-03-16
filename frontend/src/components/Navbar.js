@@ -98,6 +98,7 @@ const Navbar = () => {
             {/* Social Media Icons - Filled Brand Colors */}
             {(settings.instagram_url || settings.facebook_url || settings.youtube_url) && (
               <div className="ml-3 md:ml-4 flex items-center gap-2">
+                <span className="text-[10px] md:text-xs text-gray-500 whitespace-nowrap">Follow us on</span>
                 {settings.instagram_url && (
                   <a 
                     href={settings.instagram_url} 
