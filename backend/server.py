@@ -582,9 +582,16 @@ async def get_appointments(payload: dict = Depends(verify_token)):
     service_ids = list(set(apt.get('service_id') for apt in appointments if apt.get('service_id')))
     staff_ids = list(set(apt.get('staff_id') for apt in appointments if apt.get('staff_id')))
     
-    # Fetch all services and staff in parallel
-    services_list = await db.services.find({"id": {"$in": service_ids}}, {"_id": 0}).to_list(100)
-    staff_list = await db.staff.find({"id": {"$in": staff_ids}}, {"_id": 0}).to_list(100)
+    # Fetch services and staff WITHOUT image data for faster loading
+    # Exclude 'image' field which contains large base64 data
+    services_list = await db.services.find(
+        {"id": {"$in": service_ids}}, 
+        {"_id": 0, "image": 0}
+    ).to_list(100)
+    staff_list = await db.staff.find(
+        {"id": {"$in": staff_ids}}, 
+        {"_id": 0, "image": 0}
+    ).to_list(100)
     
     # Create lookup dictionaries
     services_map = {s['id']: s for s in services_list}
