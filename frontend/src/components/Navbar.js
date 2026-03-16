@@ -95,64 +95,43 @@ const Navbar = () => {
               </div>
             </Link>
             
-            {/* Social Media Icons - Desktop: Row, Mobile: Follow Button */}
+            {/* Social Media Icons - Small Square Style */}
             {(settings.instagram_url || settings.facebook_url || settings.youtube_url) && (
-              <>
-                {/* Mobile: Instagram Follow Button */}
-                <div className="ml-3 flex md:hidden">
-                  {settings.instagram_url && (
-                    <a 
-                      href={settings.instagram_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex flex-col items-center"
-                      data-testid="nav-instagram-mobile"
-                    >
-                      <div className="w-[30px] h-[30px] flex items-center justify-center rounded-full bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 text-white shadow-sm">
-                        <Instagram size={16} />
-                      </div>
-                      <span className="text-[10px] text-gray-500 mt-1">Follow us</span>
-                    </a>
-                  )}
-                </div>
-                
-                {/* Desktop: Row of Icons */}
-                <div className="ml-4 hidden md:flex items-center gap-1.5">
-                  {settings.instagram_url && (
-                    <a 
-                      href={settings.instagram_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="w-6 h-6 flex items-center justify-center rounded bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 text-white hover:opacity-90 transition-opacity"
-                      data-testid="nav-instagram"
-                    >
-                      <Instagram size={14} />
-                    </a>
-                  )}
-                  {settings.facebook_url && (
-                    <a 
-                      href={settings.facebook_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="w-6 h-6 flex items-center justify-center rounded bg-blue-600 text-white hover:opacity-90 transition-opacity"
-                      data-testid="nav-facebook"
-                    >
-                      <Facebook size={14} />
-                    </a>
-                  )}
-                  {settings.youtube_url && (
-                    <a 
-                      href={settings.youtube_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="w-6 h-6 flex items-center justify-center rounded bg-red-600 text-white hover:opacity-90 transition-opacity"
-                      data-testid="nav-youtube"
-                    >
-                      <Youtube size={14} />
-                    </a>
-                  )}
-                </div>
-              </>
+              <div className="ml-3 md:ml-4 flex items-center gap-1.5">
+                {settings.instagram_url && (
+                  <a 
+                    href={settings.instagram_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="w-[26px] h-[26px] flex items-center justify-center rounded-[4px] bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 text-white hover:opacity-90 transition-opacity"
+                    data-testid="nav-instagram"
+                  >
+                    <Instagram size={15} strokeWidth={2} />
+                  </a>
+                )}
+                {settings.facebook_url && (
+                  <a 
+                    href={settings.facebook_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="w-[26px] h-[26px] flex items-center justify-center rounded-[4px] bg-blue-600 text-white hover:opacity-90 transition-opacity"
+                    data-testid="nav-facebook"
+                  >
+                    <Facebook size={15} strokeWidth={2} />
+                  </a>
+                )}
+                {settings.youtube_url && (
+                  <a 
+                    href={settings.youtube_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="w-[26px] h-[26px] flex items-center justify-center rounded-[4px] bg-red-600 text-white hover:opacity-90 transition-opacity"
+                    data-testid="nav-youtube"
+                  >
+                    <Youtube size={15} strokeWidth={2} />
+                  </a>
+                )}
+              </div>
             )}
           </div>
 
