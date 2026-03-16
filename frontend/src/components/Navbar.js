@@ -97,7 +97,7 @@ const Navbar = () => {
             
             {/* Social Media Icons - Filled Brand Colors */}
             {(settings.instagram_url || settings.facebook_url || settings.youtube_url) && (
-              <div className="ml-3 md:ml-4 flex flex-col items-center">
+              <div className="ml-3 md:ml-4 flex flex-col items-center mt-1">
                 <div className="flex items-center gap-2">
                   {settings.instagram_url && (
                     <a 
