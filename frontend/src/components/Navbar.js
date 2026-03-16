@@ -104,10 +104,10 @@ const Navbar = () => {
                     href={settings.instagram_url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="w-4 h-4 md:w-5 md:h-5 flex items-center justify-center rounded-full bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 text-white hover:scale-110 transition-transform"
+                    className="w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 text-white hover:scale-110 transition-transform"
                     data-testid="nav-instagram"
                   >
-                    <Instagram size={9} />
+                    <Instagram size={12} />
                   </a>
                 )}
                 {settings.facebook_url && (
@@ -115,10 +115,10 @@ const Navbar = () => {
                     href={settings.facebook_url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="w-4 h-4 md:w-5 md:h-5 flex items-center justify-center rounded-full bg-blue-600 text-white hover:scale-110 transition-transform"
+                    className="w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded bg-blue-600 text-white hover:scale-110 transition-transform"
                     data-testid="nav-facebook"
                   >
-                    <Facebook size={9} />
+                    <Facebook size={12} />
                   </a>
                 )}
                 {settings.youtube_url && (
@@ -126,10 +126,10 @@ const Navbar = () => {
                     href={settings.youtube_url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="w-4 h-4 md:w-5 md:h-5 flex items-center justify-center rounded-full bg-red-600 text-white hover:scale-110 transition-transform"
+                    className="w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded bg-red-600 text-white hover:scale-110 transition-transform"
                     data-testid="nav-youtube"
                   >
-                    <Youtube size={9} />
+                    <Youtube size={12} />
                   </a>
                 )}
               </div>
