@@ -1388,8 +1388,11 @@ app.include_router(api_router)
 
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=[
+        "https://lotusparlour.vercel.app",
+        "https://lotusparlour-2duxs13p0-thanjozs-projects.vercel.app"
+    ],
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
     allow_methods=["*"],
     allow_headers=["*"],
 )
