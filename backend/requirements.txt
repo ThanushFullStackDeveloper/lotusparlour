@@ -9,3 +9,4 @@ twilio
 email-validator
 uvicorn[standard]
 websockets
+cloudinary
