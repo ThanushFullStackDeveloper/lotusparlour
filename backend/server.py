@@ -20,6 +20,8 @@ import jwt
 import bcrypt
 from twilio.rest import Client
 import base64
+import cloudinary
+import cloudinary.uploader
 
 # Setup logging early
 logging.basicConfig(
@@ -1014,13 +1016,40 @@ async def get_revenue_data():
 
 # ============ FILE UPLOAD ============
 
+# @api_router.post("/upload")
+# async def upload_image(file: UploadFile = File(...)):
+#     # Read file and encode to base64
+#     contents = await file.read()
+#     base64_encoded = base64.b64encode(contents).decode('utf-8')
+#     image_data = f"data:{file.content_type};base64,{base64_encoded}"
+#     return {"url": image_data}
+
+CLOUDINARY_CLOUD_NAME=drzzzfgnw
+CLOUDINARY_API_KEY=657355937224384
+CLOUDINARY_API_SECRET=4jFwUk7LtQ8uENucZpnuSTzA9OM
+
+# Configure Cloudinary
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET")
+)
+
 @api_router.post("/upload")
 async def upload_image(file: UploadFile = File(...)):
-    # Read file and encode to base64
-    contents = await file.read()
-    base64_encoded = base64.b64encode(contents).decode('utf-8')
-    image_data = f"data:{file.content_type};base64,{base64_encoded}"
-    return {"url": image_data}
+    try:
+        contents = await file.read()
+
+        result = cloudinary.uploader.upload(
+            contents,
+            folder="lotus_parlour",
+            resource_type="image"
+        )
+
+        return {"url": result["secure_url"]}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ============ SERVICE VIDEOS ROUTES ============
