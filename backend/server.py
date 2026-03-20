@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field, ConfigDict, EmailStr, validator
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone, timedelta
+from fastapi.responses import RedirectResponse
 import json
 
 # IST Timezone (UTC+5:30)
@@ -387,6 +388,17 @@ async def send_sms_reminder(phone: str, message: str):
             )
         except Exception as e:
             logging.error(f"SMS sending failed: {str(e)}")
+
+# =========== Server routes ==========
+
+@app.get("/")
+async def root():
+    return {"message": "Backend running 🚀"}
+
+@app.get("/")
+async def root():
+    return RedirectResponse(url="/api")
+
 
 # ============ AUTHENTICATION ROUTES ============
 
