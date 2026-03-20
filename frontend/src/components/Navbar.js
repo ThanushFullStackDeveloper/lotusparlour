@@ -85,7 +85,7 @@ const Navbar = () => {
                 alt={parlourName}
                 className="h-12 w-12 md:h-16 md:w-16 object-contain"
               />
-              <div>
+              <div className="mt-1">
                 <h1 className="text-lg md:text-2xl font-heading font-bold" style={{ color: 'var(--secondary)' }}>
                   {mainTitle}
                 </h1>
