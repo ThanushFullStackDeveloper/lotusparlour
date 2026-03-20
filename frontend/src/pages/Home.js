@@ -191,10 +191,13 @@ useEffect(() => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
             >
-              // <h1 className="text-4xl md:text-5xl lg:text-5xl font-bold font-heading mb-6" style={{ color: 'var(--text-primary)' }}>
-              <h1 className="text-4xl md:text-5xl lg:text-5xl font-bold font-heading mb-6 mt-6 md:mt-0">
-                {settings.welcome_text} <span style={{ color: 'var(--secondary)' }}>{settings.parlour_name.split(' ').pop()}</span>
+              <h1 className="text-4xl md:text-5xl lg:text-5xl font-bold font-heading mb-6 mt-6 md:mt-0" style={{ color: 'var(--text-primary)' }}>
+              {settings.welcome_text}{' '}
+              <span style={{ color: 'var(--secondary)' }}>
+              {settings.parlour_name.split(' ').pop()}
+              </span>
               </h1>
+                
               <p className="text-base md:text-lg mb-8" style={{ color: 'var(--text-secondary)' }}>
                 {settings.tagline || "Transform your beauty journey with our premium makeup artistry and salon services in the heart of Tirunelveli."}
               </p>
