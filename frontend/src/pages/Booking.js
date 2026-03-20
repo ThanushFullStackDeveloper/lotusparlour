@@ -119,9 +119,20 @@ const Booking = () => {
     setStep(2);
   };
 
+  // const handleDateSelect = (e) => {
+  //   setFormData({ ...formData, appointment_date: e.target.value });
+  // };
+
   const handleDateSelect = (e) => {
-    setFormData({ ...formData, appointment_date: e.target.value });
-  };
+  const selected = e.target.value;
+
+  if (selected < today) {
+    toast.error("Past dates are not allowed");
+    return;
+  }
+
+  setFormData({ ...formData, appointment_date: selected });
+};
 
 
   const handleApplyCoupon = async () => {
