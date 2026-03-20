@@ -15,6 +15,14 @@ const Home = () => {
   const [staff, setStaff] = useState([]);
   const [reviews, setReviews] = useState([]);
   const reviewScrollRef = useRef(null);
+  const scrollReviews = (direction) => {
+  if (!reviewScrollRef.current) return;
+
+  reviewScrollRef.current.scrollBy({
+    left: direction === 'left' ? -300 : 300,
+    behavior: 'smooth'
+  });
+};
   const [settings, setSettings] = useState({
     parlour_name: 'Lotus Beauty Parlour',
     welcome_text: 'Welcome to Lotus Beauty',
@@ -439,18 +447,6 @@ useEffect(() => {
     </div>
   </div>
 </section>
-
-const reviewScrollRef = useRef(null);
-
-const scrollReviews = (direction) => {
-  if (!reviewScrollRef.current) return;
-
-  reviewScrollRef.current.scrollBy({
-    left: direction === 'left' ? -300 : 300,
-    behavior: 'smooth'
-  });
-};
-
       {/* Submit Review Section */}
       <ReviewSubmission />
 
