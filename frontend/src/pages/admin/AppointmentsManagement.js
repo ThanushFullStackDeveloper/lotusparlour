@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle, XCircle, Search, Calendar, Filter, ChevronDown, RefreshCw } from 'lucide-react';
@@ -133,7 +132,7 @@ const AppointmentsManagement = () => {
         ].map((stat) => (
           <div
             key={stat.label}
-           className={`flex-shrink-0 px-4 py-2 rounded-lg ${stat.color}`}
+            className={`flex-shrink-0 px-4 py-2 rounded-lg ${stat.color}`}
           >
             <p className="text-xl font-bold">{stat.count}</p>
             <p className="text-xs font-medium">{stat.label}</p>
@@ -239,7 +238,7 @@ const AppointmentsManagement = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.02, duration: 0.2 }}
               className="bg-white p-4 rounded-xl shadow-sm"
-              data-testid={appointment-card-${index}}
+              data-testid={`appointment-card-${index}`}
             >
               {/* Customer & Status */}
               <div className="flex items-start justify-between mb-3">
@@ -247,7 +246,7 @@ const AppointmentsManagement = () => {
                   <p className="font-semibold">{appointment.customer_name}</p>
                   <p className="text-xs text-gray-500">{appointment.customer_phone}</p>
                 </div>
-                className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}
+                <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>
                   {appointment.status}
                 </span>
               </div>
@@ -353,7 +352,7 @@ const AppointmentsManagement = () => {
                       <p className="text-sm">{appointment.staff?.name || 'Any'}</p>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}}>
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>
                         {appointment.status}
                       </span>
                     </td>
@@ -398,4 +397,4 @@ const AppointmentsManagement = () => {
   );
 };
 
-export default AppointmentsManagement; 
+export default AppointmentsManagement;
