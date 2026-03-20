@@ -6,8 +6,7 @@ import { getServicesFull, getStaff, getReviews, getSettings, createReview } from
 import { getCachedData, clearCache } from '../utils/cacheManager';
 import OfflineBanner from '../components/OfflineBanner';
 import { toast } from 'sonner';
-// import { useWebSocketContext } from '../contexts/WebSocketContext';
-import useWebSocket from '../hooks/useWebSocket'; 
+import { useWebSocketContext } from '../contexts/WebSocketContext'; 
 
 const Home = () => {
   const [services, setServices] = useState([]);
@@ -25,35 +24,24 @@ const Home = () => {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [isStale, setIsStale] = useState(false);
   
-  // const { lastUpdate } = useWebSocketContext();
+  const { lastUpdate } = useWebSocketContext();
 
-// useEffect(() => {
-//   if (!lastUpdate) return;
+useEffect(() => {
+  if (!lastUpdate) return;
 
-//   console.log("Home WS update:", lastUpdate);
+  console.log("Home WS update:", lastUpdate);
 
-//   if (['services', 'staff', 'settings', 'reviews'].includes(lastUpdate.entity)) {
-//     console.log(`Refreshing ${lastUpdate.entity}...`);
+  if (['services', 'staff', 'settings', 'reviews'].includes(lastUpdate.entity)) {
+    console.log(`Refreshing ${lastUpdate.entity}...`);
 
-//     // Clear cache
-//     clearCache(lastUpdate.entity);
+    // Clear cache
+    clearCache(lastUpdate.entity);
 
-//     // Refresh data
-//     fetchData();
-//   }
-
-// }, [lastUpdate]);
-
-const handleWebSocketUpdate = useCallback((data) => {
-  console.log("Home WS:", data);
-
-  if (['services', 'staff', 'settings', 'reviews'].includes(data.entity)) {
-    clearCache(data.entity);
+    // Refresh data
     fetchData();
   }
-}, [fetchData]);
 
-useWebSocket(handleWebSocketUpdate);
+}, [lastUpdate]);
 
   
 // Listen for WebSocket updates (REAL-TIME HANDLING)
