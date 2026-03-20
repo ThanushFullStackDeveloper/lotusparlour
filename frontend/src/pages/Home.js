@@ -28,7 +28,7 @@ const Home = () => {
 
   Listen for WebSocket updates - use timestamp to detect all changes
   useEffect(() => {
-    if (lastUpdate && ['services', 'staff', 'settings', 'reviews'].includes(lastUpdate.entity) && lastUpdate.timestamp) {
+    if (lastUpdate && ['services', 'staff', 'settings',].includes(lastUpdate.entity) && lastUpdate.timestamp) {
       console.log(`Home: WebSocket update for ${lastUpdate.entity}, refreshing... (timestamp: ${lastUpdate.timestamp})`);
       // Clear cache for updated entity and refetch immediately
       clearCache(lastUpdate.entity);
