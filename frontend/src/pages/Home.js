@@ -7,22 +7,11 @@ import { getCachedData, clearCache } from '../utils/cacheManager';
 import OfflineBanner from '../components/OfflineBanner';
 import { toast } from 'sonner';
 import { useWebSocketContext } from '../contexts/WebSocketContext';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useRef } from 'react';
 
 const Home = () => {
   const [services, setServices] = useState([]);
   const [staff, setStaff] = useState([]);
   const [reviews, setReviews] = useState([]);
-  const reviewScrollRef = useRef(null);
-  const scrollReviews = (direction) => {
-  if (!reviewScrollRef.current) return;
-
-  reviewScrollRef.current.scrollBy({
-    left: direction === 'left' ? -300 : 300,
-    behavior: 'smooth'
-  });
-};
   const [settings, setSettings] = useState({
     parlour_name: 'Lotus Beauty Parlour',
     welcome_text: 'Welcome to Lotus Beauty',
@@ -351,102 +340,38 @@ useEffect(() => {
       </section>
 
       {/* Testimonials */}
-      // <section className="section-spacing" data-testid="testimonials-section">
-      //   <div className="w-full px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto">
-      //     <div className="text-center mb-12">
-      //       <h2 className="text-4xl md:text-5xl font-bold font-heading mb-4">What Our Clients Say</h2>
-      //       <p className="text-base md:text-lg" style={{ color: 'var(--text-secondary)' }}>
-      //         Real experiences from our valued customers
-      //       </p>
-      //     </div>
-      //     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-      //       {reviews.map((review, index) => (
-      //         <motion.div
-      //           key={review.id}
-      //           initial={{ opacity: 0, y: 30 }}
-      //           animate={{ opacity: 1, y: 0 }}
-      //           transition={{ delay: index * 0.1, duration: 0.4 }}
-      //           className="testimonial-card"
-      //           data-testid={`review-card-${index}`}
-      //         >
-      //           <div className="flex items-center mb-3">
-      //             {[...Array(review.rating)].map((_, i) => (
-      //               <Star key={i} size={16} fill="var(--secondary)" color="var(--secondary)" />
-      //             ))}
-      //           </div>
-      //           <p className="text-sm mb-4 italic" style={{ color: 'var(--text-secondary)' }}>
-      //             "{review.review_text}"
-      //           </p>
-      //           <p className="text-sm font-semibold">- {review.customer_name}</p>
-      //         </motion.div>
-      //       ))}
-      //     </div>
-      //   </div>
-      // </section>
-
-{/* Testimonials */}
-<section className="section-spacing" data-testid="testimonials-section">
-  <div className="w-full px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto">
-    <div className="text-center mb-12">
-      <h2 className="text-4xl md:text-5xl font-bold font-heading mb-4">
-        What Our Clients Say
-      </h2>
-      <p className="text-base md:text-lg" style={{ color: 'var(--text-secondary)' }}>
-        Real experiences from our valued customers
-      </p>
-    </div>
-
-    {/* ✅ NEW: Horizontal Scroll */}
-    <div className="relative">
-      {/* Left Arrow */}
-      <button
-        onClick={() => scrollReviews('left')}
-        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-md p-2 rounded-full"
-      >
-        <ChevronLeft size={20} />
-      </button>
-
-      {/* Scroll Container */}
-      <div
-        ref={reviewScrollRef}
-        className="flex gap-6 overflow-x-auto scroll-smooth px-10 no-scrollbar"
-      >
-        {reviews.map((review, index) => (
-          <motion.div
-            key={review.id}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1, duration: 0.4 }}
-            className="min-w-[280px] max-w-[320px] flex-shrink-0 testimonial-card"
-            data-testid={`review-card-${index}`}
-          >
-            <div className="flex items-center mb-3">
-              {[...Array(review.rating)].map((_, i) => (
-                <Star key={i} size={16} fill="var(--secondary)" color="var(--secondary)" />
-              ))}
-            </div>
-
-            <p className="text-sm mb-4 italic" style={{ color: 'var(--text-secondary)' }}>
-              "{review.review_text}"
+      <section className="section-spacing" data-testid="testimonials-section">
+        <div className="w-full px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold font-heading mb-4">What Our Clients Say</h2>
+            <p className="text-base md:text-lg" style={{ color: 'var(--text-secondary)' }}>
+              Real experiences from our valued customers
             </p>
-
-            <p className="text-sm font-semibold">
-              - {review.customer_name}
-            </p>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Right Arrow */}
-      <button
-        onClick={() => scrollReviews('right')}
-        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-md p-2 rounded-full"
-      >
-        <ChevronRight size={20} />
-      </button>
-    </div>
-  </div>
-</section>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {reviews.map((review, index) => (
+              <motion.div
+                key={review.id}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1, duration: 0.4 }}
+                className="testimonial-card"
+                data-testid={`review-card-${index}`}
+              >
+                <div className="flex items-center mb-3">
+                  {[...Array(review.rating)].map((_, i) => (
+                    <Star key={i} size={16} fill="var(--secondary)" color="var(--secondary)" />
+                  ))}
+                </div>
+                <p className="text-sm mb-4 italic" style={{ color: 'var(--text-secondary)' }}>
+                  "{review.review_text}"
+                </p>
+                <p className="text-sm font-semibold">- {review.customer_name}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
       {/* Submit Review Section */}
       <ReviewSubmission />
 
