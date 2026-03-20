@@ -5,7 +5,7 @@ import { Calendar, Clock, User, Tag, CheckCircle, CalendarPlus, ArrowLeft, Loade
 import { getServices, getStaff, createAppointment, getAvailableSlots, getHolidays, getCurrentUser, validateCoupon } from '../utils/api';
 import { toast } from 'sonner';
 
-const API_BASE_URL = "https://lotusparlour.onrender.com/api";
+const API_BASE_URL = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const Booking = () => {
   const navigate = useNavigate();
