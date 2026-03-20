@@ -6,3 +6,4 @@ PyJWT
 bcrypt
 python-multipart
 twilio
+email-validator
