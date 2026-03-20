@@ -241,20 +241,48 @@ const Booking = () => {
   const selectedStaff = staff.find(s => s.id === formData.staff_id);
 
   // Get today's date in IST (UTC+5:30) in YYYY-MM-DD format
+  // const getISTDate = () => {
+  //   const now = new Date();
+  //   // Add 5 hours 30 minutes for IST
+  //   const istOffset = 5.5 * 60 * 60 * 1000;
+  //   const istDate = new Date(now.getTime() + istOffset);
+  //   return istDate.toISOString().split('T')[0];
+  // };
+
   const getISTDate = () => {
-    const now = new Date();
-    // Add 5 hours 30 minutes for IST
-    const istOffset = 5.5 * 60 * 60 * 1000;
-    const istDate = new Date(now.getTime() + istOffset);
-    return istDate.toISOString().split('T')[0];
-  };
+  const now = new Date();
+
+  // Convert to IST using locale (SAFE for iPhone)
+  const istDate = new Date(
+    now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+  );
+
+  const year = istDate.getFullYear();
+  const month = String(istDate.getMonth() + 1).padStart(2, "0");
+  const day = String(istDate.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
   
+  // const getISTTime = () => {
+  //   const now = new Date();
+  //   const istOffset = 5.5 * 60 * 60 * 1000;
+  //   const istDate = new Date(now.getTime() + istOffset);
+  //   return istDate.toISOString().split('T')[1].substring(0, 5); // HH:MM format
+  // };
+
   const getISTTime = () => {
-    const now = new Date();
-    const istOffset = 5.5 * 60 * 60 * 1000;
-    const istDate = new Date(now.getTime() + istOffset);
-    return istDate.toISOString().split('T')[1].substring(0, 5); // HH:MM format
-  };
+  const now = new Date();
+
+  const istDate = new Date(
+    now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+  );
+
+  const hours = String(istDate.getHours()).padStart(2, "0");
+  const minutes = String(istDate.getMinutes()).padStart(2, "0");
+
+  return `${hours}:${minutes}`;
+};
   
   const today = getISTDate();
   const currentTime = getISTTime();
