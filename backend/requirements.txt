@@ -3,3 +3,5 @@ uvicorn
 motor
 python-dotenv
 PyJWT
+bcrypt
+python-multipart
