@@ -27,21 +27,38 @@ const Home = () => {
   const { lastUpdate } = useWebSocketContext();
 
   // Listen for WebSocket updates - use timestamp to detect all changes
-  useEffect(() => {
-  if (
-    lastUpdate &&
-    ['services', 'staff', 'settings', 'reviews'].includes(lastUpdate.entity) &&
-    lastUpdate.timestamp
-  ) {
-    console.log(`Home: WebSocket update for ${lastUpdate.entity}, refreshing...`);
+//   useEffect(() => {
+//   if (
+//     lastUpdate &&
+//     ['services', 'staff', 'settings', 'reviews'].includes(lastUpdate.entity) &&
+//     lastUpdate.timestamp
+//   ) {
+//     console.log(`Home: WebSocket update for ${lastUpdate.entity}, refreshing...`);
 
-    // Clear cache for updated entity
+//     // Clear cache for updated entity
+//     clearCache(lastUpdate.entity);
+
+//     // 🔥 Always refresh (same as services/gallery)
+//     fetchData();
+//   }
+// }, [lastUpdate?.timestamp]);
+
+useEffect(() => {
+  if (!lastUpdate) return;
+
+  console.log("Home WS update:", lastUpdate);
+
+  if (['services', 'staff', 'settings', 'reviews'].includes(lastUpdate.entity)) {
+    console.log(`Refreshing ${lastUpdate.entity}...`);
+
+    // Clear cache
     clearCache(lastUpdate.entity);
 
-    // 🔥 Always refresh (same as services/gallery)
+    // Refresh data
     fetchData();
   }
-}, [lastUpdate?.timestamp]);
+
+}, [lastUpdate]);
   
 // Listen for WebSocket updates (REAL-TIME HANDLING)
 
