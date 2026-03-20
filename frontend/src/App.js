@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { HashRouter } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 import { Toaster } from 'sonner';
 import './App.css';
 
@@ -62,7 +62,7 @@ function App() {
 
   return (
     <div className="App">
-      <HashRouter>
+      <BrowserRouter>
         <WebSocketProvider>
           <ScrollToTop />
           <Toaster 
@@ -125,7 +125,7 @@ function App() {
           />
         </Routes>
         </WebSocketProvider>
-      </HashRouter>
+      </BrowserRouter>
     </div>
   );
 }
