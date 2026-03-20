@@ -1024,10 +1024,6 @@ async def get_revenue_data():
 #     image_data = f"data:{file.content_type};base64,{base64_encoded}"
 #     return {"url": image_data}
 
-CLOUDINARY_CLOUD_NAME=drzzzfgnw
-CLOUDINARY_API_KEY=657355937224384
-CLOUDINARY_API_SECRET=4jFwUk7LtQ8uENucZpnuSTzA9OM
-
 # Configure Cloudinary
 cloudinary.config(
     cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
