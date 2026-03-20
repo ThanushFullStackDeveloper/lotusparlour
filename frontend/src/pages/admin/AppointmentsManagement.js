@@ -114,16 +114,16 @@ const loadSlots = async () => {
     return filtered;
   }, [appointments, filterStatus, filterDate, searchTerm, sortOrder]);
 
-  // const handleStatusUpdate = async (appointmentId, newStatus) => {
-  //   try {
-  //     await updateAppointmentStatus(appointmentId, newStatus);
-  //     toast.success(`Appointment ${newStatus}`);
-  //     fetchAppointments();
-  //   } catch (error) {
-  //     console.error('Error updating appointment:', error);
-  //     toast.error('Failed to update appointment');
-  //   }
-  // };
+  const handleStatusUpdate = async (appointmentId, newStatus) => {
+    try {
+      await updateAppointmentStatus(appointmentId, newStatus);
+      toast.success(`Appointment ${newStatus}`);
+      fetchAppointments();
+    } catch (error) {
+      console.error('Error updating appointment:', error);
+      toast.error('Failed to update appointment');
+    }
+  };
   const handleCreateAppointment = async () => {
   if (!formData.customer_name || !formData.customer_phone || !formData.service_id) {
     return toast.error("Fill all required fields");
