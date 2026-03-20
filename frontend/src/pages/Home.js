@@ -32,7 +32,7 @@ useEffect(() => {
   console.log("Home WS update:", lastUpdate);
 
   if (['services', 'staff', 'settings', 'reviews'].includes(lastUpdate.entity)) {
-    console.log(`Refreshing ${lastUpdate.entity}...`);
+    console.log(`Refresing ${lastUpdate.entity}...`);
 
     // Clear cache
     clearCache(lastUpdate.entity);
