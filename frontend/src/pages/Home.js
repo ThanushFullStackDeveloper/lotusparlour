@@ -14,7 +14,7 @@ const Home = () => {
   const [reviews, setReviews] = useState([]);
   const [settings, setSettings] = useState({
     parlour_name: 'Lotus Beauty Parlour',
-    welcome_text: 'Welcome to Lotus Beauty Parlour',
+    welcome_text: 'Welcome to Lotus Beauty',
     years_experience: '5+',
     opening_time: '09:00',
     closing_time: '22:00',
