@@ -479,86 +479,87 @@ const loadSlots = async () => {
           </table>
         </div>
       </div>
+
+          {showCreateModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white p-5 rounded-xl w-full max-w-md space-y-3">
+
+            <h2 className="text-lg font-bold">Create Appointment</h2>
+
+            <input placeholder="Name" className="input"
+              value={formData.customer_name}
+              onChange={(e)=>setFormData({...formData, customer_name:e.target.value})}
+            />
+
+            <input placeholder="Phone" className="input"
+              value={formData.customer_phone}
+              onChange={(e)=>setFormData({...formData, customer_phone:e.target.value})}
+            />
+
+            <input placeholder="Email" className="input"
+              value={formData.customer_email}
+              onChange={(e)=>setFormData({...formData, customer_email:e.target.value})}
+            />
+
+            <select className="input"
+              value={formData.service_id}
+              onChange={(e)=>setFormData({...formData, service_id:e.target.value})}
+            >
+              <option value="">Select Service</option>
+              {services.map(s => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+
+            <select className="input"
+              value={formData.staff_id}
+              onChange={(e)=>setFormData({...formData, staff_id:e.target.value})}
+            >
+              <option value="">Any Staff</option>
+              {staffList.map(s => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+
+            <input type="date" className="input"
+              value={formData.appointment_date}
+              onChange={(e)=>setFormData({...formData, appointment_date:e.target.value})}
+            />
+
+            <select className="input"
+              value={formData.appointment_time}
+              onChange={(e)=>setFormData({...formData, appointment_time:e.target.value})}
+            >
+              <option value="">Select Time</option>
+              {availableSlots.map(slot => (
+                <option key={slot} value={slot}>{slot}</option>
+              ))}
+            </select>
+
+            <div className="flex gap-2">
+              <button
+                onClick={handleCreateAppointment}
+                disabled={creating}
+                className="bg-green-500 text-white w-full py-2 rounded"
+              >
+                {creating ? "Creating..." : "Create"}
+              </button>
+
+              <button
+                onClick={()=>setShowCreateModal(false)}
+                className="bg-gray-300 w-full py-2 rounded"
+              >
+                Cancel
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-    {showCreateModal && (
-  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-    <div className="bg-white p-5 rounded-xl w-full max-w-md space-y-3">
 
-      <h2 className="text-lg font-bold">Create Appointment</h2>
-
-      <input placeholder="Name" className="input"
-        value={formData.customer_name}
-        onChange={(e)=>setFormData({...formData, customer_name:e.target.value})}
-      />
-
-      <input placeholder="Phone" className="input"
-        value={formData.customer_phone}
-        onChange={(e)=>setFormData({...formData, customer_phone:e.target.value})}
-      />
-
-      <input placeholder="Email" className="input"
-        value={formData.customer_email}
-        onChange={(e)=>setFormData({...formData, customer_email:e.target.value})}
-      />
-
-      <select className="input"
-        value={formData.service_id}
-        onChange={(e)=>setFormData({...formData, service_id:e.target.value})}
-      >
-        <option value="">Select Service</option>
-        {services.map(s => (
-          <option key={s.id} value={s.id}>{s.name}</option>
-        ))}
-      </select>
-
-      <select className="input"
-        value={formData.staff_id}
-        onChange={(e)=>setFormData({...formData, staff_id:e.target.value})}
-      >
-        <option value="">Any Staff</option>
-        {staffList.map(s => (
-          <option key={s.id} value={s.id}>{s.name}</option>
-        ))}
-      </select>
-
-      <input type="date" className="input"
-        value={formData.appointment_date}
-        onChange={(e)=>setFormData({...formData, appointment_date:e.target.value})}
-      />
-
-      {/* SLOT DROPDOWN */}
-      <select className="input"
-        value={formData.appointment_time}
-        onChange={(e)=>setFormData({...formData, appointment_time:e.target.value})}
-      >
-        <option value="">Select Time</option>
-        {availableSlots.map(slot => (
-          <option key={slot} value={slot}>{slot}</option>
-        ))}
-      </select>
-
-      <div className="flex gap-2">
-        <button
-          onClick={handleCreateAppointment}
-          disabled={creating}
-          className="bg-green-500 text-white w-full py-2 rounded"
-        >
-          {creating ? "Creating..." : "Create"}
-        </button>
-
-        <button
-          onClick={()=>setShowCreateModal(false)}
-          className="bg-gray-300 w-full py-2 rounded"
-        >
-          Cancel
-        </button>
-      </div>
-
-    </div>
-  </div>
-)}
 
 export default AppointmentsManagement;
