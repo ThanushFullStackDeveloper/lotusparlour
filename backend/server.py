@@ -785,177 +785,58 @@ END:VCALENDAR"""
 
 # ============ REVIEW ROUTES ============
 
-# @api_router.get("/reviews")
-# async def get_reviews():
-#     reviews = await db.reviews.find({"approved": True}, {"_id": 0}).to_list(1000)
-#     return reviews
-
-# @api_router.get("/reviews/all", dependencies=[Depends(verify_admin)])
-# async def get_all_reviews():
-#     reviews = await db.reviews.find({}, {"_id": 0}).to_list(1000)
-#     return reviews
-
-# @api_router.post("/reviews")
-# async def create_review(review_data: ReviewCreate):
-#     """Customer can submit a review (will need admin approval)"""
-#     review = Review(**review_data.model_dump(), approved=False)
-#     doc = review.model_dump()
-#     await db.reviews.insert_one(doc)
-#     return {"message": "Review submitted successfully. It will be visible after admin approval."}
-
-# @api_router.post("/reviews/admin", dependencies=[Depends(verify_admin)])
-# async def create_review_admin(review_data: ReviewCreate):
-#     """Admin can directly create an approved review"""
-#     review = Review(**review_data.model_dump(), approved=True)
-#     doc = review.model_dump()
-#     await db.reviews.insert_one(doc)
-#     return review
-
-# @api_router.put("/reviews/{review_id}/approve", dependencies=[Depends(verify_admin)])
-# async def approve_review(review_id: str):
-#     result = await db.reviews.update_one(
-#         {"id": review_id},
-#         {"$set": {"approved": True}}
-#     )
-#     if result.matched_count == 0:
-#         raise HTTPException(status_code=404, detail="Review not found")
-#     return {"message": "Review approved"}
-
-# @api_router.put("/reviews/{review_id}/unapprove", dependencies=[Depends(verify_admin)])
-# async def unapprove_review(review_id: str):
-#     result = await db.reviews.update_one(
-#         {"id": review_id},
-#         {"$set": {"approved": False}}
-#     )
-#     if result.matched_count == 0:
-#         raise HTTPException(status_code=404, detail="Review not found")
-#     return {"message": "Review unapproved"}
-
-# @api_router.delete("/reviews/{review_id}", dependencies=[Depends(verify_admin)])
-# async def delete_review(review_id: str):
-#     result = await db.reviews.delete_one({"id": review_id})
-#     if result.deleted_count == 0:
-#         raise HTTPException(status_code=404, detail="Review not found")
-#     return {"message": "Review deleted"}
-
-# ============ REVIEW ROUTES ============
-
 @api_router.get("/reviews")
 async def get_reviews():
-    """Public - only approved reviews"""
     reviews = await db.reviews.find({"approved": True}, {"_id": 0}).to_list(1000)
     return reviews
 
-
 @api_router.get("/reviews/all", dependencies=[Depends(verify_admin)])
 async def get_all_reviews():
-    """Admin - all reviews"""
     reviews = await db.reviews.find({}, {"_id": 0}).to_list(1000)
     return reviews
 
-
-# ================= CREATE REVIEW (CUSTOMER) =================
 @api_router.post("/reviews")
 async def create_review(review_data: ReviewCreate):
+    """Customer can submit a review (will need admin approval)"""
     review = Review(**review_data.model_dump(), approved=False)
     doc = review.model_dump()
-
     await db.reviews.insert_one(doc)
+    return {"message": "Review submitted successfully. It will be visible after admin approval."}
 
-    # 🔥 Broadcast
-    await manager.broadcast({
-        "type": "update",
-        "entity": "reviews",
-        "action": "create",
-        "data": doc
-    })
-
-    return {
-        "message": "Review submitted successfully. It will be visible after admin approval."
-    }
-
-
-# ================= CREATE REVIEW (ADMIN) =================
 @api_router.post("/reviews/admin", dependencies=[Depends(verify_admin)])
 async def create_review_admin(review_data: ReviewCreate):
+    """Admin can directly create an approved review"""
     review = Review(**review_data.model_dump(), approved=True)
     doc = review.model_dump()
-
     await db.reviews.insert_one(doc)
-
-    # 🔥 Broadcast
-    await manager.broadcast({
-        "type": "update",
-        "entity": "reviews",
-        "action": "create",
-        "data": doc
-    })
-
     return review
 
-
-# ================= APPROVE REVIEW =================
 @api_router.put("/reviews/{review_id}/approve", dependencies=[Depends(verify_admin)])
 async def approve_review(review_id: str):
     result = await db.reviews.update_one(
         {"id": review_id},
         {"$set": {"approved": True}}
     )
-
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Review not found")
-
-    # 🔥 Broadcast
-    await manager.broadcast({
-        "type": "update",
-        "entity": "reviews",
-        "action": "approve",
-        "id": review_id
-    })
-
     return {"message": "Review approved"}
 
-
-# ================= UNAPPROVE REVIEW =================
 @api_router.put("/reviews/{review_id}/unapprove", dependencies=[Depends(verify_admin)])
 async def unapprove_review(review_id: str):
     result = await db.reviews.update_one(
         {"id": review_id},
         {"$set": {"approved": False}}
     )
-
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Review not found")
-
-    # 🔥 Broadcast
-    await manager.broadcast({
-        "type": "update",
-        "entity": "reviews",
-        "action": "unapprove",
-        "id": review_id
-    })
-
     return {"message": "Review unapproved"}
 
-
-# ================= DELETE REVIEW =================
 @api_router.delete("/reviews/{review_id}", dependencies=[Depends(verify_admin)])
 async def delete_review(review_id: str):
     result = await db.reviews.delete_one({"id": review_id})
-
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Review not found")
-
-    # 🔥 Broadcast
-    await manager.broadcast({
-        "type": "update",
-        "entity": "reviews",
-        "action": "delete",
-        "id": review_id
-    })
-
     return {"message": "Review deleted"}
-
 
 
 # ============ GALLERY ROUTES ============
