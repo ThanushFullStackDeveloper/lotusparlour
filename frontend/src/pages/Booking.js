@@ -295,7 +295,23 @@ const Booking = () => {
   return `${hours}:${minutes}`;
 };
   
-  const today = getISTDate();
+  const getTodayLocal = () => {
+  const now = new Date();
+
+  const local = new Date(
+    now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+  );
+
+  const y = local.getFullYear();
+  const m = String(local.getMonth() + 1).padStart(2, "0");
+  const d = String(local.getDate()).padStart(2, "0");
+
+  return `${y}-${m}-${d}`;
+};
+  
+  // const today = getISTDate();
+  const today = getTodayLocal();
+  
   const currentTime = getISTTime();
   
   // Filter out past time slots for today's date
