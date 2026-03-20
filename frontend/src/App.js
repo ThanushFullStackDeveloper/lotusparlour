@@ -62,7 +62,7 @@ function App() {
 
   return (
     <div className="App">
-      <BrowserRouter>
+      <HashRouter>
         <WebSocketProvider>
           <ScrollToTop />
           <Toaster 
@@ -125,7 +125,7 @@ function App() {
           />
         </Routes>
         </WebSocketProvider>
-      </BrowserRouter>
+      </HashRouter>
     </div>
   );
 }
