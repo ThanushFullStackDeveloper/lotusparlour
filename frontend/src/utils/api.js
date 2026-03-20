@@ -69,6 +69,9 @@ export const updateAppointmentStatus = (id, status) =>
 export const getAppointmentICS = (id) =>
   `${BASE_URL}/appointments/${id}/ics`;
 
+export const createAdminAppointment = (data) =>
+  api.post("/appointments/admin", data);
+
 // ================= REVIEWS =================
 export const getReviews = () => api.get("/reviews");
 export const getAllReviews = () => api.get("/reviews/all");
