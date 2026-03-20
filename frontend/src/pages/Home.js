@@ -26,52 +26,17 @@ const Home = () => {
   
   const { lastUpdate } = useWebSocketContext();
 
-  // Listen for WebSocket updates - use timestamp to detect all changes
-  // useEffect(() => {
-  //   if (lastUpdate && ['services', 'staff', 'settings'].includes(lastUpdate.entity) && lastUpdate.timestamp) {
-  //     console.log(`Home: WebSocket update for ${lastUpdate.entity}, refreshing... (timestamp: ${lastUpdate.timestamp})`);
-  //     // Clear cache for updated entity and refetch immediately
-  //     clearCache(lastUpdate.entity);
-  //     fetchData();
-  //   }
-  // }, [lastUpdate?.timestamp]);
-// Listen for WebSocket updates (REAL-TIME HANDLING)
-useEffect(() => {
-  if (!lastUpdate || !lastUpdate.timestamp) return;
-
-  console.log("Home WebSocket update:", lastUpdate);
-
-  // ================= REVIEWS =================
-  if (lastUpdate.entity === "reviews") {
-
-    if (lastUpdate.action === "create") {
-      // Only show approved reviews
-      if (lastUpdate.data?.approved) {
-        setReviews(prev => [lastUpdate.data, ...prev].slice(0, 3));
-      }
-      return;
-    }
-
-    if (lastUpdate.action === "delete") {
-      setReviews(prev => prev.filter(r => r.id !== lastUpdate.id));
-      return;
-    }
-
-    if (["approve", "unapprove"].includes(lastUpdate.action)) {
-      clearCache("reviews");
+  Listen for WebSocket updates - use timestamp to detect all changes
+  useEffect(() => {
+    if (lastUpdate && ['services', 'staff', 'settings'].includes(lastUpdate.entity) && lastUpdate.timestamp) {
+      console.log(`Home: WebSocket update for ${lastUpdate.entity}, refreshing... (timestamp: ${lastUpdate.timestamp})`);
+      // Clear cache for updated entity and refetch immediately
+      clearCache(lastUpdate.entity);
       fetchData();
-      return;
     }
-  }
+  }, [lastUpdate?.timestamp]);
+Listen for WebSocket updates (REAL-TIME HANDLING)
 
-  // ================= OTHER ENTITIES =================
-  if (['services', 'staff', 'settings'].includes(lastUpdate.entity)) {
-    console.log(`Refreshing ${lastUpdate.entity}...`);
-    clearCache(lastUpdate.entity);
-    fetchData();
-  }
-
-}, [lastUpdate?.timestamp]);
   useEffect(() => {
     fetchData();
     
