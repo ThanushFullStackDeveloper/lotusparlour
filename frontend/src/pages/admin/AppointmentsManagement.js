@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle, XCircle, Search, Calendar, Filter, ChevronDown, RefreshCw } from 'lucide-react';
-import { getAppointments, updateAppointmentStatus, createAdminAppointment } from '../../utils/api';
+import { getAppointments, updateAppointmentStatus, createAdminAppointment, getServices, getStaff, getAvailableSlots } from '../../utils/api';
 import { clearCache } from '../../utils/cacheManager';
 import { toast } from 'sonner';
 
