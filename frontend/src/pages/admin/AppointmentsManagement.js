@@ -1,7 +1,8 @@
+
 import React, { useEffect, useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle, XCircle, Search, Calendar, Filter, ChevronDown, RefreshCw } from 'lucide-react';
-import { getAppointments, updateAppointmentStatus, createAdminAppointment, getServices, getStaff, getAvailableSlots } from '../../utils/api';
+import { getAppointments, updateAppointmentStatus } from '../../utils/api';
 import { clearCache } from '../../utils/cacheManager';
 import { toast } from 'sonner';
 
@@ -12,61 +13,11 @@ const AppointmentsManagement = () => {
   const [filterDate, setFilterDate] = useState('');
   const [loading, setLoading] = useState(true);
   const [sortOrder, setSortOrder] = useState('newest');
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [services, setServices] = useState([]);
-  const [staffList, setStaffList] = useState([]);
-  const [availableSlots, setAvailableSlots] = useState([]);
-  const [creating, setCreating] = useState(false);
 
-const [formData, setFormData] = useState({
-  customer_name: '',
-  customer_phone: '',
-  customer_email: '',
-  service_id: '',
-  staff_id: '',
-  appointment_date: '',
-  appointment_time: ''
-});
-
-  // useEffect(() => {
-  //   fetchAppointments();
-  // }, []);
-useEffect(() => {
-  fetchAppointments();
-  fetchMeta();
-}, []);
-
-  const fetchMeta = async () => {
-  try {
-    const [servicesRes, staffRes] = await Promise.all([
-      getServices(),
-      getStaff()
-    ]);
-    setServices(servicesRes.data);
-    setStaffList(staffRes.data);
-  } catch (err) {
-    console.error(err);
-  }
-};
   useEffect(() => {
-  if (formData.appointment_date && formData.service_id) {
-    loadSlots();
-  }
-}, [formData.appointment_date, formData.service_id]);
+    fetchAppointments();
+  }, []);
 
-const loadSlots = async () => {
-  try {
-    const res = await getAvailableSlots(
-      formData.appointment_date,
-      formData.service_id
-    );
-    setAvailableSlots(res.data.slots || []);
-  } catch {
-    toast.error("Failed to load slots");
-  }
-};
-
-  
   const fetchAppointments = async () => {
     setLoading(true);
     try {
@@ -106,8 +57,8 @@ const loadSlots = async () => {
 
     // Sort by date/time
     filtered.sort((a, b) => {
-      const dateA = new Date(`${a.appointment_date} ${a.appointment_time}`);
-      const dateB = new Date(`${b.appointment_date} ${b.appointment_time}`);
+      const dateA = new Date(${a.appointment_date} ${a.appointment_time});
+      const dateB = new Date(${b.appointment_date} ${b.appointment_time});
       return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
     });
 
@@ -117,43 +68,14 @@ const loadSlots = async () => {
   const handleStatusUpdate = async (appointmentId, newStatus) => {
     try {
       await updateAppointmentStatus(appointmentId, newStatus);
-      toast.success(`Appointment ${newStatus}`);
+      toast.success(Appointment ${newStatus});
       fetchAppointments();
     } catch (error) {
       console.error('Error updating appointment:', error);
       toast.error('Failed to update appointment');
     }
   };
-  const handleCreateAppointment = async () => {
-  if (!formData.customer_name || !formData.customer_phone || !formData.service_id) {
-    return toast.error("Fill all required fields");
-  }
 
-  try {
-    setCreating(true);
-    await createAdminAppointment(formData);
-    toast.success("Appointment created");
-
-    setShowCreateModal(false);
-    fetchAppointments();
-
-    setFormData({
-      customer_name: '',
-      customer_phone: '',
-      customer_email: '',
-      service_id: '',
-      staff_id: '',
-      appointment_date: '',
-      appointment_time: ''
-    });
-
-  } catch {
-    toast.error("Failed to create appointment");
-  } finally {
-    setCreating(false);
-  }
-};
-  
   const getStatusColor = (status) => {
     switch (status) {
       case 'confirmed': return 'bg-green-100 text-green-800';
@@ -197,13 +119,6 @@ const loadSlots = async () => {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl md:text-3xl font-bold font-heading mb-1">Appointments</h1>
-    
-        <button
-        onClick={() => setShowCreateModal(true)}
-        className="mt-2 px-4 py-2 bg-[var(--secondary)] text-white rounded-lg text-sm" 
-        > + New Appointment
-       </button>
-          
         <p className="text-sm text-gray-600">Manage customer bookings</p>
       </div>
 
@@ -218,7 +133,7 @@ const loadSlots = async () => {
         ].map((stat) => (
           <div
             key={stat.label}
-            className={`flex-shrink-0 px-4 py-2 rounded-lg ${stat.color}`}
+            className={flex-shrink-0 px-4 py-2 rounded-lg ${stat.color}}
           >
             <p className="text-xl font-bold">{stat.count}</p>
             <p className="text-xs font-medium">{stat.label}</p>
@@ -324,7 +239,7 @@ const loadSlots = async () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.02, duration: 0.2 }}
               className="bg-white p-4 rounded-xl shadow-sm"
-              data-testid={`appointment-card-${index}`}
+              data-testid={appointment-card-${index}}
             >
               {/* Customer & Status */}
               <div className="flex items-start justify-between mb-3">
@@ -332,7 +247,7 @@ const loadSlots = async () => {
                   <p className="font-semibold">{appointment.customer_name}</p>
                   <p className="text-xs text-gray-500">{appointment.customer_phone}</p>
                 </div>
-                <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>
+                <span className={px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}}>
                   {appointment.status}
                 </span>
               </div>
@@ -418,7 +333,7 @@ const loadSlots = async () => {
                     animate={{ opacity: 1 }}
                     transition={{ delay: index * 0.02 }}
                     className="hover:bg-gray-50"
-                    data-testid={`appointment-row-${index}`}
+                    data-testid={appointment-row-${index}}
                   >
                     <td className="px-4 py-3">
                       <div>
@@ -438,7 +353,7 @@ const loadSlots = async () => {
                       <p className="text-sm">{appointment.staff?.name || 'Any'}</p>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>
+                      <span className={px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}}>
                         {appointment.status}
                       </span>
                     </td>
@@ -479,87 +394,8 @@ const loadSlots = async () => {
           </table>
         </div>
       </div>
-
-          {showCreateModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white p-5 rounded-xl w-full max-w-md space-y-3">
-
-            <h2 className="text-lg font-bold">Create Appointment</h2>
-
-            <input placeholder="Name" className="input"
-              value={formData.customer_name}
-              onChange={(e)=>setFormData({...formData, customer_name:e.target.value})}
-            />
-
-            <input placeholder="Phone" className="input"
-              value={formData.customer_phone}
-              onChange={(e)=>setFormData({...formData, customer_phone:e.target.value})}
-            />
-
-            <input placeholder="Email" className="input"
-              value={formData.customer_email}
-              onChange={(e)=>setFormData({...formData, customer_email:e.target.value})}
-            />
-
-            <select className="input"
-              value={formData.service_id}
-              onChange={(e)=>setFormData({...formData, service_id:e.target.value})}
-            >
-              <option value="">Select Service</option>
-              {services.map(s => (
-                <option key={s.id} value={s.id}>{s.name}</option>
-              ))}
-            </select>
-
-            <select className="input"
-              value={formData.staff_id}
-              onChange={(e)=>setFormData({...formData, staff_id:e.target.value})}
-            >
-              <option value="">Any Staff</option>
-              {staffList.map(s => (
-                <option key={s.id} value={s.id}>{s.name}</option>
-              ))}
-            </select>
-
-            <input type="date" className="input"
-              value={formData.appointment_date}
-              onChange={(e)=>setFormData({...formData, appointment_date:e.target.value})}
-            />
-
-            <select className="input"
-              value={formData.appointment_time}
-              onChange={(e)=>setFormData({...formData, appointment_time:e.target.value})}
-            >
-              <option value="">Select Time</option>
-              {availableSlots.map(slot => (
-                <option key={slot} value={slot}>{slot}</option>
-              ))}
-            </select>
-
-            <div className="flex gap-2">
-              <button
-                onClick={handleCreateAppointment}
-                disabled={creating}
-                className="bg-green-500 text-white w-full py-2 rounded"
-              >
-                {creating ? "Creating..." : "Create"}
-              </button>
-
-              <button
-                onClick={()=>setShowCreateModal(false)}
-                className="bg-gray-300 w-full py-2 rounded"
-              >
-                Cancel
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
     </div>
   );
 };
 
-
-
-export default AppointmentsManagement;
+export default AppointmentsManagement; 
