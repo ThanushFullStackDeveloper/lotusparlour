@@ -57,8 +57,8 @@ const AppointmentsManagement = () => {
 
     // Sort by date/time
     filtered.sort((a, b) => {
-      const dateA = new Date(${a.appointment_date} ${a.appointment_time});
-      const dateB = new Date(${b.appointment_date} ${b.appointment_time});
+      const dateA = new Date(`${a.appointment_date} ${a.appointment_time}`);
+      const dateB = new Date(`${b.appointment_date} ${b.appointment_time}`);
       return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
     });
 
@@ -68,7 +68,7 @@ const AppointmentsManagement = () => {
   const handleStatusUpdate = async (appointmentId, newStatus) => {
     try {
       await updateAppointmentStatus(appointmentId, newStatus);
-      toast.success(Appointment ${newStatus});
+      toast.success(`Appointment ${newStatus}`);
       fetchAppointments();
     } catch (error) {
       console.error('Error updating appointment:', error);
@@ -133,7 +133,7 @@ const AppointmentsManagement = () => {
         ].map((stat) => (
           <div
             key={stat.label}
-            className={flex-shrink-0 px-4 py-2 rounded-lg ${stat.color}}
+           className={`flex-shrink-0 px-4 py-2 rounded-lg ${stat.color}`}
           >
             <p className="text-xl font-bold">{stat.count}</p>
             <p className="text-xs font-medium">{stat.label}</p>
@@ -247,7 +247,7 @@ const AppointmentsManagement = () => {
                   <p className="font-semibold">{appointment.customer_name}</p>
                   <p className="text-xs text-gray-500">{appointment.customer_phone}</p>
                 </div>
-                <span className={px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}}>
+                className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}
                   {appointment.status}
                 </span>
               </div>
@@ -333,7 +333,7 @@ const AppointmentsManagement = () => {
                     animate={{ opacity: 1 }}
                     transition={{ delay: index * 0.02 }}
                     className="hover:bg-gray-50"
-                    data-testid={appointment-row-${index}}
+                    data-testid={`appointment-row-${index}`}
                   >
                     <td className="px-4 py-3">
                       <div>
