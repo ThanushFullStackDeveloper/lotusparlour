@@ -7,3 +7,5 @@ bcrypt
 python-multipart
 twilio
 email-validator
+uvicorn[standard]
+websockets
