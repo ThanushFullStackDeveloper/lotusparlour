@@ -74,6 +74,7 @@ const Navbar = () => {
       data-testid="navbar"
     >
       {/* Safe area spacer for iOS PWA */}
+      <div className="safe-area-spacer"></div>
       <div className="container-custom">
         <div className="flex justify-between items-center py-2 md:py-4">
           {/* Logo */}
