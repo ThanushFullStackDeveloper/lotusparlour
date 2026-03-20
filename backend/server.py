@@ -783,6 +783,33 @@ END:VCALENDAR"""
         }
     )
 
+# ========================= Admin Appointment Creation ================#
+
+@api_router.post("/appointments/admin", dependencies=[Depends(verify_admin)])
+async def create_appointment_admin(appointment_data: AppointmentCreate):
+
+    # Check holiday
+    holiday = await db.holidays.find_one({"date": appointment_data.appointment_date}, {"_id": 0})
+    if holiday:
+        raise HTTPException(status_code=400, detail="Parlour closed on this date")
+
+    appointment = Appointment(
+        user_id=None,  # admin created
+        **appointment_data.model_dump()
+    )
+
+    await db.appointments.insert_one(appointment.model_dump())
+
+    # Broadcast update (optional but good)
+    await manager.broadcast({
+        "type": "update",
+        "entity": "appointments",
+        "action": "create"
+    })
+
+    return appointment
+
+
 # ============ REVIEW ROUTES ============
 
 # @api_router.get("/reviews")
